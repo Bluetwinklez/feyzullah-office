@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.superpowers/
+catalog/agency-agents/
+assets/realistic/sheets/
+catalog/voltagent/

@@ -1,0 +1,21 @@
+{
+  "name": "feyzullah-ofis",
+  "version": "0.1.0",
+  "description": "Feyzullah Ofis: ajanların çalıştığı piksel ofis (Windows). Feyzullah köprüsünü kullanır.",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "devDependencies": {
+    "electron": "38.8.6"
+  },
+  "allowScripts": {
+    "electron@38.8.6": true
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.129.0"
+  }
+}

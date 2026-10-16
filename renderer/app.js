@@ -1,0 +1,977 @@
+// Pencere: solda piksel ofis, altta çalışanlar, sağda seçili ajanın ayrıntıları (komutlar, diff'ler).
+import { loungeChatter } from '../src/chatter.js';
+import { daylight } from '../src/sun.js';
+import { advance, newActor, LAYOUT, targetFor, TILE } from './scene-logic.js';
+import { drawCharacter, lookFor, loadPack } from './sprites.js';
+import { AGENT_COLORS, drawLabels, drawWorld, H, W } from './world.js';
+import { createImageScene, loadCast, loadOfficeImage } from './image-world.js';
+import { PIXEL2, REAL } from './image-scene.js';
+import { createEvents } from './events.js';
+import { PRESETS, presetFor } from '../src/agents/presets.js';
+
+const officeEvents = createEvents();
+let demoEvents = false;
+let demoPanelShown = false;
+
+const $ = (id) => document.getElementById(id);
+const api = window.ofis;
+const world = document.createElement('canvas');
+world.width = W; world.height = H;
+const wctx = world.getContext('2d');
+
+// Sahne: varsayılan, Krea ile üretilmiş ofis görseli (assets/office/ofis.png); yüklenemezse kodla çizilen ofis.
+const codeScene = {
+  W, H,
+  newActor: () => newActor(LAYOUT.door),
+  advance: (actor, agent, index, t, seed, dt) => advance(actor, targetFor(agent, index, t, seed), dt),
+  point: (a) => [a.actor.x * TILE + 16, a.actor.y * TILE + 4],
+  labelActor: (a) => a,
+  draw: (ctx, o) => drawWorld(ctx, o),
+};
+let scene = codeScene;
+const view = $('world');
+const vctx = view.getContext('2d');
+
+let pack = null;
+let office = { agents: [], counts: { working: 0, resting: 0, waiting: 0, guards: 0 } };
+let cfg = { lat: 41.01, lon: 28.98, pack: 'metrocity' };
+let online = false;
+let selectedKey = null;
+let details = null;
+let apiAgents = [];
+let board = [];
+let stats = {};
+const cardDiffs = new Map(); // kart id → git farkı (Farkı gör)
+let usage = null;
+let boardOpen = false;
+const TASK_TR = { doing: 'yapılıyor', review: 'kontrolde', redo: 'düzeltiliyor', done: 'bitti', 'needs-work': 'düzeltilmeli', failed: 'hata' };
+const STATUS_COLOR = { doing: '#60a5fa', review: '#c084fc', redo: '#fbbf24', done: '#4ade80', 'needs-work': '#f87171', failed: '#f87171' };
+const actors = new Map(); // key → { agent, actor, look, seed }
+let geom = { scale: 1, ox: 0, oy: 0 };
+
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3000); }
+const ago = (at) => { const s = Math.max(0, Math.round((Date.now() - at) / 1000)); return s < 60 ? `${s} sn` : s < 3600 ? `${Math.floor(s / 60)} dk` : `${Math.floor(s / 3600)} sa`; };
+
+function syncActors() {
+  const seen = new Set();
+  let lounge = 0; let corridor = 0;
+  for (const agent of office.agents) {
+    seen.add(agent.key);
+    let a = actors.get(agent.key);
+    if (!a) {
+      a = { agent, actor: scene.newActor(), look: lookFor(agent.key, pack), seed: Math.random() * 10 };
+      actors.set(agent.key, a);
+    }
+    a.agent = agent;
+    a.index = agent.place === 'lounge' ? lounge++ : agent.place === 'standing' && agent.desk == null ? corridor++ : 0;
+  }
+  for (const k of actors.keys()) if (!seen.has(k)) actors.delete(k);
+}
+
+function resize() {
+  const st = $('stage');
+  const r = st.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  view.width = Math.floor(r.width * dpr); view.height = Math.floor(r.height * dpr);
+  view.style.width = `${r.width}px`; view.style.height = `${r.height}px`;
+  // Sığdır; oran farkı küçükse (≤%20) alanı tam doldur (kenarlardan az kırpılır, boş bant kalmaz).
+  const fit = Math.min(view.width / scene.W, view.height / scene.H);
+  const cover = Math.max(view.width / scene.W, view.height / scene.H);
+  const scale = Math.max(0.3, cover / fit <= 1.2 ? cover : fit);
+  geom = { scale, ox: Math.floor((view.width - scene.W * scale) / 2), oy: Math.floor((view.height - scene.H * scale) / 2), dpr };
+  // Cam kart ofis görselinin sağ alt köşesinde durur (sahne boş alanında kaybolmasın).
+  const fc = $('floatCard');
+  fc.style.left = `${Math.max(12, geom.ox / dpr + 14)}px`;
+  fc.style.bottom = `${Math.max(12, (view.height - geom.oy - scene.H * scale) / dpr + 14)}px`;
+}
+window.addEventListener('resize', resize);
+
+let last = performance.now();
+const perf = { n: 0, ms: 0 };
+const FRAME_MS = 50; // ~20 kare/sn: piksel animasyon için yeterli, işlemciyi yormaz
+function frame(now) {
+  if (document.hidden || now - last < FRAME_MS) { requestAnimationFrame(frame); return; }
+  const dt = Math.min(150, now - last);
+  last = now;
+  const list = [...actors.values()];
+  const t = Date.now();
+  for (const a of list) a.actor = scene.advance(a.actor, a.agent, a.index, t, a.seed, dt);
+  const t0 = performance.now();
+  const events = officeEvents.tick(t, cfg.settings?.events !== false);
+  scene.draw(wctx, { t, counts: office.counts, actors: list, pack, light: daylight(t, cfg.lat, cfg.lon), selectedKey, events });
+  perf.n++; perf.ms += performance.now() - t0;
+  if (perf.n === 200) console.log(`ofis çizimi: ortalama ${(perf.ms / perf.n).toFixed(2)} ms/kare`);
+  vctx.imageSmoothingEnabled = false;
+  vctx.fillStyle = '#0f1116'; vctx.fillRect(0, 0, view.width, view.height);
+  vctx.drawImage(world, 0, 0, scene.W, scene.H, geom.ox, geom.oy, scene.W * geom.scale, scene.H * geom.scale);
+  vctx.save();
+  vctx.scale(geom.dpr, geom.dpr);
+  if (scene.board) drawBoardText(vctx, scene.board, geom.scale / geom.dpr, geom.ox / geom.dpr, geom.oy / geom.dpr);
+  drawLabels(vctx, { actors: list.map(scene.labelActor), scale: geom.scale / geom.dpr, ox: geom.ox / geom.dpr, oy: geom.oy / geom.dpr, t, selectedKey, hoveredKey, chatter: withEventChatter(loungeChatter(office.agents, t), events) });
+  vctx.restore();
+  drawLive();
+  requestAnimationFrame(frame);
+}
+
+/** Kart başlığını duvar notuna sığacak kısa metne çevirir (biçim işaretleri, yollar, tırnaklar atılır). */
+function shortTitle(t) {
+  return String(t ?? '')
+    .replace(/[*`#>_]/g, '')
+    .replace(/[A-Za-z]:[\\/][^\s,;)]*/g, '')
+    .replace(/["'“”‘’]/g, '')
+    .replace(/\b(projesinde|klasöründe|içindeki|uygulamasının|uygulaması)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Duvar panosu: başlık + üç sütun (yapılıyor / kontrolde / bitti), her görev renkli yapışkan not. */
+const BOARD_COLS = [
+  { title: 'YAPILIYOR', match: (t) => t.status === 'doing', paper: '#fde68a', pin: '#ef4444' },
+  { title: 'KONTROLDE', match: (t) => t.status === 'review' || t.status === 'redo', paper: '#ddd6fe', pin: '#7c3aed' },
+  { title: 'BİTTİ', match: (t) => ['done', 'needs-work', 'failed'].includes(t.status), paper: '#bbf7d0', pin: '#16a34a' },
+];
+function drawBoardText(ctx, [bx, by, bw, bh], s, ox, oy) {
+  const x = ox + bx * s; const y = oy + by * s; const w = bw * s; const h = bh * s;
+  const pad = Math.max(4, w * 0.02);
+  const fs = Math.max(8, Math.min(12, h / 8.5));
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.textBaseline = 'top';
+  // başlık
+  ctx.font = `700 ${fs}px "Bahnschrift", "Segoe UI", sans-serif`;
+  ctx.fillStyle = '#fde68a';
+  ctx.fillText('GÖREV PANOSU', x + pad, y + pad * 0.8);
+  const active = board.filter((t) => ['doing', 'review', 'redo'].includes(t.status)).length;
+  const sum = `${active} aktif · ${board.filter((t) => t.status === 'done').length} bitti`;
+  ctx.font = `${fs - 1}px "Segoe UI", sans-serif`;
+  ctx.fillStyle = '#cbd5e1';
+  ctx.fillText(sum, x + w - pad - ctx.measureText(sum).width, y + pad * 0.8 + 1);
+  // sütunlar
+  const top = y + pad + fs * 1.5;
+  const colW = (w - pad * 4) / 3;
+  const noteH = Math.max(fs * 2.3, (h - (top - y) - pad - fs * 1.2) / 2 - pad * 0.6);
+  BOARD_COLS.forEach((col, ci) => {
+    const cx = x + pad + ci * (colW + pad);
+    ctx.font = `700 ${fs - 2}px "Segoe UI", sans-serif`;
+    ctx.fillStyle = '#94a3b8';
+    const items = [...board].filter(col.match).sort((a, b) => b.at - a.at);
+    ctx.fillText(`${col.title} ${items.length || ''}`.trim(), cx, top);
+    items.slice(0, 2).forEach((t, i) => {
+      const ny = top + fs * 1.2 + i * (noteH + pad * 0.6);
+      const tilt = ((i + ci) % 2 ? 1 : -1) * 0.012;
+      ctx.save();
+      ctx.translate(cx + colW / 2, ny + noteH / 2); ctx.rotate(tilt); ctx.translate(-(cx + colW / 2), -(ny + noteH / 2));
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(cx + 2, ny + 2, colW, noteH);
+      const failed = t.status === 'failed' || t.status === 'needs-work';
+      ctx.fillStyle = failed ? '#fecaca' : col.paper; ctx.fillRect(cx, ny, colW, noteH);
+      ctx.fillStyle = col.pin; ctx.beginPath(); ctx.arc(cx + colW / 2, ny + 2, Math.max(1.5, fs * 0.22), 0, Math.PI * 2); ctx.fill();
+      // ad + kısa başlık (iki satır)
+      const fit = (txt, maxW) => { let s2 = txt; while (s2.length > 2 && ctx.measureText(s2).width > maxW) s2 = `${s2.slice(0, -2)}…`; return s2; };
+      ctx.fillStyle = '#1f2937';
+      ctx.font = `700 ${fs - 2}px "Segoe UI", sans-serif`;
+      ctx.fillText(fit(`${t.name}${failed ? ' ✕' : t.status === 'redo' ? ' ↻' : ''}`, colW - 6), cx + 3, ny + noteH * 0.14);
+      ctx.font = `${fs - 2}px "Segoe UI", sans-serif`;
+      ctx.fillStyle = '#374151';
+      ctx.fillText(fit(shortTitle(t.title), colW - 6), cx + 3, ny + noteH * 0.14 + fs);
+      ctx.restore();
+    });
+    if (!items.length) { ctx.font = `${fs - 2}px "Segoe UI", sans-serif`; ctx.fillStyle = '#475569'; ctx.fillText('—', cx, top + fs * 1.3); }
+  });
+  ctx.restore();
+}
+function boardAt(ev) {
+  if (!scene.board) return false;
+  const r = view.getBoundingClientRect();
+  const wx = ((ev.clientX - r.left) * geom.dpr - geom.ox) / geom.scale;
+  const wy = ((ev.clientY - r.top) * geom.dpr - geom.oy) / geom.scale;
+  const [bx, by, bw, bh] = scene.board;
+  return wx >= bx && wx <= bx + bw && wy >= by && wy <= by + bh;
+}
+// ---- sağ panel yönetimi: widget'lar (boşta) · pano · ayarlar · ajan ayrıntısı ----
+let panel = null; // null | 'board' | 'settings'
+function showPanel(name) {
+  panel = name;
+  boardOpen = name === 'board';
+  if (name) { selectedKey = null; details = null; api.select(null); }
+  for (const [id, p] of [['navOffice', null], ['navStats', 'stats'], ['navBoard', 'board'], ['navExperts', 'experts'], ['navSettings', 'settings']]) $(id).classList.toggle('on', p === name);
+  $('detail').classList.toggle('stats-open', name === 'stats');
+  renderRoster();
+  renderDetails();
+}
+$('navOffice').onclick = () => showPanel(null);
+$('navStats').onclick = () => showPanel(panel === 'stats' ? null : 'stats'); // dar ekranda widget'lar
+$('navBoard').onclick = () => showPanel(panel === 'board' ? null : 'board');
+$('navSettings').onclick = () => showPanel(panel === 'settings' ? null : 'settings');
+$('navExperts').onclick = () => showPanel(panel === 'experts' ? null : 'experts');
+$('eClose').onclick = () => showPanel(null);
+
+// Uzman istatistikleri: geçmişteki bitmiş görevlerden başarı oranı, düzeltme turu, ortalama süre.
+function renderExperts() {
+  $('expertsPanel').hidden = panel !== 'experts';
+  if (panel !== 'experts') return;
+  const rows = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
+  $('eSub').textContent = rows.length ? `${rows.reduce((n, [, s]) => n + s.total, 0)} bitmiş görev · yönetici bu geçmişe bakarak seçer` : 'Henüz bitmiş görev yok';
+  $('eList').replaceChildren(...rows.map(([, s]) => {
+    const r = el('div', 'ex');
+    const rate = Math.round(s.successRate * 100);
+    const d = el('div', 'dots'); d.style.setProperty('--c', rate >= 80 ? '#2ee6c5' : rate >= 50 ? '#f59e0b' : '#ff2d55');
+    for (let i = 0; i < 14; i++) d.append(el('i', i < Math.round(s.successRate * 14) ? 'on' : null));
+    const avg = s.avgMs == null ? '' : ` · ort ${Math.max(1, Math.round(s.avgMs / 60_000))} dk`;
+    r.append(el('div', 'ex-n', s.name ?? '?'), el('div', 'ex-r', `%${rate}`), el('div', 'dim', `${s.total} görev · ${s.done} bitti · ${s.needsWork} düzeltilmeli · ${s.failed} hata · ${s.redo} tur${avg}`), d);
+    return r;
+  }));
+}
+
+const fmtTok = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}k` : String(n));
+function renderBoard() {
+  $('boardPanel').hidden = panel !== 'board';
+  if (panel !== 'board') return;
+  const active = board.filter((t) => ['doing', 'review', 'redo'].includes(t.status)).length;
+  const tok = board.reduce((n, t) => n + (t.usage ? t.usage.in + t.usage.out : 0), 0);
+  const cost = board.reduce((n, t) => n + (t.usage?.cost ?? 0), 0);
+  $('bSub').textContent = `${active} yapılıyor · ${board.filter((t) => t.status === 'done').length} bitti · son ${board.length} görev${tok ? ` · ${fmtTok(tok)} token${cost ? ` · $${cost.toFixed(2)}` : ''}` : ''}`;
+  $('bList').replaceChildren(...[...board].reverse().map((t) => {
+    const c = el('div', `card ${t.status}`);
+    const top = el('div', 'c-top');
+    top.append(el('span', null, `${t.name}${t.fixer ? ` → ${t.fixer}` : ''}`), el('span', null, `${TASK_TR[t.status] ?? t.status}${t.round ? ` · ${t.round}. tur` : ''} · ${ago(t.at)}`));
+    c.append(top, el('div', 'c-title', t.title));
+    if (t.branch) c.append(el('div', 'dim', `Dal: ${t.branch}`));
+    if (t.integration) c.append(el('div', 'dim', `🧩 Bütünleşme kontrolü: ${t.integration}`));
+    if (t.reviewSkipped) c.append(el('div', 'dim', `⚠ Reality Checker kontrolü atlandı: ${t.reviewSkipped}`));
+    if (t.feedback && t.status !== 'done') c.append(el('div', 'dim', `Kontrol: ${t.feedback}`));
+    if (t.error) c.append(el('div', 'dim', `Hata: ${t.error}`));
+    if (t.command) c.append(el('div', 'dim', `Komut: ${t.command}`));
+    // Panodan yönetim: süren görev iptal, biten/başarısız görev yeniden başlatılır.
+    const btns = el('div', 'c-btns');
+    const act = async (action, msg) => { const r = await api.boardAction(t.id, action); toast(r?.ok ? msg : `Olmadı: ${r?.error ?? ''}`); };
+    if (['doing', 'review', 'redo'].includes(t.status)) { const b = el('button', 'deny', 'İptal'); b.onclick = () => act('cancel', 'İptal edildi'); btns.append(b); }
+    else if (t.task) { const b = el('button', null, '↻ Yeniden başlat'); b.onclick = () => act('retry', 'Yeniden başlatıldı'); btns.append(b); }
+    if (t.branch && t.worktree && !t.merged && !t.discarded && !['doing', 'review', 'redo'].includes(t.status)) {
+      const v = el('button', null, cardDiffs.has(t.id) ? 'Farkı gizle' : '🔍 Farkı gör');
+      v.dataset.test = 'diff';
+      v.onclick = async () => {
+        if (cardDiffs.has(t.id)) { cardDiffs.delete(t.id); renderBoard(); return; }
+        const r = await api.boardAction(t.id, 'diff');
+        if (!r?.ok) { toast(`Fark alınamadı: ${r?.error ?? ''}`); return; }
+        cardDiffs.set(t.id, r); renderBoard();
+      };
+      const m = el('button', 'allow', '⤵ Dalı birleştir'); m.title = `${t.branch} → deponun o anki dalı`; m.onclick = () => act('merge', 'Birleştirildi');
+      const x = el('button', 'deny', 'Dalı at'); x.dataset.test = 'discard'; x.onclick = () => act('discard', 'Dal silindi');
+      btns.append(v, m, x);
+    }
+    if (t.merged) c.append(el('div', 'dim', t.reverted ? '↶ birleştirme geri alındı' : `✓ dal birleştirildi${t.mergeCommit ? ` (${t.mergeCommit})` : ''}`));
+    if (t.merged && t.postTest) {
+      const bad = t.postTest === 'BAŞARISIZ';
+      c.append(el('div', `ptest ${bad ? 'bad' : t.postTest === 'geçti' ? 'ok' : ''}`, `🧪 Birleştirme sonrası test: ${t.postTest}`));
+      if (bad && t.postTestTail) c.append(el('pre', 'stat', t.postTestTail));
+    }
+    if (t.merged && t.mergeCommit && !t.reverted) { const rv = el('button', 'deny', '↶ Birleştirmeyi geri al'); rv.title = 'Yeni bir geri alma (revert) commit\'i atar; geçmiş silinmez'; rv.onclick = () => act('revert', 'Birleştirme geri alındı'); btns.append(rv); }
+    if (t.usage) c.append(el('div', 'c-use', `📊 ${fmtTok(t.usage.in + t.usage.out)} token${t.usage.cost ? ` · $${t.usage.cost.toFixed(3)}` : ''}`));
+    if (btns.childElementCount) c.append(btns);
+    const d = cardDiffs.get(t.id);
+    if (d && !t.merged) { c.append(el('pre', 'stat', d.stat || '(değişiklik yok)')); if (d.diff) c.append(diffView(d.diff, { id: `diff:${t.id}`, title: t.title })); }
+    return c;
+  }));
+  if (!board.length) $('bList').replaceChildren(el('div', 'dim', 'Prompt Master\'a komut yazınca görevler burada görünür.'));
+}
+$('bClose').onclick = () => showPanel(null);
+
+// Ayarlar: ~/.feyzullah/ofis.json (main yazar). Anahtarlı kartlar.
+const SETTINGS = [
+  ['promptMaster', '✨', 'Prompt Master', 'Komutu önce net prompta çevirir'],
+  ['review', '🧐', 'Reality Checker', 'Uzman işini kontrol eder, gerekirse geri gönderir'],
+  ['limitGuard', '🛡️', 'Limit koruması', 'Claude %90\'ı geçince Claude\'a iş verilmez'],
+  ['gitBranches', '🌿', 'Görev başına git dalı', 'Git deposundaki işler ayrı çalışma ağacında'],
+  ['codexNetwork', '🌐', 'Codex ağ erişimi', 'Kum havuzunda internet (npm install vb.); yazma yine yalnız iş klasörü'],
+  ['caveman', '✂️', 'caveman üslubu', 'Codex/agy cevapları kısa (yeniden açınca)'],
+  ['notify', '🔔', 'Bildirim', 'Görev bitince / izin istenince'],
+  ['speak', '🔊', 'Sesli okuma', 'Feyzullah ses altyapısıyla'],
+  ['events', '🍕', 'Ofis olayları', 'Pizza, kedi, elektrik dalgalanması'],
+  ['dailyReport', '🗓️', 'Günlük rapor', 'Akşam özeti telefona ve bildirim olarak'],
+];
+function renderSettings() {
+  $('settingsPanel').hidden = panel !== 'settings';
+  if (panel !== 'settings') return;
+  const s = cfg.settings ?? {};
+  $('sList').replaceChildren(...SETTINGS.map(([key, icon, title, sub]) => {
+    const row = el('div', 'tg');
+    const b = el('div', 'tg-b'); b.append(el('div', 'tg-t', title), el('div', 'dim', sub));
+    const sw = el('button', `switch${s[key] !== false ? ' on' : ''}`);
+    sw.title = s[key] !== false ? 'Açık' : 'Kapalı';
+    sw.onclick = async () => { const r = await api.setConfig(key, s[key] === false); if (!r?.ok) toast(`Kaydedilemedi: ${r?.error ?? ''}`); };
+    row.append(el('span', 'tg-ic', icon), b);
+    if (key === 'dailyReport') {
+      const h = el('input'); h.type = 'number'; h.min = 0; h.max = 23; h.value = s.reportHour ?? 21; h.title = 'Saat';
+      h.onchange = () => api.setConfig('reportHour', Math.max(0, Math.min(23, Number(h.value) || 21)));
+      row.append(h);
+    }
+    row.append(sw);
+    return row;
+  }));
+}
+$('sClose').onclick = () => showPanel(null);
+
+// ---- widget'lar (sağ panel boşken) ----
+const pctNow = (w) => (w ? (!w.resetsAt || w.resetsAt > Date.now() ? w.used : 0) : null);
+const level = (v) => (v == null ? '#3a3a42' : v > 0.85 ? 'var(--neon-red)' : v > 0.6 ? 'var(--neon-yellow)' : 'var(--neon-green)');
+const hm = (ms) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+function widget({ icon, title, sub, num, sup, side, neon, foot }) {
+  const w = el('div', 'widget');
+  w.append(el('span', 'w-more', '•••'));
+  const head = el('div', 'w-head');
+  const t = el('div'); t.append(el('div', 'w-title', title), el('div', 'w-sub', sub));
+  head.append(el('span', 'w-ic', icon), t);
+  const big = el('div', 'w-big');
+  big.append(el('span', 'w-num', num), el('span', 'w-sup', sup ?? ''));
+  if (side) { const s = el('div', 'w-side'); s.append(...side); big.append(s); }
+  w.append(head, big);
+  if (neon) w.append(neon);
+  if (foot?.length) { const f = el('div', 'w-foot'); f.append(...foot.map((x) => el('span', null, x))); w.append(f); }
+  return w;
+}
+/** Limit penceresi zaman çizelgesi: başlangıç → şimdi → sıfırlanma. */
+function windowNeon(w, hours, color) {
+  const n = el('div', 'neon'); n.style.setProperty('--c', color);
+  if (!w?.resetsAt) { n.append(el('div', 'n-row', 'Ölçüm yok · uzman çalışınca gelir')); return n; }
+  const end = w.resetsAt; const start = end - hours * 3_600_000;
+  const f = Math.max(0, Math.min(1, (Date.now() - start) / (end - start)));
+  const lbl = el('div', 'n-lbl'); lbl.append(el('span', null, 'pencere'), el('span', null, 'sıfırlanma'));
+  const row = el('div', 'n-row'); row.append(el('span', null, hours > 24 ? new Date(start).toLocaleDateString('tr-TR', { weekday: 'short' }) : hm(start)), el('span', null, hours > 24 ? new Date(end).toLocaleDateString('tr-TR', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : hm(end)));
+  const line = el('div', 'n-line'); const fill = el('i'); fill.style.width = `${f * 100}%`; const mark = el('b'); mark.style.left = `calc(${f * 100}% - 1px)`; line.append(fill, mark);
+  n.append(lbl, line, row);
+  return n;
+}
+function segNeon(color, parts, labels) {
+  const n = el('div', 'neon'); n.style.setProperty('--c', color);
+  const segs = el('div', 'n-segs');
+  for (const on of parts) segs.append(el('i', on ? 'on' : null));
+  const lbl = el('div', 'n-lbl'); lbl.append(...labels.map((x) => el('span', null, x)));
+  n.append(segs, lbl);
+  return n;
+}
+/** Claude limitini şimdi ölç (küçük, hook'suz sorgu). */
+let probingNow = false;
+function probeBtn() {
+  const b = el('button', 'w-btn', probingNow ? 'ölçülüyor…' : '↻ ölç');
+  b.title = 'Claude limitini şimdi ölç (çok küçük bir sorgu, limitten az harcar)';
+  b.disabled = probingNow;
+  b.onclick = async () => { probingNow = true; renderUsage(); const r = await api.probeUsage(); probingNow = false; renderUsage(); toast(r?.ok ? 'Claude limiti güncellendi' : `Ölçülemedi: ${r?.error ?? ''}`); };
+  return b;
+}
+function renderUsage() {
+  const c = usage?.claude; const x = usage?.codex;
+  const cv = pctNow(c?.fiveHour); const xv = pctNow(x?.fiveHour);
+  const pct = (v) => (v == null ? '–' : String(Math.round(v * 100)));
+  const wk = (w) => { const v = pctNow(w); return v == null ? 'hafta ?' : `hafta %${Math.round(v * 100)}`; };
+  const counts = office.counts ?? {};
+  const active = board.filter((t) => ['doing', 'review', 'redo'].includes(t.status));
+  const recent = [...board].slice(-12);
+  $('usage').replaceChildren(
+    widget({ icon: '✳️', title: 'Claude', sub: 'beyin · 5 saatlik limit', num: pct(cv), sup: '%', side: [el('div', null, wk(c?.week)), el('div', null, c ? `${ago(c.at)} önce` : 'ölçülmedi'), probeBtn()], neon: windowNeon(c?.fiveHour, 5, level(cv)), foot: [`⏱ ${c?.fiveHour?.resetsAt ? `${hm(c.fiveHour.resetsAt)} sıfırlanır` : 'bekleniyor'}`, `📅 ${wk(c?.week)}`] }),
+    widget({ icon: '⌘', title: 'Codex', sub: 'iş yükü · 5 saatlik limit', num: pct(xv), sup: '%', side: [el('div', null, wk(x?.week)), el('div', null, x ? `${ago(x.at)} önce` : 'ölçülmedi')], neon: windowNeon(x?.fiveHour, 5, level(xv)), foot: [usage?.down?.codex ? `⛔ kapalı · ${hm(usage.down.codex)}'e kadar (iş Claude ile sürer)` : `⏱ ${x?.fiveHour?.resetsAt ? `${hm(x.fiveHour.resetsAt)} sıfırlanır` : 'bekleniyor'}`, `📅 ${wk(x?.week)}`] }),
+    widget({ icon: '📋', title: 'Görevler', sub: 'yönetici panosu', num: String(active.length), sup: 'aktif', side: [el('div', null, `bitti ${board.filter((t) => t.status === 'done').length}`)], neon: segNeon('var(--accent)', recent.map((t) => t.status === 'done'), ['son görevler', 'bitti = dolu']), foot: [`🧐 kontrolde ${active.filter((t) => t.status === 'review').length}`, `↻ düzeltme ${active.filter((t) => t.status === 'redo').length}`, `✕ hata ${board.filter((t) => ['failed', 'needs-work'].includes(t.status)).length}`] }),
+    widget({ icon: '👥', title: 'Ekip', sub: 'ofisteki ajanlar', num: String(counts.working ?? 0), sup: 'çalışıyor', side: [el('div', null, `dinlenen ${counts.resting ?? 0}`)], neon: segNeon('var(--neon-orange)', office.agents.slice(0, 16).map((a) => !['idle', 'resting'].includes(a.activity)), ['masada', 'mola']), foot: [`✋ izin bekleyen ${counts.waiting ?? 0}`, `🛡️ bekçi ${counts.guards ?? 0}`] }),
+  );
+  // Ofisin üstündeki cam kart: limitler noktalı çubukla.
+  const dots = (v, color) => { const d = el('div', 'dots'); d.style.setProperty('--c', color); for (let i = 0; i < 14; i++) d.append(el('i', v != null && i < Math.round(v * 14) ? 'on' : null)); return d; };
+  const row = (t, s, v, color) => { const r = el('div', 'f-row'); r.append(el('div', 'f-t', t), el('div', 'f-s', s), el('div', 'f-v', v == null ? '–' : `%${Math.round(v * 100)}`), dots(v, color)); return r; };
+  const fc = $('floatCard');
+  fc.hidden = false;
+  fc.replaceChildren(row('Claude', 'beyin · 5 saat', cv, cv > 0.85 ? '#ff2d55' : cv > 0.6 ? '#f59e0b' : '#2ee6c5'), row('Codex', 'iş yükü · 5 saat', xv, xv > 0.85 ? '#ff2d55' : xv > 0.6 ? '#f59e0b' : '#2ee6c5'));
+}
+
+// ---- saat / tarih ----
+function tick() {
+  const now = new Date();
+  $('clock').textContent = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  $('today').textContent = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+  $('sunIcon').textContent = daylight(now.getTime(), cfg.lat, cfg.lon) > 0.5 ? '☀️' : '🌙';
+}
+setInterval(tick, 10_000);
+setTimeout(tick, 0);
+
+// ---- avatarlar: karakterin baş/omuz kısmı (önbellekli) ----
+const avatars = new Map();
+function avatarFor(a) {
+  const key = `${a.key}|${pack ? 1 : 0}`;
+  if (avatars.has(key)) return avatars.get(key);
+  const c = document.createElement('canvas'); c.width = 22; c.height = 22;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  const look = actors.get(a.key)?.look ?? lookFor(a.key, pack);
+  x.translate(-5, -2);
+  drawCharacter(x, pack, look, 0, 0, 'down', 0);
+  const url = c.toDataURL();
+  avatars.set(key, url);
+  return url;
+}
+
+// ---- canlı görüntü: seçili ajanın çevresi, büyütülmüş ----
+const live = $('live');
+const lctx = live.getContext('2d');
+function drawLive() {
+  if ($('detailBody').hidden || !selectedKey) return;
+  const a = actors.get(selectedKey);
+  if (!a) return;
+  const [px, py] = scene.point(a);
+  const sw = Math.min(scene.W, 240); const sh = Math.round(sw * live.height / live.width);
+  const sx = Math.max(0, Math.min(scene.W - sw, px - sw / 2)); const sy = Math.max(0, Math.min(scene.H - sh, py - sh / 2));
+  lctx.imageSmoothingEnabled = false;
+  lctx.drawImage(world, sx, sy, sw, sh, 0, 0, live.width, live.height);
+}
+
+/** Pizza geldiyse dinlenen birinin balonunda duyurulur. */
+function withEventChatter(chatter, events) {
+  if (!events.some((e) => e.kind === 'pizza')) return chatter;
+  const who = office.agents.find((a) => a.place === 'lounge');
+  if (!who) return chatter;
+  const m = new Map(chatter ?? []);
+  m.set(who.key, { text: 'Pizza geldi! 🍕' });
+  return m;
+}
+
+let hoveredKey = null;
+function actorAt(ev) {
+  const r = view.getBoundingClientRect();
+  const wx = ((ev.clientX - r.left) * geom.dpr - geom.ox) / geom.scale;
+  const wy = ((ev.clientY - r.top) * geom.dpr - geom.oy) / geom.scale;
+  let best = null; let bd = 26;
+  for (const a of actors.values()) {
+    const [px, py] = scene.point(a);
+    const d = Math.hypot(px - wx, py - wy);
+    if (d < bd) { bd = d; best = a; }
+  }
+  return best;
+}
+view.addEventListener('mousemove', (ev) => { hoveredKey = actorAt(ev)?.agent.key ?? null; });
+view.addEventListener('mouseleave', () => { hoveredKey = null; });
+view.addEventListener('click', (ev) => {
+  const a = actorAt(ev);
+  if (!a && boardAt(ev)) { showPanel('board'); return; }
+  select(a?.agent.key ?? null);
+});
+
+async function select(key) {
+  selectedKey = key;
+  userClosed = !key;
+  if (key && panel) { panel = null; boardOpen = false; for (const id of ['navStats', 'navBoard', 'navExperts', 'navSettings']) $(id).classList.remove('on'); $('navOffice').classList.add('on'); }
+  // Seçim kalkınca ana süreçe de bildirilir; yoksa her güncellemede eski ajanın ayrıntısı geri gelir.
+  const d = await api.select(key ?? null);
+  details = key && selectedKey === key ? d : null;
+  renderRoster();
+  renderDetails();
+}
+
+// ---- alt şerit: çalışanlar ----
+function renderRoster() {
+  const box = $('roster');
+  const agents = [...office.agents].sort((a, b) => b.since - a.since);
+  const groups = [
+    ['İzin bekleyen', agents.filter((a) => a.activity === 'waiting')],
+    ['Çalışıyor', agents.filter((a) => !['idle', 'resting', 'waiting'].includes(a.activity))],
+    ['Molada / boşta', agents.filter((a) => ['idle', 'resting'].includes(a.activity))],
+  ];
+  $('tSub').textContent = `${agents.length} ajan · ${groups[1][1].length} çalışıyor${groups[0][1].length ? ` · ${groups[0][1].length} izin bekliyor` : ''}`;
+  if (!agents.length) { box.replaceChildren(el('div', 'dim', online ? 'Şu an çalışan ajan yok.' : 'Feyzullah köprüsüne bağlanılıyor…')); return; }
+  const chip = (a) => {
+    const c = el('button', `chip${a.key === selectedKey ? ' sel' : ''}`);
+    const img = el('img', 'ava'); img.src = avatarFor(a); img.alt = '';
+    img.style.boxShadow = `0 0 0 2px ${a.color ?? AGENT_COLORS[a.agent] ?? '#94a3b8'}`;
+    const body = el('div', 'c-body');
+    body.append(el('div', 'c-name', a.name), el('div', `c-act ${a.activity}`, `${a.label} · ${ago(a.since)}`));
+    c.append(img, body);
+    if (!['idle', 'resting'].includes(a.activity)) c.append(el('span', `ck${a.activity === 'waiting' ? ' warn' : ''}`, a.activity === 'waiting' ? '!' : '✓'));
+    c.onclick = () => select(a.key);
+    return c;
+  };
+  box.replaceChildren(...groups.filter(([, l]) => l.length).flatMap(([t, l]) => [el('div', 'grp', `${t} · ${l.length}`), ...l.map(chip)]));
+}
+
+// ---- sağ panel: ayrıntılar ----
+const KIND_TR = { prompt: 'görev', edit: 'düzenle', write: 'yaz', read: 'oku', search: 'ara', run: 'komut', web: 'web', mcp: 'mcp', plan: 'plan', tool: 'araç', agent: 'alt ajan', permission: 'izin', stop: 'bitti', note: 'not', guard: 'bekçi', session: 'oturum', say: 'mesaj' };
+
+// ---- sohbet görünümü: mesaj balonları, basit markdown, katlanır komutlar ----
+const expanded = new Set(); // açılmış uzun mesajlar / komutlar (yeniden çizimde korunur)
+const LONG_MSG = 700;
+
+/** Satır içi biçim: **kalın**, `kod`, [metin](bağlantı) → DOM (innerHTML yok). */
+function inlineMd(text) {
+  const out = [];
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
+  let last = 0; let m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(document.createTextNode(text.slice(last, m.index)));
+    const tok = m[0];
+    if (tok.startsWith('**')) out.push(el('strong', null, tok.slice(2, -2)));
+    else if (tok.startsWith('`')) out.push(el('code', 'ic', tok.slice(1, -1)));
+    else out.push(el('span', 'lnk', tok.slice(1, tok.indexOf(']'))));
+    last = m.index + tok.length;
+  }
+  if (last < text.length) out.push(document.createTextNode(text.slice(last)));
+  return out;
+}
+
+/** Basit markdown: başlık, madde, numaralı madde, kod bloğu, tablo satırları (düz), paragraf. */
+function mdView(src) {
+  const box = el('div', 'md');
+  const lines = String(src ?? '').replace(/\r\n/g, '\n').split('\n');
+  let list = null; let code = null;
+  for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      if (code) { box.append(code); code = null; } else code = el('pre', 'mdcode', '');
+      continue;
+    }
+    if (code) { code.textContent += `${line}\n`; continue; }
+    const li = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line);
+    if (li) {
+      if (!list) { list = el(/^\s*\d/.test(line) ? 'ol' : 'ul'); box.append(list); }
+      const item = el('li'); item.append(...inlineMd(li[1])); list.append(item);
+      continue;
+    }
+    list = null;
+    if (!line.trim()) continue;
+    const hd = /^#{1,4}\s+(.*)$/.exec(line);
+    if (hd) { const h = el('div', 'mdh'); h.append(...inlineMd(hd[1])); box.append(h); continue; }
+    if (/^\|?[\s:-]+\|[\s|:-]*$/.test(line)) continue; // tablo ayırıcı satırı
+    const p = el('p'); p.append(...inlineMd(line.replace(/^\|\s*|\s*\|$/g, '').replace(/\s*\|\s*/g, ' · '))); box.append(p);
+  }
+  if (code) box.append(code);
+  return box;
+}
+
+/** Bir kaydı sohbet öğesine çevirir. who: kullanıcı/ajan/sistem; komut ve araçlar katlanır satır. */
+function chatItem(e, d) {
+  const time = el('span', 'time', ago(e.at));
+  // Kullanıcının/yöneticinin gönderdiği görev ya da telefondan mesaj: sağda balon
+  if (e.kind === 'prompt' || e.kind === 'say') {
+    const b = el('div', 'bubble me');
+    const meta = el('div', 'b-meta'); meta.append(el('span', null, e.kind === 'say' ? (e.detail ?? 'mesaj') : 'görev'), time);
+    b.append(meta, mdView(e.text ?? e.title));
+    return b;
+  }
+  // Ajanın cevabı: solda balon, uzunsa katlanır
+  if (e.kind === 'stop') {
+    const b = el('div', `bubble agent${e.status === 'running' ? ' typing' : ''}`);
+    const meta = el('div', 'b-meta'); meta.append(el('span', null, e.status === 'running' ? 'yazıyor…' : 'cevap'), time);
+    const text = e.text || e.title || '';
+    const long = text.length > LONG_MSG && !expanded.has(e.id);
+    b.append(meta, mdView(long ? `${text.slice(0, LONG_MSG)}…` : text));
+    if (text.length > LONG_MSG) {
+      const more = el('button', 'more', expanded.has(e.id) ? 'daha az göster' : `devamını göster (${Math.round(text.length / 100) / 10}k karakter)`);
+      more.onclick = () => { if (expanded.has(e.id)) expanded.delete(e.id); else expanded.add(e.id); renderDetails(); };
+      b.append(more);
+    }
+    return b;
+  }
+  // Bekçi uyarısı ve notlar: ortada ince şerit
+  if (e.kind === 'guard' || e.kind === 'note' || e.kind === 'session') {
+    const n = el('div', `sysnote ${e.kind}${e.status === 'failed' ? ' bad' : ''}`);
+    n.append(el('span', 'k', e.kind === 'guard' ? '🛡 bekçi' : e.kind === 'session' ? 'oturum' : 'not'), el('span', 't', e.title), time);
+    return n;
+  }
+  // Komut / araç / dosya işlemi: tek satır, tıklayınca ayrıntı
+  const open = expanded.has(e.id) || e.status === 'waiting';
+  const row = el('div', `act ${e.status ?? ''}${open ? ' open' : ''}`);
+  const h = el('button', 'act-h');
+  const icon = { run: '›_', edit: '✎', write: '✎', read: '👁', search: '⌕', web: '🌐', mcp: '⚙', permission: '✋', plan: '☰', agent: '⇢' }[e.kind] ?? '•';
+  h.append(el('span', 'ai', icon), el('span', 'at', e.kind === 'run' && e.command ? e.command.split('\n')[0] : e.title));
+  if (e.status === 'failed') h.append(el('span', 'badge bad', 'hata'));
+  h.append(time);
+  h.onclick = () => { if (expanded.has(e.id)) expanded.delete(e.id); else expanded.add(e.id); renderDetails(); };
+  row.append(h);
+  if (open) {
+    if (e.command && (e.command.includes('\n') || e.command !== e.title)) row.append(el('pre', 'cmd', `$ ${e.command}`));
+    if (e.output) row.append(outputView(e));
+  }
+  if (e.diff) row.append(diffView(e.diff, e)); // farklar kendi içinde katlanır
+  return row;
+}
+
+const FILTERS = [
+  { id: 'all', label: 'Hepsi', test: () => true },
+  { id: 'cmd', label: 'Komutlar', test: (e) => e.kind === 'run' || e.kind === 'permission' || Boolean(e.command) },
+  { id: 'change', label: 'Değişiklikler', test: (e) => ['edit', 'write'].includes(e.kind) || Boolean(e.diff) },
+  { id: 'msg', label: 'Mesajlar', test: (e) => ['prompt', 'say', 'stop', 'note'].includes(e.kind) },
+];
+const STATUS_TR = { ok: 'başarılı', failed: 'başarısız', running: 'çalışıyor', waiting: 'bekliyor' };
+const OUTPUT_TAIL = 30;
+const DIFF_MAX_LINES = 400;
+let filter = 'all';
+const openFiles = new Map(); // `${kayıt}:${dosya}` → açık mı (kullanıcı değiştirdiyse)
+const fullOutputs = new Set(); // çıktısı tamamen açılmış kayıtlar
+
+const cleanPath = (p) => p.trim().replace(/\t.*$/, '').replace(/^[ab]\//, '');
+
+/** Birleşik diff ya da apply_patch metnini dosyalara böler; satır numaralarını @@ başlığından hesaplar. */
+function parseDiff(text, fallbackName) {
+  const files = [];
+  let cur = null; let oldLn = null; let newLn = null;
+  const start = (name) => { cur = { name, lines: [], add: 0, del: 0 }; files.push(cur); oldLn = null; newLn = null; };
+  const lines = String(text).replace(/\r\n/g, '\n').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\*\*\* (Begin|End) Patch/.test(line) || /^diff --git /.test(line) || /^index [0-9a-f]+\.\.[0-9a-f]+/.test(line)) continue;
+    const patch = /^\*\*\* (Update|Add|Delete) File: (.+)$/.exec(line);
+    if (patch) { start(patch[2].trim()); if (patch[1] !== 'Update') cur.tag = patch[1] === 'Add' ? 'yeni' : 'silindi'; continue; }
+    if (/^\*\*\* Move to: /.test(line) && cur) { cur.name += ` → ${line.slice(13).trim()}`; continue; }
+    if (line.startsWith('--- ') && lines[i + 1]?.startsWith('+++ ')) {
+      const from = cleanPath(line.slice(4)); const to = cleanPath(lines[i + 1].slice(4));
+      start(to === '/dev/null' ? from : to);
+      if (from === '/dev/null') cur.tag = 'yeni'; else if (to === '/dev/null') cur.tag = 'silindi';
+      i++; continue;
+    }
+    if (!cur) { if (line === '') continue; start(fallbackName); }
+    const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+    if (hunk) { oldLn = Number(hunk[1]); newLn = Number(hunk[2]); cur.lines.push({ type: 'hunk', text: line }); continue; }
+    if (line.startsWith('@@')) { oldLn = null; newLn = null; cur.lines.push({ type: 'hunk', text: line }); continue; }
+    if (line.startsWith('\\')) { cur.lines.push({ type: 'meta', text: line }); continue; }
+    if (line.startsWith('+')) { cur.add++; cur.lines.push({ type: 'add', o: null, n: newLn, text: line }); if (newLn != null) newLn++; continue; }
+    if (line.startsWith('-')) { cur.del++; cur.lines.push({ type: 'del', o: oldLn, n: null, text: line }); if (oldLn != null) oldLn++; continue; }
+    if (line === '' && i === lines.length - 1) continue; // sondaki boş satır
+    cur.lines.push({ type: 'ctx', o: oldLn, n: newLn, text: line });
+    if (oldLn != null) oldLn++;
+    if (newLn != null) newLn++;
+  }
+  return files;
+}
+
+function diffStats(text) {
+  let add = 0; let del = 0; const names = [];
+  for (const f of parseDiff(text, '')) { add += f.add; del += f.del; if (f.name) names.push(f.name); }
+  return { add, del, names };
+}
+
+function counter(add, del) {
+  const c = el('span', 'counter');
+  c.append(el('span', 'c-add', `+${add}`), el('span', 'c-del', `−${del}`));
+  return c;
+}
+
+function diffView(diff, e) {
+  const box = el('div', 'diff-files');
+  const fallback = e.files?.[0]?.path ?? e.title ?? 'değişiklik';
+  parseDiff(diff, fallback).forEach((f, idx) => {
+    const key = `${e.id}:${idx}`;
+    const det = el('details', 'dfile');
+    det.open = openFiles.has(key) ? openFiles.get(key) : idx < 3;
+    det.addEventListener('toggle', () => openFiles.set(key, det.open));
+    const sum = el('summary');
+    const name = el('span', 'df-name', f.name.split(/[\\/]/).slice(-3).join('/'));
+    name.title = f.name;
+    sum.append(name);
+    if (f.tag) sum.append(el('span', `df-tag ${f.tag === 'yeni' ? 'new' : 'gone'}`, f.tag));
+    sum.append(counter(f.add, f.del));
+    const body = el('div', 'diff');
+    for (const l of f.lines.slice(0, DIFF_MAX_LINES)) {
+      if (l.type === 'hunk' || l.type === 'meta') { body.append(el('div', `dl ${l.type}`, l.text)); continue; }
+      const row = el('div', `dl ${l.type}`);
+      row.append(el('span', 'ln', l.o ?? ''), el('span', 'ln', l.n ?? ''), el('span', 'code', l.text || ' '));
+      body.append(row);
+    }
+    if (f.lines.length > DIFF_MAX_LINES) body.append(el('div', 'dl meta', `… ${f.lines.length - DIFF_MAX_LINES} satır daha`));
+    det.append(sum, body);
+    box.append(det);
+  });
+  return box;
+}
+
+function outputView(e) {
+  const wrap = el('div', `out${e.status === 'failed' ? ' failed' : ''}`);
+  const lines = String(e.output).replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n');
+  const full = fullOutputs.has(e.id);
+  const shown = full ? lines : lines.slice(-OUTPUT_TAIL);
+  if (lines.length > OUTPUT_TAIL) {
+    const b = el('button', 'more', full ? 'son 30 satırı göster' : `tamamını göster (${lines.length} satır, ${lines.length - OUTPUT_TAIL} gizli)`);
+    b.onclick = () => { if (full) fullOutputs.delete(e.id); else fullOutputs.add(e.id); renderDetails(); };
+    wrap.append(b);
+  }
+  wrap.append(el('pre', null, shown.join('\n')));
+  return wrap;
+}
+
+function renderSummary(d) {
+  let box = $('dSummary');
+  if (!box) { box = el('div', 'summary'); box.id = 'dSummary'; $('dTask').before(box); }
+  const files = new Set(d.files.map((f) => f.path));
+  let add = 0; let del = 0;
+  for (const e of d.entries) {
+    if (!e.diff) continue;
+    const s = diffStats(e.diff);
+    add += s.add; del += s.del;
+    if (!e.files?.length) for (const n of s.names) files.add(n);
+  }
+  const lastCmd = d.entries.find(FILTERS[1].test);
+  const items = [el('span', 'sm', `${files.size} dosya`), counter(add, del)];
+  if (lastCmd) {
+    const st = el('span', `sm status ${lastCmd.status ?? ''}`, `son komut: ${STATUS_TR[lastCmd.status] ?? lastCmd.status ?? '—'}`);
+    st.title = lastCmd.command || lastCmd.title;
+    items.push(st);
+  }
+  box.replaceChildren(...items);
+}
+
+function renderFilters(d) {
+  let bar = $('dFilters');
+  if (!bar) { bar = el('div', 'filters'); bar.id = 'dFilters'; $('dTimeline').before(bar); }
+  bar.replaceChildren(...FILTERS.map((f) => {
+    const b = el('button', `flt${f.id === filter ? ' on' : ''}`);
+    b.append(el('span', null, f.label), el('span', 'n', String(d.entries.filter(f.test).length)));
+    b.onclick = () => { filter = f.id; renderDetails(); };
+    return b;
+  }));
+}
+
+function renderDetails() {
+  renderBoard();
+  renderSettings();
+  renderExperts();
+  const d = panel ? null : details;
+  $('detailEmpty').hidden = Boolean(d) || (Boolean(panel) && panel !== 'stats');
+  $('detailBody').hidden = !d;
+  if (!d) return;
+  const agent = office.agents.find((a) => a.key === d.key);
+  const apiA = d.agent === 'api' ? apiAgents.find((a) => a.id === d.session) : null;
+  $('dDot').textContent = apiA?.emoji || { claude: '✳️', codex: '⌘', antigravity: '🅰️' }[d.agent] || '🤖';
+  $('dDot').style.background = office.agents.find((x) => x.key === d.key)?.color ?? AGENT_COLORS[d.agent] ?? 'var(--accent)';
+  $('dName').textContent = agent?.name ?? `${d.agent} · ${d.project}`;
+  $('dSub').textContent = `${agent?.label ?? d.state} · ${d.cwd ?? ''}`;
+  $('dTask').textContent = d.task ? `Görev: ${d.task}` : '';
+  $('dPending').hidden = !d.pending;
+  if (d.pending) $('dPendingCmd').textContent = d.pending.command || d.pending.title;
+  $('dFiles').replaceChildren(...d.files.slice(-30).map((f) => el('span', `file ${f.change}`, f.path.split(/[\\/]/).slice(-2).join('/'))));
+  renderSummary(d);
+  renderFilters(d);
+  const test = (FILTERS.find((f) => f.id === filter) ?? FILTERS[0]).test;
+  const shown = d.entries.filter(test);
+  // Sohbet sırası: eskiden yeniye (en yeni yazma kutusunun üstünde); kullanıcı alttaysa yeni mesajda alta kayar.
+  const pane = $('detail');
+  const atBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight < 80;
+  const sameAgent = renderDetails.lastKey === d.key;
+  renderDetails.lastKey = d.key;
+  const ordered = [...shown].sort((a, b) => a.at - b.at);
+  $('dTimeline').replaceChildren(...(ordered.length ? ordered.map((e) => chatItem(e, d)) : [el('div', 'dim', 'Bu filtrede kayıt yok.')]));
+  if (!sameAgent || atBottom) requestAnimationFrame(() => { pane.scrollTop = pane.scrollHeight; });
+  $('dSay').hidden = !(d.agent === 'claude' || d.agent === 'antigravity' || d.agent === 'api');
+  const apiAgent = d.agent === 'api' ? apiAgents.find((a) => a.id === d.session) : null;
+  $('dApi').hidden = !apiAgent;
+  $('dRemove').hidden = apiAgent?.role === 'admin' || apiAgent?.role === 'prompt'; // silinemezler
+  if (apiAgent && apiAgent.engine !== 'api') $('dSub').textContent = `${agent?.label ?? ''} · ${ENGINE_TR[apiAgent.engine] ?? apiAgent.engine} · ${apiAgent.workdir || 'ofis-work klasörü'}`;
+  else if (apiAgent) $('dSub').textContent = `${agent?.label ?? ''} · ${apiAgent.provider} · ${apiAgent.model}${apiAgent.hasKey ? ` · anahtar ••••${apiAgent.keyHint}` : ' · anahtar yok'}`;
+  $('dSayText').placeholder = d.agent === 'api' ? 'Ajana yaz…' : 'Ajana yaz… (sonraki adımda ya da bitince iletilir)';
+}
+
+$('dClose').onclick = () => select(null);
+// ---- kayıtlı komutlar (⭐): tıklayınca kutuya gelir; kutudaki komut kaydedilebilir ----
+function renderSaved() {
+  const list = cfg.savedCommands ?? [];
+  const pop = $('savedPop');
+  const save = (next) => api.setConfig('savedCommands', next).then((r) => { if (!r?.ok) toast(`Kaydedilemedi: ${r?.error ?? ''}`); });
+  const rows = list.map((c, i) => {
+    const r = el('div', 'sc');
+    const use = el('button', 'use', c); use.title = c;
+    use.onclick = () => { $('adminText').value = c; pop.hidden = true; $('adminText').focus(); };
+    const del = el('button', 'del', '✕'); del.title = 'Sil';
+    del.onclick = () => save(list.filter((_, j) => j !== i));
+    r.append(use, del);
+    return r;
+  });
+  const cur = $('adminText').value.trim();
+  const add = el('button', 'add', cur ? `+ Kutudaki komutu kaydet: "${cur.slice(0, 50)}${cur.length > 50 ? '…' : ''}"` : 'Kutuya bir komut yaz, sonra buradan kaydet');
+  add.disabled = !cur || list.includes(cur) || list.length >= 30;
+  add.onclick = () => save([...list, cur]);
+  pop.replaceChildren(...(rows.length ? rows : [el('div', 'dim', 'Henüz kayıtlı komut yok. Örn: "testleri çalıştır, kırılanları düzelt"')]), add);
+}
+$('savedBtn').onclick = () => { const p = $('savedPop'); p.hidden = !p.hidden; if (!p.hidden) renderSaved(); };
+document.addEventListener('click', (ev) => { if (!ev.target.closest?.('#savedPop, #savedBtn')) $('savedPop').hidden = true; });
+$('adminForm').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const text = $('adminText').value.trim();
+  if (!text) return;
+  const direct = $('adminDirect').checked;
+  const r = await api.commandAdmin(text, { direct });
+  if (!r.ok) { toast(`Gönderilemedi: ${r.error}`); return; }
+  $('adminText').value = '';
+  const pm = apiAgents.find((a) => a.role === 'prompt');
+  toast(direct || !pm ? 'Yönetici görevi dağıtıyor…' : 'Prompt Master netleştiriyor, sonra yönetici dağıtacak…');
+  const who = direct || !pm ? apiAgents.find((a) => a.role === 'admin') : pm;
+  if (who) select(`api:${who.id}`);
+};
+$('dAllow').onclick = async () => { if (!details?.pending) return; const r = await api.decide(details.pending.id, 'allow'); toast(r.ok ? 'İzin verildi' : `Olmadı: ${r.error ?? ''}`); };
+$('dDeny').onclick = async () => { if (!details?.pending) return; const r = await api.decide(details.pending.id, 'deny'); toast(r.ok ? 'Reddedildi' : `Olmadı: ${r.error ?? ''}`); };
+$('dSay').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const text = $('dSayText').value.trim();
+  if (!text || !details) return;
+  const r = await api.say(details.agent, details.session, text);
+  if (r.ok) { $('dSayText').value = ''; toast('Mesaj sıraya alındı'); } else toast(`Gönderilemedi: ${r.error ?? ''}`);
+};
+
+// ---- API ajanı ekle / düzenle ----
+let editingId = null;
+function openAgentDialog(agent = null) {
+  editingId = agent?.id ?? null;
+  const f = $('agentForm');
+  f.reset();
+  $('agentDlgTitle').textContent = agent ? 'Ajanı düzenle' : 'Ajan ekle';
+  f.name.value = agent?.name ?? '';
+  f.engine.value = agent?.engine ?? 'api';
+  f.workdir.value = agent?.workdir ?? '';
+  syncEngineRows();
+  // Hazır sağlayıcı listesi (Anthropic, OpenAI, Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI, yerel Ollama/LM Studio…).
+  if (!f.preset.options.length) for (const p of PRESETS) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.label; f.preset.append(o); }
+  const pre = agent ? presetFor(agent.provider, agent.baseUrl) : PRESETS[0];
+  f.preset.value = pre.id;
+  f.baseUrl.value = agent?.baseUrl ?? pre.baseUrl;
+  f.model.value = agent?.model ?? pre.model;
+  syncPreset();
+  f.system.value = agent?.system ?? '';
+  f.key.placeholder = agent?.hasKey ? `Kayıtlı: ••••${agent.keyHint} (boş bırak = değiştirme)` : 'Boş bırakılabilir';
+  $('keyClearRow').hidden = !agent?.hasKey;
+  $('agentDlg').showModal();
+}
+function syncEngineRows() {
+  const isApi = $('agentForm').engine.value === 'api';
+  for (const e of document.querySelectorAll('#agentForm .api-only')) e.hidden = !isApi;
+  for (const e of document.querySelectorAll('#agentForm .cli-only')) e.hidden = isApi;
+}
+$('agentForm').engine.addEventListener('change', syncEngineRows);
+/** Seçili hazır sağlayıcıya göre: sağlayıcı türü, adres alanı (yalnız özel adreste görünür), model ipucu, anahtar notu. */
+function syncPreset() {
+  const f = $('agentForm');
+  const p = PRESETS.find((x) => x.id === f.preset.value) ?? PRESETS[0];
+  f.provider.value = p.provider;
+  $('baseUrlRow').hidden = p.id !== 'custom';
+  f.model.placeholder = p.hint ?? '';
+  if (!f.key.value && !editingId) f.key.placeholder = p.local ? 'Yerel sunucu: anahtar gerekmez' : 'Bu sağlayıcının API anahtarı (isteğe bağlı)';
+}
+$('agentForm').preset.addEventListener('change', () => {
+  const f = $('agentForm');
+  const p = PRESETS.find((x) => x.id === f.preset.value);
+  const known = PRESETS.some((x) => x.model && x.model === f.model.value);
+  if (p.id !== 'custom') f.baseUrl.value = p.baseUrl;
+  if (!f.model.value || known) f.model.value = p.model;
+  syncPreset();
+});
+// ---- Agency Agents kataloğundan işe alma ----
+let catalogData = null;
+const ENGINE_TR = { claude: 'Claude', codex: 'Codex', antigravity: 'agy' };
+function renderHire() {
+  const q = $('hireSearch').value.trim().toLowerCase();
+  const div = $('hireDivision').value;
+  const hired = new Set(apiAgents.map((a) => a.catalogId).filter(Boolean));
+  const list = catalogData.agents.filter((a) => (!div || a.division === div) && (!q || `${a.name} ${a.description} ${a.id}`.toLowerCase().includes(q))).slice(0, 120);
+  $('hireList').replaceChildren(...(list.length ? list.map((a) => {
+    const row = el('div', `hire-item${hired.has(a.id) ? ' hired' : ''}`);
+    row.style.setProperty('--c', a.color);
+    const info = el('div');
+    info.append(el('div', 'h-name', `${a.emoji} ${a.name}`), el('div', 'h-desc', `${catalogData.divisions[a.division]?.label ?? a.division} · ${a.description}`));
+    info.title = a.description;
+    const sel = el('select');
+    for (const [v, t] of Object.entries(ENGINE_TR)) { const o = el('option', null, v === a.engine ? `${t} (önerilen)` : t); o.value = v; sel.append(o); }
+    sel.value = a.engine;
+    const btn = el('button', 'allow', hired.has(a.id) ? 'Ofiste' : 'İşe al');
+    btn.type = 'button';
+    btn.disabled = hired.has(a.id);
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const r = await api.hire(a.id, sel.value);
+      if (!r.ok) { toast(`Olmadı: ${r.error}`); btn.disabled = false; return; }
+      apiAgents.push(r.agent);
+      btn.textContent = 'Ofiste'; row.classList.add('hired');
+      toast(`${a.name} işe alındı — ofise geliyor`);
+    };
+    row.append(info, sel, btn);
+    return row;
+  }) : [el('p', 'dim', 'Sonuç yok.')]));
+}
+$('btnAddAgent').onclick = async () => {
+  if (!catalogData) {
+    catalogData = await api.catalog();
+    for (const [id, d] of Object.entries(catalogData.divisions)) { const o = el('option', null, d.label); o.value = id; $('hireDivision').append(o); }
+  }
+  if (!catalogData.agents.length) { openAgentDialog(); toast('Katalog yok (catalog/agency-agents); API ajanı ekleyebilirsin'); return; }
+  renderHire();
+  $('hireDlg').showModal();
+};
+$('hireSearch').addEventListener('input', () => renderHire());
+$('hireDivision').addEventListener('change', () => renderHire());
+$('hireApi').onclick = () => { $('hireDlg').close(); openAgentDialog(); };
+$('agentDlg').addEventListener('close', async () => {
+  const f = $('agentForm');
+  if ($('agentDlg').returnValue !== 'save') { f.key.value = ''; return; }
+  const key = f.keyClear.checked ? '' : (f.key.value.trim() || (editingId ? null : undefined));
+  const engine = f.engine.value;
+  const fields = engine === 'api'
+    ? { name: f.name.value, engine, provider: f.provider.value, model: f.model.value, baseUrl: f.baseUrl.value, system: f.system.value, key }
+    : { name: f.name.value, engine, workdir: f.workdir.value };
+  f.key.value = ''; // anahtar formda kalmasın
+  const r = await api.saveAgent(editingId, fields);
+  if (!r.ok) { toast(`Kaydedilemedi: ${r.error}`); return; }
+  toast(editingId ? 'Ajan güncellendi' : 'Ajan eklendi — ofise geliyor');
+  select(`api:${r.agent.id}`);
+});
+$('dEdit').onclick = () => { const a = apiAgents.find((x) => x.id === details?.session); if (a) openAgentDialog(a); };
+$('dRemove').onclick = async () => {
+  const a = apiAgents.find((x) => x.id === details?.session);
+  if (!a) return;
+  if ($('dRemove').dataset.confirm !== a.id) { $('dRemove').dataset.confirm = a.id; $('dRemove').textContent = 'Emin misin? Tekrar bas'; return; }
+  delete $('dRemove').dataset.confirm; $('dRemove').textContent = 'Sil';
+  await api.removeAgent(a.id);
+  select(null);
+  toast('Ajan silindi');
+};
+
+api.onOffice((msg) => {
+  office = msg.office;
+  cfg = msg.config ?? cfg;
+  if (cfg.demo && !demoEvents) { demoEvents = true; officeEvents.start('pizza', Date.now()); officeEvents.start('cat', Date.now()); }
+  if (cfg.demoPanel && !demoPanelShown) { demoPanelShown = true; setTimeout(() => showPanel(cfg.demoPanel), 500); }
+  online = msg.online;
+  apiAgents = msg.agents ?? [];
+  board = msg.board ?? [];
+  stats = msg.stats ?? {};
+  usage = msg.usage ?? null;
+  renderUsage();
+  if (panel) renderDetails();
+  if (!$('savedPop').hidden) renderSaved();
+  $('conn').title = online ? 'Feyzullah köprüsüne bağlı' : 'Köprü yok';
+  $('conn').className = `conn ${online ? 'on' : 'off'}`;
+  const c = office.counts;
+  const b = (n) => el('b', null, String(n));
+  $('counts').replaceChildren('Çalışan ', b(c.working), ' · Dinlenen ', b(c.resting), ...(c.waiting ? [' · İzin ', b(c.waiting)] : []));
+  syncActors();
+  renderRoster();
+  if (selectedKey && !office.agents.some((a) => a.key === selectedKey)) renderDetails();
+});
+// Bildirim sesi: Feyzullah ses sağlayıcısının dosyası varsa o, yoksa Windows'un Türkçe sesi.
+api.onSpeak?.(({ text, audio }) => {
+  if (audio?.base64) { new Audio(`data:${audio.mime};base64,${audio.base64}`).play().catch(() => {}); return; }
+  if (!('speechSynthesis' in window) || !text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'tr-TR';
+  const tr = speechSynthesis.getVoices().find((v) => v.lang?.startsWith('tr'));
+  if (tr) u.voice = tr;
+  speechSynthesis.speak(u);
+});
+let userClosed = false; // kullanıcı kapattıysa ana süreçten geç gelen eski ayrıntı paneli yeniden açmaz
+api.onDetails((d) => {
+  if (d && d.key !== selectedKey && (userClosed || panel)) return;
+  details = d; if (d) selectedKey = d.key; renderDetails(); renderRoster();
+});
+
+(async () => {
+  pack = await loadPack(cfg.pack);
+  // Tema: 'real' (Krea gerçekçi ofis + stilize karakterler) → 'pixel' (Krea piksel ofis + MetroCity) → kod çizimi
+  const theme = cfg.theme ?? 'pixel';
+  const cast = theme === 'real' && REAL ? await loadCast() : [];
+  const sceneDef = cast.length ? REAL : PIXEL2;
+  const bg = await loadOfficeImage(sceneDef.IMG);
+  if (bg) {
+    scene = createImageScene(bg, sceneDef, { style: sceneDef === REAL ? 'real' : 'pixel', cast });
+    world.width = scene.W; world.height = scene.H;
+    for (const a of actors.values()) a.actor = scene.newActor();
+  }
+  for (const a of actors.values()) a.look = lookFor(a.agent.key, pack);
+  resize();
+  requestAnimationFrame(frame);
+})();

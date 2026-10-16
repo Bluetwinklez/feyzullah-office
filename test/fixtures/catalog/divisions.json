@@ -1,0 +1,1 @@
+{ "_note": "test", "divisions": { "design": { "label": "Design", "color": "#EC4899" }, "engineering": { "label": "Engineering", "color": "#3B82F6" }, "testing": { "label": "Testing", "color": "#EF4444" } } }

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; media-src 'self' data:; style-src 'self'; script-src 'self'">
+  <title>Feyzullah Ofis</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <aside class="agents">
+      <div class="ag-head">
+        <div class="logo" title="Feyzullah Ofis">F</div>
+        <div><div class="ag-title">Çalışanlar</div><div id="tSub" class="dim"></div></div>
+      </div>
+      <div id="roster" class="roster"></div>
+    </aside>
+
+    <section class="office">
+      <header class="topbar">
+        <div class="brand-box">
+          <div class="brand">Feyzullah Ofis</div>
+          <div id="today" class="dim"></div>
+        </div>
+        <form id="adminForm" class="admin-form pill">
+          <span class="spark">✨</span>
+          <input id="adminText" maxlength="8000" placeholder="Prompt Master'a yaz… net prompta çevirir, yönetici dağıtır" autocomplete="off">
+          <label class="direct" title="Prompt Master'ı atla, doğrudan yöneticiye"><input id="adminDirect" type="checkbox"> 👔</label>
+          <button type="button" id="savedBtn" class="star" title="Kayıtlı komutlar">⭐</button>
+          <button type="submit" class="send" title="Gönder">➤</button>
+        </form>
+        <div id="savedPop" class="saved-pop glass" hidden></div>
+        <div class="pill stats"><span id="counts">Bağlanıyor…</span></div>
+        <div class="pill clock"><span id="sunIcon">☀️</span><span id="clock"></span></div>
+      </header>
+      <div id="stage" class="stage">
+        <canvas id="world"></canvas>
+        <div id="floatCard" class="glass float" hidden></div>
+      </div>
+    </section>
+
+    <aside id="detail" class="detail">
+      <div id="detailEmpty" class="widgets">
+        <div id="usage" class="widget-col"></div>
+      </div>
+      <div id="boardPanel" class="panel" hidden>
+        <div class="head-card">
+          <span class="icon-sq">📋</span>
+          <div><h2>Görev panosu</h2><p id="bSub" class="dim"></p></div>
+          <button id="bClose" class="ghost" title="Kapat">✕</button>
+        </div>
+        <div id="bList" class="board-list"></div>
+      </div>
+      <div id="expertsPanel" class="panel" hidden>
+        <div class="head-card">
+          <span class="icon-sq">📈</span>
+          <div><h2>Uzmanlar</h2><p id="eSub" class="dim"></p></div>
+          <button id="eClose" class="ghost" title="Kapat">✕</button>
+        </div>
+        <div id="eList" class="experts"></div>
+      </div>
+      <div id="settingsPanel" class="panel" hidden>
+        <div class="head-card">
+          <span class="icon-sq">⚙️</span>
+          <div><h2>Ayarlar</h2><p class="dim">~/.feyzullah/ofis.json</p></div>
+          <button id="sClose" class="ghost" title="Kapat">✕</button>
+        </div>
+        <div id="sList" class="toggles"></div>
+      </div>
+      <div id="detailBody" class="panel" hidden>
+        <div class="head-card">
+          <span id="dDot" class="icon-sq"></span>
+          <div>
+            <h2 id="dName"></h2>
+            <p id="dSub" class="dim"></p>
+          </div>
+          <button id="dClose" class="ghost" title="Kapat">✕</button>
+        </div>
+        <div class="live">
+          <canvas id="live" width="360" height="200"></canvas>
+          <span class="live-badge">● Canlı</span>
+        </div>
+        <div id="dTask" class="task"></div>
+        <div id="dPending" class="pending" hidden>
+          <div class="p-title">İzin istiyor</div>
+          <pre id="dPendingCmd"></pre>
+          <div class="row">
+            <button id="dAllow" class="allow">İzin ver</button>
+            <button id="dDeny" class="deny">Reddet</button>
+          </div>
+        </div>
+        <div id="dFiles" class="files"></div>
+        <div id="dTimeline" class="timeline"></div>
+        <div id="dApi" class="row" hidden>
+          <button id="dEdit">Düzenle</button>
+          <button id="dRemove" class="deny">Sil</button>
+        </div>
+        <form id="dSay" class="say" hidden>
+          <textarea id="dSayText" rows="2" placeholder="Ajana yaz… (sonraki adımda ya da bitince iletilir)"></textarea>
+          <button type="submit">Gönder</button>
+        </form>
+      </div>
+    </aside>
+    <nav class="rail">
+      <button id="navOffice" class="nav on" title="Ofis">🏢</button>
+      <button id="navStats" class="nav stats-nav" title="Limitler ve özet">📊</button>
+      <button id="navBoard" class="nav" title="Görev panosu">📋</button>
+      <button id="navExperts" class="nav" title="Uzman istatistikleri">📈</button>
+      <button id="btnAddAgent" class="nav" title="Uzman işe al / ajan ekle">➕</button>
+      <button id="navSettings" class="nav" title="Ayarlar">⚙️</button>
+      <span class="grow"></span>
+      <span id="navHint" class="nav-hint"></span>
+      <span id="conn" class="conn off" title="Feyzullah köprüsü">●</span>
+    </nav>
+  </div>
+  <dialog id="agentDlg">
+    <form id="agentForm" method="dialog">
+      <h3 id="agentDlgTitle">Ajan ekle</h3>
+      <label>Ad <input name="name" required maxlength="40" placeholder="ör. Ayşe"></label>
+      <label>Motor
+        <select name="engine">
+          <option value="api">API anahtarı (sağlayıcı)</option>
+          <option value="claude">Claude Code (bu bilgisayar)</option>
+          <option value="codex">Codex (bu bilgisayar)</option>
+          <option value="antigravity">agy (bu bilgisayar)</option>
+        </select>
+      </label>
+      <label class="cli-only">Çalışma klasörü (boş = ~/.feyzullah/ofis-work/&lt;ajan&gt;) <input name="workdir" maxlength="500" placeholder="ör. C:\Projeler\uygulamam"></label>
+      <div class="api-only">
+      <label>Sağlayıcı
+        <select name="preset"></select>
+        <input type="hidden" name="provider">
+      </label>
+      <label>Model <input name="model" maxlength="120"></label>
+      <label id="baseUrlRow">Taban adres <input name="baseUrl" maxlength="200" placeholder="ör. https://api.groq.com/openai/v1"></label>
+      </div>
+      <label class="api-only">Rol / talimat <textarea name="system" rows="3" maxlength="8000" placeholder="ör. Kodu inceler, kısa ve net cevap verir."></textarea></label>
+      <div class="api-only">
+      <label>API anahtarı (isteğe bağlı) <input name="key" type="password" autocomplete="off" placeholder="Boş bırakılabilir"></label>
+      <label id="keyClearRow" class="check" hidden><input name="keyClear" type="checkbox"> Kayıtlı anahtarı sil</label>
+      <p class="dim">Anahtar Windows şifrelemesiyle (DPAPI) bu bilgisayarda saklanır; pencereye geri gönderilmez.</p>
+      </div>
+      <div class="row">
+        <button value="cancel" formnovalidate>Vazgeç</button>
+        <button id="agentSave" value="save" class="allow">Kaydet</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="hireDlg" class="wide">
+    <form method="dialog">
+      <h3>Uzman işe al <span class="dim">— Agency Agents kataloğu</span></h3>
+      <div class="row">
+        <input id="hireSearch" placeholder="Ara: frontend, reviewer, growth…" autocomplete="off">
+        <select id="hireDivision"><option value="">Tüm bölümler</option></select>
+      </div>
+      <div id="hireList" class="hire-list"></div>
+      <div class="row">
+        <button id="hireApi" type="button">API anahtarıyla özel ajan…</button>
+        <button value="close">Kapat</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" hidden></div>
+</body>
+</html>

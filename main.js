@@ -14,7 +14,8 @@ import { ADMIN_PERSONA, createAdmin, promptMasterPersona } from './src/agents/ad
 import { loadCaveman, RE_ID, RE_PERSONA } from './src/agents/personas.js';
 import { createUsage } from './src/usage.js';
 import { approvalNotice, boardNotices, dailyReport, reportDay, reportDue } from './src/notify.js';
-import { branchDiff, cleanupWorktrees, commitAll, mergeWorktree, removeWorktree, revertMerge, runProjectTests, sharedPreparer } from './src/gitwork.js';
+import { branchDiff, cleanupWorktrees, commitAll, mergeWorktree, removeWorktree, revertMerge, runProjectTests, sharedPreparer, worktreeFate } from './src/gitwork.js';
+import { createSchedule } from './src/schedule.js';
 import { addHistory, expertStats, statsLine } from './src/stats.js';
 import { probeClaude } from './src/usage.js';
 import { statSync } from 'node:fs';
@@ -30,6 +31,7 @@ const deskCount = () => (config.theme === 'real' ? 10 : 12);
 let win = null;
 let config;
 let model; // Feyzullah'ın island-model.js'i
+let schedule = null; // zamanlanmış komutlar
 let state;
 let online = false;
 let selected = null;
@@ -180,7 +182,7 @@ function push() {
   const office = buildOffice(all, { memory, desks: deskCount(), restMs: config.restMinutes * 60_000 });
   // Uzman kimlik metinleri uzun: pencereye yalnız API ajanlarının talimatı gider.
   const agents = (agentStore?.list() ?? []).map((a) => (a.engine === 'api' ? a : { ...a, system: '' }));
-  win.webContents.send('office', { online, office, agents, stats: Object.fromEntries(statsMap()), board: process.env.OFIS_DEMO === '1' ? demoBoard() : admin?.board() ?? [], usage: usage ? { ...usage.get(), down: agentRunner?.downEngines() ?? {} } : null, config: { demo: process.env.OFIS_DEMO === '1', demoPanel: process.env.OFIS_PANEL || null, lat: config.lat, lon: config.lon, pack: config.pack, theme: config.theme, settings: Object.fromEntries([...SETTING_KEYS, 'reportHour'].map((k) => [k, config[k]])), savedCommands: config.savedCommands ?? [] } });
+  win.webContents.send('office', { online, office, agents, stats: Object.fromEntries(statsMap()), board: process.env.OFIS_DEMO === '1' ? demoBoard() : admin?.board() ?? [], usage: usage ? { ...usage.get(), down: agentRunner?.downEngines() ?? {} } : null, config: { demo: process.env.OFIS_DEMO === '1', demoPanel: process.env.OFIS_PANEL || null, lat: config.lat, lon: config.lon, pack: config.pack, theme: config.theme, settings: Object.fromEntries([...SETTING_KEYS, 'reportHour'].map((k) => [k, config[k]])), savedCommands: config.savedCommands ?? [] }, schedule: schedule?.list() ?? [] });
   if (selected) win.webContents.send('details', agentDetails(all, selected));
 }
 
@@ -408,6 +410,25 @@ app.whenReady().then(async () => {
   const sweepTrees = () => cleanupWorktrees(WORKTREES(), 7 * 86_400_000, Date.now(), new Set(admin.board().filter((t) => t.worktree && ['doing', 'review', 'redo'].includes(t.status)).map((t) => t.worktree.toLowerCase()))).catch(() => []);
   setTimeout(sweepTrees, 30_000);
   setInterval(sweepTrees, 6 * 3_600_000);
+  // Pano ↔ git: çalışma kopyası Ofis dışında kaldırılan kartların akıbeti (birleştirildi / atıldı) git'ten okunur.
+  const syncBoardGit = async () => {
+    const cards = admin.board().filter((t) => t.worktree && !t.merged && !t.discarded && !['doing', 'review', 'redo', 'todo'].includes(t.status));
+    let n = 0;
+    for (const t of cards) { const f = await worktreeFate(t).catch(() => null); if (f) { admin.annotate(t.id, f); n++; } }
+    if (n) schedulePush();
+  };
+  setTimeout(syncBoardGit, 5000);
+  ipcMain.handle('board:sync', async () => { const before = admin.board().filter((t) => t.merged || t.discarded).length; await syncBoardGit(); return { ok: true, changed: admin.board().filter((t) => t.merged || t.discarded).length - before }; });
+  setInterval(syncBoardGit, 5 * 60_000);
+  // Zamanlanmış komutlar: saati gelen / limitleri açılan komut yöneticiye gider.
+  schedule = await createSchedule({ dir: dataDir(), send: (text, opts) => {
+    const r = dispatch(text, opts);
+    notify({ title: 'Zamanlanmış komut gönderildi', body: text.slice(0, 120) });
+    return r;
+  } });
+  setInterval(() => { if (schedule.tick({ down: agentRunner.downEngines(), claudeLow: claudeLow() }).length) schedulePush(); }, 30_000);
+  ipcMain.handle('schedule:add', (_e, item) => { const r = schedule.add(item); schedulePush(); return r; });
+  ipcMain.handle('schedule:remove', (_e, id) => { const r = schedule.remove(String(id)); schedulePush(); return r; });
   // Günlük rapor: ayarlanan saatte bir kez (bildirim + yöneticinin sohbeti → telefon).
   let lastReport = null;
   try { lastReport = JSON.parse(await readFile(join(dataDir(), 'ofis-report.json'), 'utf8')).day ?? null; } catch {}

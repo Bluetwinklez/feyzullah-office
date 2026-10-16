@@ -15,6 +15,10 @@ Yapay zekâ ajanlarının piksel bir ofiste çalıştığı Windows masaüstü u
 - **Uzman kataloğu:** [Agency Agents](https://github.com/msitarzewski/agency-agents) ve [VoltAgent awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) (ikisi de MIT) uzmanları işe alınabilir; Ters Mühendis (REA MCP) uzmanı dahili.
 - **Limitler:** Claude ve Codex 5 saatlik/haftalık kullanım göstergesi, limit koruması.
 - **API ajanları:** 16 hazır sağlayıcı (Anthropic, OpenAI, Gemini, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio …). Anahtarlar Windows DPAPI (`safeStorage`) ile şifreli saklanır, pencereye gönderilmez.
+- **Arayüz:** Ofis / Görevler (kanban) / Raporlar sekmeleri; ekipte arama ve Çalışan/Molada süzgeci; ofiste yakınlaştırma, sürükleyerek gezinme ve tam ekran; son aktiviteler ve bildirim zili; alt durum çubuğu.
+- **Zamanlanmış komutlar:** bir komutu belli saatte ve/veya kullanım limitleri açılınca yöneticiye otomatik gönder.
+- **Pano ↔ git eşitleme:** Ofis dışında birleştirilen ya da silinen dallar panoda doğru görünür.
+- **Kısayollar:** Ctrl+K komut kutusu, Ctrl+F ajan ara, Alt+1/2/3 sekmeler, +/−/0 yakınlaştırma, Esc kapat, ↑/↓ komut geçmişi.
 - **Bildirim ve ses**, günlük rapor, kayıtlı komutlar, uzman istatistikleri.
 - **Oyun geliştirme:** Godot kuruluysa oyun uzmanları başsız test ve Windows dışa aktarma yapabilir.
 

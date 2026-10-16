@@ -69,22 +69,54 @@ function syncActors() {
   for (const k of actors.keys()) if (!seen.has(k)) actors.delete(k);
 }
 
+// Yakınlaştırma / kaydırma: zoom 1 = ofis alanı kaplar; büyütünce sürükleyerek gezilir, "Ortala" sıfırlar.
+const view_ = { zoom: 1, panX: 0, panY: 0 };
+const ZOOMS = [1, 1.25, 1.5, 2, 2.5, 3];
 function resize() {
   const st = $('stage');
   const r = st.getBoundingClientRect();
+  if (!r.width || !r.height) return;
   const dpr = window.devicePixelRatio || 1;
   view.width = Math.floor(r.width * dpr); view.height = Math.floor(r.height * dpr);
   view.style.width = `${r.width}px`; view.style.height = `${r.height}px`;
   // Sığdır; oran farkı küçükse (≤%20) alanı tam doldur (kenarlardan az kırpılır, boş bant kalmaz).
   const fit = Math.min(view.width / scene.W, view.height / scene.H);
   const cover = Math.max(view.width / scene.W, view.height / scene.H);
-  const scale = Math.max(0.3, cover / fit <= 1.2 ? cover : fit);
-  geom = { scale, ox: Math.floor((view.width - scene.W * scale) / 2), oy: Math.floor((view.height - scene.H * scale) / 2), dpr };
-  // Cam kart ofis görselinin sağ alt köşesinde durur (sahne boş alanında kaybolmasın).
-  const fc = $('floatCard');
-  fc.style.left = `${Math.max(12, geom.ox / dpr + 14)}px`;
-  fc.style.bottom = `${Math.max(12, (view.height - geom.oy - scene.H * scale) / dpr + 14)}px`;
+  const scale = Math.max(0.3, cover / fit <= 1.2 ? cover : fit) * view_.zoom;
+  const w = scene.W * scale; const h = scene.H * scale;
+  // Kaydırma, görsel alanın dışına taşmayacak kadar sınırlanır.
+  const mx = Math.max(0, (w - view.width) / 2); const my = Math.max(0, (h - view.height) / 2);
+  view_.panX = Math.max(-mx, Math.min(mx, view_.panX)); view_.panY = Math.max(-my, Math.min(my, view_.panY));
+  geom = { scale, ox: Math.floor((view.width - w) / 2 + view_.panX), oy: Math.floor((view.height - h) / 2 + view_.panY), dpr };
+  $('zoomPct').textContent = `${Math.round(view_.zoom * 100)}%`;
+  $('stage').classList.toggle('pan', view_.zoom > 1);
 }
+function setZoom(z, at = null) {
+  const old = view_.zoom; view_.zoom = Math.max(ZOOMS[0], Math.min(ZOOMS.at(-1), z));
+  // İmlecin altındaki nokta yerinde kalsın.
+  if (at) { const k = view_.zoom / old; view_.panX = (view_.panX - at.x) * k + at.x; view_.panY = (view_.panY - at.y) * k + at.y; }
+  if (view_.zoom === 1) { view_.panX = 0; view_.panY = 0; }
+  resize();
+}
+$('zoomIn').onclick = () => setZoom(ZOOMS.find((z) => z > view_.zoom) ?? view_.zoom);
+$('zoomOut').onclick = () => setZoom([...ZOOMS].reverse().find((z) => z < view_.zoom) ?? 1);
+$('zoomFit').onclick = () => { view_.panX = 0; view_.panY = 0; setZoom(1); };
+view.addEventListener('wheel', (ev) => {
+  ev.preventDefault();
+  const r = view.getBoundingClientRect(); const dpr = geom.dpr || 1;
+  const at = { x: (ev.clientX - r.left) * dpr - view.width / 2, y: (ev.clientY - r.top) * dpr - view.height / 2 };
+  setZoom(view_.zoom * (ev.deltaY < 0 ? 1.15 : 1 / 1.15), at);
+}, { passive: false });
+let drag = null; // sürükleme tıklamayı bastırır
+view.addEventListener('pointerdown', (ev) => { if (view_.zoom > 1) drag = { x: ev.clientX, y: ev.clientY, px: view_.panX, py: view_.panY, moved: false }; });
+window.addEventListener('pointermove', (ev) => {
+  if (!drag) return;
+  const dx = ev.clientX - drag.x; const dy = ev.clientY - drag.y;
+  if (Math.hypot(dx, dy) > 4) { drag.moved = true; $('stage').classList.add('panning'); }
+  view_.panX = drag.px + dx * geom.dpr; view_.panY = drag.py + dy * geom.dpr; resize();
+});
+window.addEventListener('pointerup', () => { setTimeout(() => { drag = null; }, 0); $('stage').classList.remove('panning'); });
+new ResizeObserver(() => resize()).observe($('stage'));
 window.addEventListener('resize', resize);
 
 let last = performance.now();
@@ -199,12 +231,113 @@ function showPanel(name) {
   renderRoster();
   renderDetails();
 }
-$('navOffice').onclick = () => showPanel(null);
-$('navStats').onclick = () => showPanel(panel === 'stats' ? null : 'stats'); // dar ekranda widget'lar
+$('navOffice').onclick = () => { showPanel(null); setView('office'); };
+$('ovBoard').onclick = () => showPanel('board');
+$('navStats').onclick = () => showPanel(panel === 'stats' ? null : 'stats'); // dar ekranda genel bakış
 $('navBoard').onclick = () => showPanel(panel === 'board' ? null : 'board');
 $('navSettings').onclick = () => showPanel(panel === 'settings' ? null : 'settings');
 $('navExperts').onclick = () => showPanel(panel === 'experts' ? null : 'experts');
 $('eClose').onclick = () => showPanel(null);
+
+/// ---- orta görünüm: Ofis (canlı) · Görevler (kanban) · Raporlar ----
+let centerView = 'office';
+const VIEW_TITLE = { office: 'Canlı ofis', tasks: 'Görevler', reports: 'Raporlar' };
+function setView(v) {
+  centerView = v;
+  for (const t of document.querySelectorAll('.tab')) t.classList.toggle('on', t.dataset.view === v);
+  $('viewTitle').textContent = VIEW_TITLE[v];
+  $('stage').hidden = v !== 'office';
+  $('stageFoot').hidden = v !== 'office';
+  $('tasksView').hidden = v !== 'tasks';
+  $('reportsView').hidden = v !== 'reports';
+  renderCenter();
+  if (v === 'office') requestAnimationFrame(resize);
+}
+for (const t of document.querySelectorAll('.tab')) t.onclick = () => setView(t.dataset.view);
+const KCOLS = [
+  ['Yapılıyor', ['doing'], '#60a5fa'],
+  ['Kontrolde', ['review', 'redo'], '#c084fc'],
+  ['Bitti', ['done'], '#3ee0a1'],
+  ['Sorunlu', ['failed', 'needs-work'], '#f87171'],
+];
+function renderCenter() {
+  if (centerView === 'tasks') {
+    $('tasksView').replaceChildren(...KCOLS.map(([title, sts, color]) => {
+      const list = [...board].reverse().filter((t) => sts.includes(t.status));
+      const col = el('div', 'kcol');
+      const h = el('h3'); const dot = el('i'); dot.style.setProperty('--c', color); h.append(dot, `${title} `, el('span', null, String(list.length)));
+      const box = el('div', 'klist');
+      box.append(...(list.length ? list.slice(0, 40).map((t) => {
+        const c = el('button', 'kcard'); c.style.setProperty('--c', STATUS_COLOR[t.status] ?? color);
+        const m = el('div', 'km'); m.append(el('span', null, `${t.name}${t.round ? ` · ${t.round}. tur` : ''}`), el('span', null, ago(t.at)));
+        c.append(el('div', 'kt', t.title), m);
+        if (t.branch) c.append(el('div', 'km', t.merged ? `✓ ${t.branch} birleştirildi` : t.worktree ? `🌿 ${t.branch} bekliyor` : `🌿 ${t.branch}`));
+        c.title = 'Panoda aç (fark, birleştir, yeniden başlat)';
+        c.onclick = () => showPanel('board');
+        return c;
+      }) : [el('div', 'dim', '—')]));
+      col.append(h, box);
+      return col;
+    }));
+  } else if (centerView === 'reports') {
+    const done = board.filter((t) => t.status === 'done').length;
+    const bad = board.filter((t) => ['failed', 'needs-work'].includes(t.status)).length;
+    const tok = board.reduce((n, t) => n + (t.usage ? t.usage.in + t.usage.out : 0), 0);
+    const cost = board.reduce((n, t) => n + (t.usage?.cost ?? 0), 0);
+    const finished = board.filter((t) => t.status === 'done' && t.startedAt && t.at > t.startedAt);
+    const avg = finished.length ? Math.round(finished.reduce((n, t) => n + (t.at - t.startedAt), 0) / finished.length / 60_000) : null;
+    const kpi = (v, l) => { const k = el('div', 'kpi'); k.append(el('div', 'v', v), el('div', 'dim', l)); return k; };
+    const row = el('div', 'rep-row');
+    row.append(kpi(String(board.length), 'son görev'), kpi(board.length ? `%${Math.round((done / Math.max(1, done + bad)) * 100)}` : '–', 'başarı (biten / sorunlu)'), kpi(tok ? fmtTok(tok) : '–', `token${cost ? ` · $${cost.toFixed(2)}` : ''}`), kpi(avg == null ? '–' : `${Math.max(1, avg)} dk`, 'ortalama görev süresi'));
+    const ex = Object.entries(stats).sort((a, b) => b[1].total - a[1].total).map(([, s]) => {
+      const r = el('div', 'rep-ex'); const rate = Math.round(s.successRate * 100);
+      const bar = el('div', 'bar'); const f = el('i'); f.style.width = `${rate}%`; f.style.setProperty('--c', rate >= 80 ? 'var(--accent)' : rate >= 50 ? 'var(--warn)' : 'var(--bad)'); bar.append(f);
+      const n = el('div', 'n'); n.append(el('div', null, s.name ?? '?'), el('div', 'dim', `${s.total} görev · ${s.done} bitti · ${s.redo} düzeltme turu${s.avgMs ? ` · ort ${Math.max(1, Math.round(s.avgMs / 60_000))} dk` : ''}`));
+      r.append(n, bar, el('div', 'p', `%${rate}`)); return r;
+    });
+    $('reportsView').replaceChildren(row, el('h3', null, 'Uzmanlar'), ...(ex.length ? ex : [el('div', 'dim', 'Henüz bitmiş görev yok.')]));
+  }
+}
+// Tam ekran: yan paneller gizlenir, ofis büyür.
+$('fullBtn').onclick = () => { const on = document.querySelector('.app').classList.toggle('full'); $('fullBtn').classList.toggle('on', on); $('fullBtn').title = on ? 'Yan panelleri göster' : 'Tam ekran (yan panelleri gizle)'; requestAnimationFrame(resize); };
+$('btnAddAgent2').onclick = () => $('btnAddAgent').click();
+$('btnSync').onclick = async () => { const r = await api.syncBoard(); toast(r?.ok ? (r.changed ? `${r.changed} kart güncellendi` : 'Pano zaten git ile uyumlu') : `Olmadı: ${r?.error ?? ''}`); };
+
+// ---- zamanlanmış komutlar (⏰): belli saatte ve/veya limitler açılınca yöneticiye gider ----
+let scheduled = [];
+function renderSched() {
+  const pop = $('schedPop');
+  $('schedCount').hidden = !scheduled.length; $('schedCount').textContent = String(scheduled.length);
+  $('navSchedule').classList.toggle('on', !pop.hidden);
+  if (pop.hidden) return;
+  const rows = scheduled.map((x) => {
+    const r = el('div', 'sc');
+    const when = [x.at ? `${new Date(x.at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${hm(x.at)}` : null, x.whenLimit ? 'limit açılınca' : null].filter(Boolean).join(' + ');
+    const tx = el('div', 'txt', x.text); tx.title = x.text;
+    const del = el('button', 'del', '✕'); del.title = 'İptal et';
+    del.onclick = async () => { const res = await api.removeSchedule(x.id); if (!res?.ok) toast(`Olmadı: ${res?.error ?? ''}`); };
+    r.append(el('span', 'when', `⏰ ${when}${x.direct ? ' · 👔' : ''}`), tx, del);
+    return r;
+  });
+  const form = el('div', 'form');
+  const time = el('input'); time.type = 'time';
+  const lim = el('input'); lim.type = 'checkbox';
+  const limL = el('label'); limL.append(lim, 'limitler açılınca');
+  const cur = $('adminText').value.trim();
+  const add = el('button', 'add', cur ? `+ "${cur.slice(0, 40)}${cur.length > 40 ? '…' : ''}" komutunu zamanla` : 'Önce kutuya komutu yaz');
+  add.disabled = !cur;
+  add.onclick = async () => {
+    const res = await api.addSchedule({ text: cur, at: time.value || null, whenLimit: lim.checked, direct: $('adminDirect').checked });
+    if (!res?.ok) { toast(`Zamanlanamadı: ${res?.error ?? ''}`); return; }
+    $('adminText').value = ''; toast('Zamanlandı');
+  };
+  form.append(el('span', 'dim', 'Saat'), time, limL, el('span', 'grow'), add);
+  pop.replaceChildren(...(rows.length ? rows : [el('div', 'dim', 'Bekleyen zamanlanmış komut yok. Örn: Codex limiti dolunca "limitler açılınca" seç.')]), form);
+}
+const toggleSched = () => { const p = $('schedPop'); p.hidden = !p.hidden; $('savedPop').hidden = true; renderSched(); };
+$('schedBtn').onclick = (ev) => { ev.stopPropagation(); toggleSched(); };
+$('navSchedule').onclick = (ev) => { ev.stopPropagation(); toggleSched(); };
+document.addEventListener('click', (ev) => { if (!ev.target.closest?.('#schedPop, #schedBtn, #navSchedule')) { $('schedPop').hidden = true; $('navSchedule').classList.remove('on'); } });
 
 // Uzman istatistikleri: geçmişteki bitmiş görevlerden başarı oranı, düzeltme turu, ortalama süre.
 function renderExperts() {
@@ -312,45 +445,10 @@ function renderSettings() {
 }
 $('sClose').onclick = () => showPanel(null);
 
-// ---- widget'lar (sağ panel boşken) ----
+// ---- genel bakış (sağ panel boşken) ----
 const pctNow = (w) => (w ? (!w.resetsAt || w.resetsAt > Date.now() ? w.used : 0) : null);
 const level = (v) => (v == null ? '#3a3a42' : v > 0.85 ? 'var(--neon-red)' : v > 0.6 ? 'var(--neon-yellow)' : 'var(--neon-green)');
 const hm = (ms) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-function widget({ icon, title, sub, num, sup, side, neon, foot }) {
-  const w = el('div', 'widget');
-  w.append(el('span', 'w-more', '•••'));
-  const head = el('div', 'w-head');
-  const t = el('div'); t.append(el('div', 'w-title', title), el('div', 'w-sub', sub));
-  head.append(el('span', 'w-ic', icon), t);
-  const big = el('div', 'w-big');
-  big.append(el('span', 'w-num', num), el('span', 'w-sup', sup ?? ''));
-  if (side) { const s = el('div', 'w-side'); s.append(...side); big.append(s); }
-  w.append(head, big);
-  if (neon) w.append(neon);
-  if (foot?.length) { const f = el('div', 'w-foot'); f.append(...foot.map((x) => el('span', null, x))); w.append(f); }
-  return w;
-}
-/** Limit penceresi zaman çizelgesi: başlangıç → şimdi → sıfırlanma. */
-function windowNeon(w, hours, color) {
-  const n = el('div', 'neon'); n.style.setProperty('--c', color);
-  if (!w?.resetsAt) { n.append(el('div', 'n-row', 'Ölçüm yok · uzman çalışınca gelir')); return n; }
-  const end = w.resetsAt; const start = end - hours * 3_600_000;
-  const f = Math.max(0, Math.min(1, (Date.now() - start) / (end - start)));
-  const lbl = el('div', 'n-lbl'); lbl.append(el('span', null, 'pencere'), el('span', null, 'sıfırlanma'));
-  const row = el('div', 'n-row'); row.append(el('span', null, hours > 24 ? new Date(start).toLocaleDateString('tr-TR', { weekday: 'short' }) : hm(start)), el('span', null, hours > 24 ? new Date(end).toLocaleDateString('tr-TR', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : hm(end)));
-  const line = el('div', 'n-line'); const fill = el('i'); fill.style.width = `${f * 100}%`; const mark = el('b'); mark.style.left = `calc(${f * 100}% - 1px)`; line.append(fill, mark);
-  n.append(lbl, line, row);
-  return n;
-}
-function segNeon(color, parts, labels) {
-  const n = el('div', 'neon'); n.style.setProperty('--c', color);
-  const segs = el('div', 'n-segs');
-  for (const on of parts) segs.append(el('i', on ? 'on' : null));
-  const lbl = el('div', 'n-lbl'); lbl.append(...labels.map((x) => el('span', null, x)));
-  n.append(segs, lbl);
-  return n;
-}
-/** Claude limitini şimdi ölç (küçük, hook'suz sorgu). */
 let probingNow = false;
 function probeBtn() {
   const b = el('button', 'w-btn', probingNow ? 'ölçülüyor…' : '↻ ölç');
@@ -359,26 +457,111 @@ function probeBtn() {
   b.onclick = async () => { probingNow = true; renderUsage(); const r = await api.probeUsage(); probingNow = false; renderUsage(); toast(r?.ok ? 'Claude limiti güncellendi' : `Ölçülemedi: ${r?.error ?? ''}`); };
   return b;
 }
+const ACTIVE = ['doing', 'review', 'redo'];
+const ringSvg = (frac, color) => {
+  const ns = 'http://www.w3.org/2000/svg'; const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', '0 0 44 44');
+  const c = (cls) => { const e = document.createElementNS(ns, 'circle'); e.setAttribute('cx', 22); e.setAttribute('cy', 22); e.setAttribute('r', 18); e.setAttribute('class', cls); return e; };
+  const fg = c('fg'); const L = 2 * Math.PI * 18;
+  fg.setAttribute('stroke-dasharray', String(L)); fg.setAttribute('stroke-dashoffset', String(L * (1 - Math.max(0, Math.min(1, frac)))));
+  svg.style.setProperty('--c', color); svg.append(c('bgc'), fg); return svg;
+};
+function usageCard({ icon, title, sub, v, w, week, down, extra, at }) {
+  const card = el('div', `uc${down ? ' down' : ''}`);
+  card.title = at ? `${ago(at)} önce ölçüldü` : 'henüz ölçülmedi';
+  const bar = el('div', 'bar'); const fill = el('i'); fill.style.width = `${Math.round((v ?? 0) * 100)}%`; fill.style.setProperty('--c', level(v)); bar.append(fill);
+  const foot = el('div', 'u-f');
+  foot.append(el('span', null, down ? `⛔ kapalı · ${hm(down)}'e kadar` : w?.resetsAt ? `Sıfırlanma ${hm(w.resetsAt)}` : 'Sıfırlanma —'), el('span', null, week == null ? 'Hafta ?' : `Hafta %${Math.round(week * 100)}`));
+  if (extra) foot.append(extra);
+  card.append(el('div', 'u-ic', icon), el('div', 'u-t', title), el('div', 'u-v', v == null ? '–' : `%${Math.round(v * 100)}`), el('div', 'u-s', sub), bar, foot);
+  return card;
+}
 function renderUsage() {
   const c = usage?.claude; const x = usage?.codex;
   const cv = pctNow(c?.fiveHour); const xv = pctNow(x?.fiveHour);
-  const pct = (v) => (v == null ? '–' : String(Math.round(v * 100)));
-  const wk = (w) => { const v = pctNow(w); return v == null ? 'hafta ?' : `hafta %${Math.round(v * 100)}`; };
-  const counts = office.counts ?? {};
-  const active = board.filter((t) => ['doing', 'review', 'redo'].includes(t.status));
-  const recent = [...board].slice(-12);
   $('usage').replaceChildren(
-    widget({ icon: '✳️', title: 'Claude', sub: 'beyin · 5 saatlik limit', num: pct(cv), sup: '%', side: [el('div', null, wk(c?.week)), el('div', null, c ? `${ago(c.at)} önce` : 'ölçülmedi'), probeBtn()], neon: windowNeon(c?.fiveHour, 5, level(cv)), foot: [`⏱ ${c?.fiveHour?.resetsAt ? `${hm(c.fiveHour.resetsAt)} sıfırlanır` : 'bekleniyor'}`, `📅 ${wk(c?.week)}`] }),
-    widget({ icon: '⌘', title: 'Codex', sub: 'iş yükü · 5 saatlik limit', num: pct(xv), sup: '%', side: [el('div', null, wk(x?.week)), el('div', null, x ? `${ago(x.at)} önce` : 'ölçülmedi')], neon: windowNeon(x?.fiveHour, 5, level(xv)), foot: [usage?.down?.codex ? `⛔ kapalı · ${hm(usage.down.codex)}'e kadar (iş Claude ile sürer)` : `⏱ ${x?.fiveHour?.resetsAt ? `${hm(x.fiveHour.resetsAt)} sıfırlanır` : 'bekleniyor'}`, `📅 ${wk(x?.week)}`] }),
-    widget({ icon: '📋', title: 'Görevler', sub: 'yönetici panosu', num: String(active.length), sup: 'aktif', side: [el('div', null, `bitti ${board.filter((t) => t.status === 'done').length}`)], neon: segNeon('var(--accent)', recent.map((t) => t.status === 'done'), ['son görevler', 'bitti = dolu']), foot: [`🧐 kontrolde ${active.filter((t) => t.status === 'review').length}`, `↻ düzeltme ${active.filter((t) => t.status === 'redo').length}`, `✕ hata ${board.filter((t) => ['failed', 'needs-work'].includes(t.status)).length}`] }),
-    widget({ icon: '👥', title: 'Ekip', sub: 'ofisteki ajanlar', num: String(counts.working ?? 0), sup: 'çalışıyor', side: [el('div', null, `dinlenen ${counts.resting ?? 0}`)], neon: segNeon('var(--neon-orange)', office.agents.slice(0, 16).map((a) => !['idle', 'resting'].includes(a.activity)), ['masada', 'mola']), foot: [`✋ izin bekleyen ${counts.waiting ?? 0}`, `🛡️ bekçi ${counts.guards ?? 0}`] }),
+    usageCard({ icon: '✳️', title: 'Claude', sub: 'beyin · 5 saatlik kullanım', v: cv, w: c?.fiveHour, week: pctNow(c?.week), down: usage?.down?.claude, at: c?.at, extra: probeBtn() }),
+    usageCard({ icon: '⌘', title: 'Codex', sub: 'iş yükü · 5 saatlik kullanım', v: xv, w: x?.fiveHour, week: pctNow(x?.week), down: usage?.down?.codex, at: x?.at }),
   );
-  // Ofisin üstündeki cam kart: limitler noktalı çubukla.
-  const dots = (v, color) => { const d = el('div', 'dots'); d.style.setProperty('--c', color); for (let i = 0; i < 14; i++) d.append(el('i', v != null && i < Math.round(v * 14) ? 'on' : null)); return d; };
-  const row = (t, s, v, color) => { const r = el('div', 'f-row'); r.append(el('div', 'f-t', t), el('div', 'f-s', s), el('div', 'f-v', v == null ? '–' : `%${Math.round(v * 100)}`), dots(v, color)); return r; };
-  const fc = $('floatCard');
-  fc.hidden = false;
-  fc.replaceChildren(row('Claude', 'beyin · 5 saat', cv, cv > 0.85 ? '#ff2d55' : cv > 0.6 ? '#f59e0b' : '#2ee6c5'), row('Codex', 'iş yükü · 5 saat', xv, xv > 0.85 ? '#ff2d55' : xv > 0.6 ? '#f59e0b' : '#2ee6c5'));
+  $('ovWhen').textContent = usage?.down?.antigravity ? `agy kapalı · ${hm(usage.down.antigravity)}` : '';
+  // Görevler: aktif / tamamlanan halkaları + kısa sayaçlar.
+  const active = board.filter((t) => ACTIVE.includes(t.status));
+  const done = board.filter((t) => t.status === 'done').length;
+  const bad = board.filter((t) => ['failed', 'needs-work'].includes(t.status)).length;
+  const ring = (frac, color, v, l) => { const r = el('div', 'ring'); const b = el('div'); b.append(el('div', 'v', String(v)), el('div', 'l', l)); r.append(ringSvg(frac, color), b); return r; };
+  const total = board.length || 1;
+  const mini = el('div', 'ov-mini');
+  mini.append(el('span', null, `🧐 kontrolde ${active.filter((t) => t.status === 'review').length}`), el('span', null, `↻ düzeltme ${active.filter((t) => t.status === 'redo').length}`), el('span', null, `✕ sorunlu ${bad}`), el('span', null, `⏰ zamanlı ${scheduled.length}`));
+  const rings = el('div', 'ov-tasks'); rings.append(ring(active.length / total, '#60a5fa', active.length, 'Aktif'), el('span', 'sep'), ring(done / total, 'var(--accent)', done, 'Tamamlandı'));
+  $('ovTasks').replaceChildren(rings, mini);
+  renderActivity();
+  renderStatus();
+}
+
+// ---- son aktiviteler + bildirimler: panodaki durum değişimlerinden üretilir ----
+const feed = []; // { at, text, title, color, notify }
+const seen = new Map(); // kart id → durum
+let feedReady = false; let unread = 0;
+const FEED_TXT = { doing: ['göreve başladı', '#60a5fa'], review: ['kontrole gitti', '#c084fc'], redo: ['düzeltiyor', '#fbbf24'], done: ['görevi tamamladı', '#3ee0a1'], 'needs-work': ['düzeltilmeli', '#f87171'], failed: ['görevde hata', '#f87171'] };
+function trackBoard() {
+  const fresh = [];
+  for (const t of board) {
+    if (seen.get(t.id) === t.status) continue;
+    seen.set(t.id, t.status);
+    const [verb, color] = FEED_TXT[t.status] ?? [t.status, '#8597a3'];
+    fresh.push({ at: feedReady ? Date.now() : (t.at ?? t.startedAt ?? Date.now()), text: `${t.name} ${verb}`, title: t.title, agentId: t.agentId, color, notify: feedReady && ['done', 'failed', 'needs-work'].includes(t.status) });
+  }
+  feedReady = true;
+  if (!fresh.length) return;
+  feed.push(...fresh); feed.sort((a, b) => a.at - b.at); if (feed.length > 60) feed.splice(0, feed.length - 60);
+  const n = fresh.filter((f) => f.notify).length;
+  if (n) { unread += n; renderBell(); }
+}
+let lastWaiting = 0;
+function trackApprovals() {
+  const w = office.agents.filter((a) => a.activity === 'waiting');
+  if (feedReady && w.length > lastWaiting) {
+    for (const a of w.slice(0, w.length - lastWaiting)) feed.push({ at: Date.now(), text: `${a.name} izin bekliyor`, key: a.key, color: '#f5b041', notify: true });
+    unread += w.length - lastWaiting; renderBell();
+  }
+  lastWaiting = w.length;
+}
+function renderActivity() {
+  const rows = [...feed].reverse().slice(0, 8);
+  $('activity').replaceChildren(...(rows.length ? rows.map((f) => {
+    const r = el('div', 'act-row'); const d = el('i'); d.style.setProperty('--c', f.color);
+    const tx = el('div', 'tx', f.text); if (f.title) tx.title = f.title;
+    r.feed = f; r.title = 'Tıkla: ajanı göster';
+    r.append(d, el('span', 'tm', hm(f.at)), tx); return r;
+  }) : [el('div', 'dim', 'Henüz aktivite yok.')]));
+}
+function renderBell() {
+  $('bellCount').hidden = !unread; $('bellCount').textContent = unread > 9 ? '9+' : String(unread);
+  const pop = $('bellPop'); if (pop.hidden) return;
+  const items = [...feed].reverse().filter((f) => f.notify).slice(0, 20);
+  pop.replaceChildren(...(items.length ? items.map((f, i) => {
+    const r = el('div', `nt${i < unread ? ' new' : ''}`); const tx = el('div', 'tx', f.text);
+    if (f.title) tx.append(el('div', 'dim', f.title.slice(0, 120)));
+    r.feed = f;
+    r.append(el('span', 'tm', hm(f.at)), tx); return r;
+  }) : [el('div', 'dim', 'Bildirim yok.')]));
+}
+$('bellBtn').onclick = (ev) => {
+  ev.stopPropagation(); const p = $('bellPop'); p.hidden = !p.hidden; renderBell();
+  if (!p.hidden) setTimeout(() => { unread = 0; $('bellCount').hidden = true; }, 1500);
+};
+document.addEventListener('click', (ev) => { if (!ev.target.closest?.('#bellPop, #bellBtn')) $('bellPop').hidden = true; });
+
+// ---- alt durum çubuğu ----
+let lastSync = null;
+const ENG_NAME = { claude: 'Claude', codex: 'Codex', antigravity: 'agy' };
+function renderStatus() {
+  const down = Object.entries(usage?.down ?? {}).filter(([, t]) => t > Date.now());
+  $('sysState').className = `sys${(!online && !cfg.demo) || down.length ? ' warn' : ''}`;
+  $('sysText').textContent = online || cfg.demo ? (down.length ? 'Sistemler çalışıyor · yedek motor devrede' : 'Sistemler çalışıyor') : 'Köprü yok · ajanlar yine çalışır';
+  $('sysEngines').textContent = down.map(([e, t]) => `${ENG_NAME[e] ?? e} limitte (${hm(t)}'e kadar)`).join(' · ');
+  const working = office.agents.filter((a) => !['idle', 'resting'].includes(a.activity)).length;
+  $('sysAgents').textContent = `${office.agents.length} ajan · ${working} aktif`;
+  $('sysSync').textContent = lastSync ? `Son eşitleme ${hm(lastSync)}` : '';
 }
 
 // ---- saat / tarih ----
@@ -446,6 +629,7 @@ function actorAt(ev) {
 view.addEventListener('mousemove', (ev) => { hoveredKey = actorAt(ev)?.agent.key ?? null; });
 view.addEventListener('mouseleave', () => { hoveredKey = null; });
 view.addEventListener('click', (ev) => {
+  if (drag?.moved) return;
   const a = actorAt(ev);
   if (!a && boardAt(ev)) { showPanel('board'); return; }
   select(a?.agent.key ?? null);
@@ -462,29 +646,43 @@ async function select(key) {
   renderDetails();
 }
 
-// ---- alt şerit: çalışanlar ----
+/// ---- sol: ekibim (arama + Tümü/Çalışan/Molada süzgeci) ----
+let rosterFilter = 'all';
+const isBusy = (a) => !['idle', 'resting', 'waiting'].includes(a.activity);
 function renderRoster() {
   const box = $('roster');
-  const agents = [...office.agents].sort((a, b) => b.since - a.since);
-  const groups = [
-    ['İzin bekleyen', agents.filter((a) => a.activity === 'waiting')],
-    ['Çalışıyor', agents.filter((a) => !['idle', 'resting', 'waiting'].includes(a.activity))],
-    ['Molada / boşta', agents.filter((a) => ['idle', 'resting'].includes(a.activity))],
-  ];
-  $('tSub').textContent = `${agents.length} ajan · ${groups[1][1].length} çalışıyor${groups[0][1].length ? ` · ${groups[0][1].length} izin bekliyor` : ''}`;
-  if (!agents.length) { box.replaceChildren(el('div', 'dim', online ? 'Şu an çalışan ajan yok.' : 'Feyzullah köprüsüne bağlanılıyor…')); return; }
+  const q = $('agentSearch').value.trim().toLocaleLowerCase('tr');
+  const all = [...office.agents].sort((a, b) => b.since - a.since);
+  const agents = q ? all.filter((a) => `${a.name} ${a.label ?? ''}`.toLocaleLowerCase('tr').includes(q)) : all;
+  const waiting = agents.filter((a) => a.activity === 'waiting');
+  const busy = agents.filter(isBusy);
+  const rest = agents.filter((a) => ['idle', 'resting'].includes(a.activity));
+  const groups = [['İzin bekliyor', waiting], ['Çalışıyor', busy], ['Molada', rest]]
+    .filter(([t]) => rosterFilter === 'all' || (rosterFilter === 'work' ? t !== 'Molada' : t === 'Molada'));
+  $('tCount').textContent = String(all.length);
+  $('agentCount').textContent = String(all.length);
+  $('tSub').textContent = q ? `"${$('agentSearch').value.trim()}" · ${agents.length} sonuç` : '';
+  if (!all.length) { box.replaceChildren(el('div', 'dim', online || cfg.demo ? 'Şu an ofiste ajan yok.' : 'Feyzullah köprüsüne bağlanılıyor…')); return; }
   const chip = (a) => {
-    const c = el('button', `chip${a.key === selectedKey ? ' sel' : ''}`);
+    const idle = ['idle', 'resting'].includes(a.activity);
+    const c = el('button', `chip${a.key === selectedKey ? ' sel' : ''}${idle ? ' idle' : ' busy'}`);
     const img = el('img', 'ava'); img.src = avatarFor(a); img.alt = '';
-    img.style.boxShadow = `0 0 0 2px ${a.color ?? AGENT_COLORS[a.agent] ?? '#94a3b8'}`;
+    img.style.boxShadow = `0 0 0 2px ${a.color ?? AGENT_COLORS[a.agent] ?? '#5f717d'}`;
     const body = el('div', 'c-body');
-    body.append(el('div', 'c-name', a.name), el('div', `c-act ${a.activity}`, `${a.label} · ${ago(a.since)}`));
+    body.append(el('div', 'c-name', a.name), el('div', `c-act ${a.activity}`, idle ? `${a.activity === 'resting' ? 'molada' : 'boşta'} · ${ago(a.since)}` : `${a.label} · ${ago(a.since)}`));
     c.append(img, body);
-    if (!['idle', 'resting'].includes(a.activity)) c.append(el('span', `ck${a.activity === 'waiting' ? ' warn' : ''}`, a.activity === 'waiting' ? '!' : '✓'));
+    if (!idle) c.append(el('span', `st${a.activity === 'waiting' ? ' warn' : ''}`));
+    c.title = a.label ?? '';
     c.onclick = () => select(a.key);
     return c;
   };
-  box.replaceChildren(...groups.filter(([, l]) => l.length).flatMap(([t, l]) => [el('div', 'grp', `${t} · ${l.length}`), ...l.map(chip)]));
+  const head = (t, n) => { const h = el('div', 'grp', `${t} `); h.append(el('span', null, `· ${n}`)); return h; };
+  const out = groups.filter(([, l]) => l.length).flatMap(([t, l]) => [head(t, l.length), ...l.map(chip)]);
+  box.replaceChildren(...(out.length ? out : [el('div', 'dim', 'Bu süzgeçte ajan yok.')]));
+}
+$('agentSearch').addEventListener('input', () => renderRoster());
+for (const b of $('rosterTabs').querySelectorAll('button')) {
+  b.onclick = () => { rosterFilter = b.dataset.f; for (const x of $('rosterTabs').querySelectorAll('button')) x.classList.toggle('on', x === b); renderRoster(); };
 }
 
 // ---- sağ panel: ayrıntılar ----
@@ -781,7 +979,7 @@ function renderSaved() {
   add.onclick = () => save([...list, cur]);
   pop.replaceChildren(...(rows.length ? rows : [el('div', 'dim', 'Henüz kayıtlı komut yok. Örn: "testleri çalıştır, kırılanları düzelt"')]), add);
 }
-$('savedBtn').onclick = () => { const p = $('savedPop'); p.hidden = !p.hidden; if (!p.hidden) renderSaved(); };
+$('savedBtn').onclick = () => { const p = $('savedPop'); p.hidden = !p.hidden; $('schedPop').hidden = true; if (!p.hidden) renderSaved(); };
 document.addEventListener('click', (ev) => { if (!ev.target.closest?.('#savedPop, #savedBtn')) $('savedPop').hidden = true; });
 $('adminForm').onsubmit = async (ev) => {
   ev.preventDefault();
@@ -791,6 +989,7 @@ $('adminForm').onsubmit = async (ev) => {
   const r = await api.commandAdmin(text, { direct });
   if (!r.ok) { toast(`Gönderilemedi: ${r.error}`); return; }
   $('adminText').value = '';
+  rememberCommand(text);
   const pm = apiAgents.find((a) => a.role === 'prompt');
   toast(direct || !pm ? 'Yönetici görevi dağıtıyor…' : 'Prompt Master netleştiriyor, sonra yönetici dağıtacak…');
   const who = direct || !pm ? apiAgents.find((a) => a.role === 'admin') : pm;
@@ -931,14 +1130,21 @@ api.onOffice((msg) => {
   board = msg.board ?? [];
   stats = msg.stats ?? {};
   usage = msg.usage ?? null;
+  scheduled = msg.schedule ?? [];
+  lastSync = Date.now();
+  trackBoard();
+  trackApprovals();
   renderUsage();
+  renderCenter();
+  renderSched();
   if (panel) renderDetails();
   if (!$('savedPop').hidden) renderSaved();
-  $('conn').title = online ? 'Feyzullah köprüsüne bağlı' : 'Köprü yok';
+  $('conn').title = online ? 'Feyzullah köprüsüne bağlı' : 'Köprü yok (Ofis ajanları yine çalışır)';
   $('conn').className = `conn ${online ? 'on' : 'off'}`;
+  $('connText').textContent = online ? 'Bağlı' : cfg.demo ? 'Demo' : 'Köprü yok';
   const c = office.counts;
   const b = (n) => el('b', null, String(n));
-  $('counts').replaceChildren('Çalışan ', b(c.working), ' · Dinlenen ', b(c.resting), ...(c.waiting ? [' · İzin ', b(c.waiting)] : []));
+  $('counts').replaceChildren(b(c.working), ' çalışıyor · ', b(c.resting), ' molada', ...(c.waiting ? [' · ', b(c.waiting), ' izin bekliyor'] : []));
   syncActors();
   renderRoster();
   if (selectedKey && !office.agents.some((a) => a.key === selectedKey)) renderDetails();
@@ -958,6 +1164,59 @@ api.onDetails((d) => {
   if (d && d.key !== selectedKey && (userClosed || panel)) return;
   details = d; if (d) selectedKey = d.key; renderDetails(); renderRoster();
 });
+
+// ---- kullanım kolaylıkları: kısayollar, komut geçmişi, tıklanabilir aktiviteler, hatırlanan arayüz durumu ----
+const agentKeyFor = (agentId) => office.agents.find((a) => a.session === agentId || a.key === `api:${agentId}`)?.key ?? null;
+// Aktivite/bildirim satırına tıklayınca ilgili ajan seçilir (yoksa pano açılır).
+function openFeedItem(f) {
+  const key = f.key ?? (f.agentId ? agentKeyFor(f.agentId) : null);
+  if (key) { setView('office'); select(key); } else showPanel('board');
+}
+$('activity').addEventListener('click', (ev) => { const r = ev.target.closest('.act-row'); if (r?.feed) openFeedItem(r.feed); });
+$('bellPop').addEventListener('click', (ev) => { const r = ev.target.closest('.nt'); if (r?.feed) { $('bellPop').hidden = true; openFeedItem(r.feed); } });
+
+// Komut geçmişi: kutuda ↑/↓ ile önceki komutlar (bu bilgisayarda, son 50).
+const HIST_KEY = 'ofis.history';
+const loadJson = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const saveJson = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+let hist = loadJson(HIST_KEY, []); let histPos = -1;
+function rememberCommand(text) { hist = [text, ...hist.filter((h) => h !== text)].slice(0, 50); histPos = -1; saveJson(HIST_KEY, hist); }
+$('adminText').addEventListener('keydown', (ev) => {
+  if (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown') return;
+  if (!hist.length) return;
+  ev.preventDefault();
+  histPos = ev.key === 'ArrowUp' ? Math.min(hist.length - 1, histPos + 1) : Math.max(-1, histPos - 1);
+  $('adminText').value = histPos < 0 ? '' : hist[histPos];
+});
+
+// Klavye: Ctrl+K komut kutusu · Ctrl+F ajan ara · Alt+1/2/3 sekmeler · +/− yakınlaştır · 0 ortala · Esc kapat
+document.addEventListener('keydown', (ev) => {
+  const typing = ev.target.closest?.('input, textarea, select');
+  if (ev.ctrlKey && ev.key.toLowerCase() === 'k') { ev.preventDefault(); $('adminText').focus(); return; }
+  if (ev.ctrlKey && ev.key.toLowerCase() === 'f') { ev.preventDefault(); $('agentSearch').focus(); return; }
+  if (ev.altKey && ['1', '2', '3'].includes(ev.key)) { ev.preventDefault(); setView(['office', 'tasks', 'reports'][Number(ev.key) - 1]); return; }
+  if (ev.key === 'Escape') {
+    for (const id of ['savedPop', 'schedPop', 'bellPop']) $(id).hidden = true;
+    if (typing) { ev.target.blur(); return; }
+    if (panel || selectedKey) { showPanel(null); select(null); }
+    return;
+  }
+  if (typing || centerView !== 'office') return;
+  if (ev.key === '+' || ev.key === '=') $('zoomIn').click();
+  else if (ev.key === '-') $('zoomOut').click();
+  else if (ev.key === '0') $('zoomFit').click();
+});
+
+// Arayüz durumu hatırlanır: sekme, ekip süzgeci, tam ekran (yakınlaştırma her açılışta %100).
+const UI_KEY = 'ofis.ui';
+function saveUi() { saveJson(UI_KEY, { view: centerView, filter: rosterFilter, full: document.querySelector('.app').classList.contains('full') }); }
+for (const b of [...document.querySelectorAll('.tab'), ...$('rosterTabs').querySelectorAll('button'), $('fullBtn')]) b.addEventListener('click', () => setTimeout(saveUi, 0));
+{
+  const ui = loadJson(UI_KEY, {});
+  if (ui.filter && ui.filter !== 'all') $('rosterTabs').querySelector(`[data-f="${ui.filter}"]`)?.click();
+  if (ui.full) $('fullBtn').click();
+  if (ui.view && ui.view !== 'office' && VIEW_TITLE[ui.view]) setView(ui.view);
+}
 
 (async () => {
   pack = await loadPack(cfg.pack);

@@ -122,3 +122,39 @@ test('runProjectTests: package.json test betiği varsa çalıştırır ve sonucu
   const bad = await runProjectTests(dir);
   assert.deepEqual([bad.ran, bad.ok], [true, false]);
 });
+
+test('worktreeFate: Ofis dışında birleştirilen / silinen / duran dal pano için doğru okunur', async () => {
+  const { worktreeFate } = await import('../src/gitwork.js');
+  const { r, wtRoot } = await repo();
+  const id = ['-c', 'user.name=t', '-c', 'user.email=t@t'];
+  // 1) çalışma kopyası duruyorsa dokunulmaz
+  const p1 = await prepareWorktree(r, 'd1', wtRoot);
+  assert.equal(await worktreeFate(p1), null);
+  // 2) elle birleştirilip dal silinmiş: birleştirme commit'i bulunur
+  await writeFile(join(p1.worktree, 'x.txt'), 'x\n');
+  await git(['add', '-A'], p1.worktree); await git([...id, 'commit', '-qm', 'x'], p1.worktree);
+  await git([...id, 'merge', '--no-ff', '-m', 'Ofis: x (ofis/d1)', 'ofis/d1'], r);
+  await git(['worktree', 'remove', '--force', p1.worktree], r); await git(['branch', '-D', 'ofis/d1'], r);
+  const f1 = await worktreeFate(p1);
+  assert.equal(f1.merged, true); assert.equal(f1.worktree, null); assert.match(f1.mergeCommit, /^[0-9a-f]{7,}$/);
+  // 3) birleştirilmeden silinmiş: atıldı
+  const p2 = await prepareWorktree(r, 'd2', wtRoot);
+  await writeFile(join(p2.worktree, 'y.txt'), 'y\n');
+  await git(['add', '-A'], p2.worktree); await git([...id, 'commit', '-qm', 'y'], p2.worktree);
+  await git(['worktree', 'remove', '--force', p2.worktree], r); await git(['branch', '-D', 'ofis/d2'], r);
+  assert.deepEqual(await worktreeFate(p2), { discarded: true, worktree: null });
+  // 4) dal duruyor, ana dala katılmış (ör. fast-forward), kopya yok: birleştirildi
+  const p3 = await prepareWorktree(r, 'd3', wtRoot);
+  await writeFile(join(p3.worktree, 'z.txt'), 'z\n');
+  await git(['add', '-A'], p3.worktree); await git([...id, 'commit', '-qm', 'z'], p3.worktree);
+  await git(['worktree', 'remove', '--force', p3.worktree], r);
+  await git(['merge', '--ff-only', 'ofis/d3'], r);
+  const f3 = await worktreeFate(p3);
+  assert.equal(f3.merged, true); assert.equal(f3.worktree, null);
+  // 5) dal duruyor ama birleştirilmemiş, kopya yok: yalnız kopya bilgisi düşer
+  const p4 = await prepareWorktree(r, 'd4', wtRoot);
+  await writeFile(join(p4.worktree, 'w.txt'), 'w\n');
+  await git(['add', '-A'], p4.worktree); await git([...id, 'commit', '-qm', 'w'], p4.worktree);
+  await git(['worktree', 'remove', '--force', p4.worktree], r);
+  assert.deepEqual(await worktreeFate(p4), { worktree: null });
+});

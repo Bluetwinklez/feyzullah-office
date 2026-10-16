@@ -138,3 +138,19 @@ export async function runProjectTests(dir, { timeoutMs = 5 * 60_000 } = {}) {
   const t = await run(['test']);
   return { ran: true, ok: t.code === 0, tail: t.out.split('\n').slice(-20).join('\n').trim() };
 }
+
+/**
+ * Çalışma kopyası diskte yoksa dalın akıbetini git'ten okur (Ofis dışında birleştirme/silme için pano eşitlemesi).
+ * Kopya duruyorsa null; yoksa kart için alanlar: birleştirildi / atıldı / yalnız kopya düştü.
+ */
+export async function worktreeFate({ repo, branch, worktree }) {
+  if (!repo || !branch || !worktree || existsSync(worktree)) return null;
+  const ref = `refs/heads/${branch}`;
+  if ((await git(['rev-parse', '--verify', '--quiet', ref], repo)).ok) {
+    const merged = (await git(['merge-base', '--is-ancestor', ref, 'HEAD'], repo)).ok;
+    return merged ? { merged: true, worktree: null, mergeCommit: (await git(['rev-parse', '--short', 'HEAD'], repo)).out || null } : { worktree: null };
+  }
+  const m = await git(['log', '-F', `--grep=(${branch})`, '--merges', '--format=%h', '-1'], repo);
+  if (m.ok && m.out) return { merged: true, worktree: null, mergeCommit: m.out };
+  return { discarded: true, worktree: null };
+}

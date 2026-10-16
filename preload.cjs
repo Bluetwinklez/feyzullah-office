@@ -16,4 +16,7 @@ contextBridge.exposeInMainWorld('ofis', {
   setConfig: (key, value) => ipcRenderer.invoke('config:set', { key, value }),
   boardAction: (id, action) => ipcRenderer.invoke('board:action', { id, action }),
   probeUsage: () => ipcRenderer.invoke('usage:probe'),
+  addSchedule: (item) => ipcRenderer.invoke('schedule:add', item),
+  removeSchedule: (id) => ipcRenderer.invoke('schedule:remove', id),
+  syncBoard: () => ipcRenderer.invoke('board:sync'),
 });

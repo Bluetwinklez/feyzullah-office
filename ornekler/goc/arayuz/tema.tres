@@ -1,0 +1,229 @@
+[gd_resource type="Theme" load_steps=12 format=3]
+
+[sub_resource type="StyleBoxFlat" id="Panel"]
+bg_color = Color(0.055, 0.08, 0.115, 0.98)
+border_color = Color(0.33, 0.29, 0.21, 1)
+border_width_left = 1
+content_margin_left = 16.0
+border_width_top = 1
+content_margin_top = 16.0
+border_width_right = 1
+content_margin_right = 16.0
+border_width_bottom = 1
+content_margin_bottom = 16.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Onay"]
+bg_color = Color(0.045, 0.065, 0.095, 1)
+border_color = Color(0.94, 0.7, 0.34, 1)
+border_width_left = 2
+content_margin_left = 24.0
+border_width_top = 2
+content_margin_top = 24.0
+border_width_right = 2
+content_margin_right = 24.0
+border_width_bottom = 2
+content_margin_bottom = 24.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Dugme"]
+bg_color = Color(0.11, 0.15, 0.2, 1)
+border_color = Color(0.34, 0.32, 0.26, 1)
+border_width_left = 1
+content_margin_left = 12.0
+border_width_top = 1
+content_margin_top = 12.0
+border_width_right = 1
+content_margin_right = 12.0
+border_width_bottom = 1
+content_margin_bottom = 12.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Hover"]
+bg_color = Color(0.23, 0.2, 0.14, 1)
+border_color = Color(0.94, 0.7, 0.34, 1)
+border_width_left = 2
+content_margin_left = 12.0
+border_width_top = 2
+content_margin_top = 12.0
+border_width_right = 2
+content_margin_right = 12.0
+border_width_bottom = 2
+content_margin_bottom = 12.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Basili"]
+bg_color = Color(0.31, 0.23, 0.12, 1)
+border_color = Color(1, 0.78, 0.43, 1)
+border_width_left = 2
+content_margin_left = 12.0
+border_width_top = 2
+content_margin_top = 12.0
+border_width_right = 2
+content_margin_right = 12.0
+border_width_bottom = 2
+content_margin_bottom = 12.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Odak"]
+bg_color = Color(0, 0, 0, 0)
+border_color = Color(1, 0.78, 0.43, 1)
+border_width_left = 2
+content_margin_left = 12.0
+border_width_top = 2
+content_margin_top = 12.0
+border_width_right = 2
+content_margin_right = 12.0
+border_width_bottom = 2
+content_margin_bottom = 12.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+draw_center = false
+
+[sub_resource type="StyleBoxFlat" id="Pasif"]
+bg_color = Color(0.09, 0.12, 0.16, 1)
+border_color = Color(0.18, 0.22, 0.27, 1)
+border_width_left = 1
+content_margin_left = 12.0
+border_width_top = 1
+content_margin_top = 12.0
+border_width_right = 1
+content_margin_right = 12.0
+border_width_bottom = 1
+content_margin_bottom = 12.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="Pencere"]
+bg_color = Color(0.045, 0.065, 0.095, 1)
+border_color = Color(0.4, 0.32, 0.19, 1)
+border_width_left = 2
+content_margin_left = 16.0
+border_width_top = 2
+content_margin_top = 16.0
+border_width_right = 2
+content_margin_right = 16.0
+border_width_bottom = 2
+content_margin_bottom = 16.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="SurguYol"]
+bg_color = Color(0.11, 0.15, 0.2, 1)
+border_color = Color(0.34, 0.32, 0.26, 1)
+border_width_left = 1
+content_margin_top = 6.0
+border_width_top = 1
+content_margin_bottom = 6.0
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="SurguDolu"]
+bg_color = Color(0.55, 0.43, 0.24, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="SurguOdak"]
+bg_color = Color(1, 0.78, 0.43, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[resource]
+default_font_size = 26
+Label/colors/font_color = Color(0.93, 0.94, 0.95, 1)
+Button/colors/font_color = Color(0.95, 0.94, 0.91, 1)
+Button/colors/font_hover_color = Color(1, 0.83, 0.56, 1)
+Button/colors/font_focus_color = Color(1, 0.83, 0.56, 1)
+Button/colors/font_pressed_color = Color(1, 0.88, 0.68, 1)
+Button/colors/font_disabled_color = Color(0.48, 0.53, 0.59, 1)
+Button/styles/normal = SubResource("Dugme")
+Button/styles/hover = SubResource("Hover")
+Button/styles/pressed = SubResource("Basili")
+Button/styles/focus = SubResource("Odak")
+Button/styles/disabled = SubResource("Pasif")
+Panel/styles/panel = SubResource("Panel")
+HSlider/styles/slider = SubResource("SurguYol")
+HSlider/styles/grabber_area = SubResource("SurguDolu")
+HSlider/styles/grabber_area_highlight = SubResource("SurguOdak")
+HSlider/styles/focus = SubResource("Odak")
+PopupMenu/styles/panel = SubResource("Pencere")
+PopupMenu/styles/hover = SubResource("Hover")
+PopupMenu/colors/font_color = Color(0.95, 0.94, 0.91, 1)
+PopupMenu/colors/font_hover_color = Color(1, 0.83, 0.56, 1)
+PanelContainer/styles/panel = SubResource("Panel")
+AcceptDialog/styles/panel = SubResource("Onay")
+AcceptDialog/constants/buttons_separation = 16
+AcceptDialog/constants/buttons_min_width = 180
+AcceptDialog/constants/buttons_min_height = 52
+Window/styles/embedded_border = SubResource("Pencere")
+Window/styles/embedded_unfocused_border = SubResource("Pencere")
+Window/colors/title_color = Color(1, 0.8, 0.48, 1)
+Window/colors/title_outline_modulate = Color(0, 0, 0, 0)
+Window/fonts/title_font = null
+Window/font_sizes/title_font_size = 34
+Window/constants/title_height = 52
+Window/constants/resize_margin = 8
+VBoxContainer/constants/separation = 12
+HBoxContainer/constants/separation = 16
+MarginContainer/constants/margin_left = 24
+MarginContainer/constants/margin_top = 20
+MarginContainer/constants/margin_right = 24
+MarginContainer/constants/margin_bottom = 20
+Baslik/base_type = &"Label"
+Baslik/font_sizes/font_size = 36
+Baslik/colors/font_color = Color(1, 0.8, 0.48, 1)
+AltBaslik/base_type = &"Label"
+AltBaslik/font_sizes/font_size = 30
+Govde/base_type = &"Label"
+Govde/font_sizes/font_size = 26
+Istem/base_type = &"Label"
+Istem/font_sizes/font_size = 30
+Tus/base_type = &"Label"
+Tus/font_sizes/font_size = 28
+Tus/styles/normal = SubResource("Dugme")
+Vurgu/base_type = &"Button"
+Vurgu/styles/normal = SubResource("Hover")
+Arayuz/colors/karartma = Color(0.015, 0.025, 0.04, 0.9)
+Arayuz/colors/vurgu = Color(0.94, 0.7, 0.34, 1)
+Arayuz/constants/simge_boy = 40
+Arayuz/constants/organ_simge_boy = 56
+Arayuz/constants/bag_en = 1120
+Arayuz/constants/bag_boy = 900
+Arayuz/constants/onay_en = 900
+Arayuz/constants/onay_boy = 260
+Arayuz/constants/istem_alt_bosluk = 48
+Arayuz/constants/hud_genislik = 820
+Arayuz/constants/menu_genislik = 680
+TusKutusu/base_type = &"PanelContainer"
+TusKutusu/styles/panel = SubResource("Dugme")
+AltIstemKenari/base_type = &"MarginContainer"
+AltIstemKenari/constants/margin_bottom = 48

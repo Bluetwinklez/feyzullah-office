@@ -1,0 +1,19 @@
+# Godot önbelleği ve derleme çıktıları (EXE, kayıt kareleri, test/perf geçici klasörleri build/ altında)
+.godot/
+build/
+*.tmp
+
+# Kullanıcı verileri (oyun bunları user:// altına yazar; depoya kopyalanırsa yok sayılır)
+kayit.json
+kayit.json.tmp
+*.bak
+ayarlar.cfg
+olaylar.jsonl
+test_asama2/
+test_asama3/
+test_ayarlar/
+test_k8/
+
+# İşletim sistemi dosyaları
+Thumbs.db
+.DS_Store

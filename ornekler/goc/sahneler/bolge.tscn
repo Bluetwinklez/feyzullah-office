@@ -1,0 +1,18 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://betikler/Avlu.gd" id="1"]
+[ext_resource type="PackedScene" path="res://sahneler/oyuncu.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://sahneler/dusmanlar/avci.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://sahneler/kirilgan_duvar.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://sahneler/arayuz/hud.tscn" id="5"]
+[node name="Avlu" type="Node3D"]
+script = ExtResource("1")
+[node name="Oyuncu" parent="." instance=ExtResource("2")]
+kamera_yolu = NodePath("../Kamera")
+[node name="Avci" parent="." instance=ExtResource("3")]
+hedef_yolu = NodePath("../Oyuncu")
+[node name="KirilganDuvar" parent="." instance=ExtResource("4")]
+[node name="Kamera" type="Camera3D" parent="."]
+projection = 1
+current = true
+[node name="HUD" parent="." instance=ExtResource("5")]
+oyuncu_yolu = NodePath("../Oyuncu")

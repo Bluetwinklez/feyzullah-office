@@ -1,0 +1,1214 @@
+{
+  "ekran_goruntusu": {
+    "genislik": 960
+  },
+  "perf_kosu": {
+    "hizlandirma": 1,
+    "bitis_kare": 120,
+    "ornek_aralik": 10,
+    "yuzdelik": 0.95,
+    "takilma_ms": 250
+  },
+  "test_k8": {
+    "on_ayar_adi": "Windows Desktop",
+    "exe_yolu": "res://build/GOC.exe",
+    "paket_adi": "goc.zip",
+    "sablon_hatasi": "template",
+    "kare": 300,
+    "yasak_gunluk": ["SCRIPT ERROR", "Parse Error", "Failed to load", "Cannot open"],
+    "gerekli_dosyalar": ["project.binary", "data/denge.json", "data/metinler.tr.translation", "sahneler/ana_menu.tscn.remap", "autoload/Ayarlar.gdc"]
+  },
+  "ayarlar": {
+    "ses_duzeyi": 1.0,
+    "ses_adim": 0.05,
+    "sarsinti": true,
+    "tam_ekran": false,
+    "cozunurluk": [1152, 648],
+    "cozunurlukler": [[1152, 648], [1280, 720], [1600, 900], [1920, 1080], [2560, 1440]],
+    "sarsinti_guc": 0.12,
+    "sarsinti_sure": 0.25,
+    "test_sarsinti_kare": 4,
+    "test_govde_px": 22
+  },
+  "oyuncu_can": 100,
+  "hiz": 5,
+  "kacin_hiz": 14,
+  "kacin_sure": 0.35,
+  "kacin_bekleme": 0.6,
+  "hasarlar": [
+    10,
+    12,
+    18
+  ],
+  "zincir_pencere": 0.7,
+  "saldiri_aralik": 0.22,
+  "saldiri_menzil": 2.5,
+  "saldiri_aci": 0.35,
+  "avci_can": 30,
+  "avci_hiz": 2.6,
+  "avci_hasar": 10,
+  "avci_hazirlik": 0.5,
+  "avci_bekleme": 1.3,
+  "avci_menzil": 1.7,
+  "avci_atilma": 8,
+  "avci_atilma_sure": 0.2,
+  "algilama": 16,
+  "tarama_yaricap": 12,
+  "tarama_sure": 6,
+  "tarama_bekleme": 8,
+  "duvar_can": 40,
+  "kamera_egim": 55,
+  "kamera_yatay": 45,
+  "kamera_uzaklik": 19,
+  "kamera_takip": 7,
+  "kamera_boyut": 22,
+  "govde_boy": 1.8,
+  "govde_yaricap": 0.4,
+  "organ_boy": 0.4,
+  "organ_konum": [
+    0.55,
+    1.2,
+    0.25
+  ],
+  "oyuncu_konum": [
+    0,
+    0,
+    5
+  ],
+  "avci_konum": [
+    5,
+    0,
+    -2
+  ],
+  "duvar_konum": [
+    0,
+    1,
+    -6
+  ],
+  "duvar_boyut": [
+    4,
+    2,
+    0.6
+  ],
+  "zemin_boyut": [
+    24,
+    1,
+    24
+  ],
+  "zemin_konum": [
+    0,
+    -0.5,
+    0
+  ],
+  "duvarlar": [
+    [
+      [
+        -12,
+        1,
+        0
+      ],
+      [
+        0.5,
+        2,
+        24
+      ]
+    ],
+    [
+      [
+        12,
+        1,
+        0
+      ],
+      [
+        0.5,
+        2,
+        24
+      ]
+    ],
+    [
+      [
+        0,
+        1,
+        -12
+      ],
+      [
+        24,
+        2,
+        0.5
+      ]
+    ],
+    [
+      [
+        0,
+        1,
+        12
+      ],
+      [
+        24,
+        2,
+        0.5
+      ]
+    ],
+    [
+      [
+        -7,
+        1,
+        -6
+      ],
+      [
+        10,
+        2,
+        0.6
+      ]
+    ],
+    [
+      [
+        7,
+        1,
+        -6
+      ],
+      [
+        10,
+        2,
+        0.6
+      ]
+    ]
+  ],
+  "renk_oyuncu": "5599cc",
+  "renk_avci": "b54c61",
+  "renk_organ": "ffbd52",
+  "renk_zemin": "354451",
+  "renk_duvar": "65788a",
+  "renk_hazirlik": "ffdd66",
+  "isik": 1.3,
+  "yazi_boy": 22,
+  "hud_kenar": 24,
+  "hud_genislik": 460,
+  "hud_yukseklik": 230,
+  "hud_satir": 38,
+  "hazirlik_olcek": 0.7,
+  "tepki_sure": 0.18,
+  "geri_itme": 0.55,
+  "renk_hasar": "ff3344",
+  "isaret_boyut": [
+    0.15,
+    0.15,
+    0.6
+  ],
+  "isaret_konum": [
+    0,
+    1,
+    -0.5
+  ],
+  "hedef_halka_y": 0.03,
+  "halka_yukseklik": 0.025,
+  "halka_ic_oran": 0.92,
+  "ses_ornek_hiz": 22050,
+  "ses_sure": 0.08,
+  "ses_saldiri": 180,
+  "ses_hasar": 100,
+  "ses_tarama": 640,
+  "ses_hazirlik": 320,
+  "ses_genlik": 0.15,
+  "arka_plan": "1f2936",
+  "ortam_renk": "a6b3cc",
+  "sis_yogunluk": 0.008,
+  "catlak_boyut": [
+    0.06,
+    1.6,
+    0.04
+  ],
+  "catlak_konum": [
+    0,
+    0,
+    0.32
+  ],
+  "catlak_aci": 22,
+  "test_tolerans": 0.0001,
+  "test_senkron_kare": 2,
+  "test_kisa_sure": 0.1,
+  "test_hedef_uzaklik": 2,
+  "test_yakin_uzaklik": 1.2,
+  "test_zaman_asimi": 3,
+  "test_erken_pay": 0.5,
+  "test_yol_uzunluk": 4,
+  "test_duraklat_sure": 0.4,
+  "hud_ikon_boy": 48,
+  "ses_etkilesim": 440,
+  "yanki_ikon": "res://varliklar/gorseller/yanki_ikon.png",
+  "ses_dosyalari": {
+    "ses_saldiri": "res://varliklar/sesler/saldiri.mp3",
+    "ses_hasar": "res://varliklar/sesler/hasar.mp3",
+    "ses_tarama": "res://varliklar/sesler/tarama.mp3",
+    "ses_etkilesim": "res://varliklar/sesler/etkilesim.mp3",
+    "ses_sis_kalkani": "res://varliklar/sesler/sis_kalkani.mp3"
+  },
+  "modeller": {
+    "oyuncu": {
+      "yol": "res://varliklar/modeller/oyuncu.glb",
+      "sahne": "res://sahneler/oyuncu.tscn",
+      "boy": 1.8,
+      "donus_y": 90,
+      "tabana_hizala": true,
+      "temel_renk": "renk_oyuncu",
+      "yer_tutucu": false
+    },
+    "avci": {
+      "yol": "res://varliklar/modeller/avci.glb",
+      "sahne": "res://sahneler/dusmanlar/avci.tscn",
+      "boy": 1.8,
+      "donus_y": 90,
+      "tabana_hizala": true,
+      "temel_renk": "renk_avci",
+      "yer_tutucu": false
+    },
+    "yanki_kesesi": {
+      "yol": "res://varliklar/modeller/yanki_kesesi.glb",
+      "sahne": "res://sahneler/yanki_kesesi.tscn",
+      "boy": 0.4,
+      "donus_y": 0,
+      "tabana_hizala": false,
+      "temel_renk": "renk_organ",
+      "yer_tutucu": false
+    },
+    "agir": {
+      "yol": "res://varliklar/modeller/agir.glb",
+      "sahne": "res://sahneler/dusmanlar/agir.tscn",
+      "boy": 2.6,
+      "donus_y": 90,
+      "tabana_hizala": true,
+      "temel_renk": "renk_agir",
+      "yer_tutucu": false
+    },
+    "puskurtucu": {
+      "yol": "res://varliklar/modeller/puskurtucu.glb",
+      "sahne": "res://sahneler/dusmanlar/puskurtucu.tscn",
+      "boy": 2.2,
+      "donus_y": 90,
+      "tabana_hizala": true,
+      "temel_renk": "renk_puskurtucu",
+      "yer_tutucu": false
+    },
+    "soluk_cekirdegi": {
+      "yol": "res://varliklar/modeller/soluk_cekirdegi.glb",
+      "sahne": "res://sahneler/soluk_cekirdegi.tscn",
+      "boy": 0.4,
+      "donus_y": 0,
+      "tabana_hizala": false,
+      "temel_renk": "renk_soluk",
+      "yer_tutucu": false
+    },
+    "nefes_kesesi": {
+      "yol": "res://varliklar/modeller/nefes_kesesi.glb",
+      "sahne": "res://sahneler/nefes_kesesi.tscn",
+      "boy": 0.45,
+      "donus_y": 0,
+      "tabana_hizala": true,
+      "temel_renk": "renk_nefes",
+      "yer_tutucu": false
+    }
+  },
+  "yer_tutucu_varliklar": [],
+  "gorsel": {
+    "kamera": {
+      "boyut": 12.8,
+      "mesafe": 14,
+      "egim": 55,
+      "yatay": 45,
+      "takip_yumusatma": 7
+    },
+    "ortam": {
+      "arka_plan": "101b29",
+      "isik_renk": "6b839e",
+      "isik_enerji": 0.38,
+      "yon_isigi_renk": "9cbad2",
+      "yon_isigi_enerji": 0.85,
+      "sis_renk": "5d7286",
+      "sis_enerji": 0.65,
+      "sis_baslangic": 17,
+      "sis_bitis": 29,
+      "sis_egri": 1.4
+    },
+    "fener": {
+      "renk": "ffb654",
+      "enerji": 2.3,
+      "menzil": 5,
+      "yukseklik": 1.2,
+      "azalma": 1.3
+    },
+    "zemin": {
+      "tas_renk": "26343e",
+      "yol_renk": "53616a",
+      "derz_renk": "141f29",
+      "karo_boyut": 1.2,
+      "derz_eni": 0.025,
+      "cesitlilik": 0.14,
+      "yol_yari_en": 1.8,
+      "yol_gecis": 0.25,
+      "puruzluluk": 0.92
+    },
+    "sutun_ust_oran": 0.7,
+    "sutun_dilim": 10,
+    "dekor": [
+      {
+        "tur": "sutun",
+        "konum": [
+          -9,
+          0,
+          5
+        ],
+        "boyut": [
+          1.1,
+          1.6,
+          1.1
+        ],
+        "donus_y": 12,
+        "egim_z": -6,
+        "renk": "43525c"
+      },
+      {
+        "tur": "tas",
+        "konum": [
+          -8.2,
+          0,
+          5.7
+        ],
+        "boyut": [
+          0.9,
+          0.35,
+          0.7
+        ],
+        "donus_y": -18,
+        "egim_z": 7,
+        "renk": "3b4a55"
+      },
+      {
+        "tur": "kasa",
+        "konum": [
+          -8.8,
+          0,
+          8.8
+        ],
+        "boyut": [
+          1.2,
+          1,
+          1.1
+        ],
+        "donus_y": 12,
+        "egim_z": 0,
+        "renk": "4b463d"
+      },
+      {
+        "tur": "kasa",
+        "konum": [
+          8.8,
+          0,
+          1
+        ],
+        "boyut": [
+          1.2,
+          0.9,
+          1.1
+        ],
+        "donus_y": -15,
+        "egim_z": 0,
+        "renk": "4b463d"
+      },
+      {
+        "tur": "tas",
+        "konum": [
+          9,
+          0,
+          4
+        ],
+        "boyut": [
+          1.5,
+          0.5,
+          1.1
+        ],
+        "donus_y": 28,
+        "egim_z": 8,
+        "renk": "43525c"
+      },
+      {
+        "tur": "tas",
+        "konum": [
+          9.7,
+          0,
+          4.4
+        ],
+        "boyut": [
+          0.8,
+          0.7,
+          0.7
+        ],
+        "donus_y": -9,
+        "egim_z": 10,
+        "renk": "3b4a55"
+      },
+      {
+        "tur": "sutun",
+        "konum": [
+          -9,
+          0,
+          -4
+        ],
+        "boyut": [
+          1,
+          1.25,
+          1
+        ],
+        "donus_y": 34,
+        "egim_z": 5,
+        "renk": "43525c"
+      },
+      {
+        "tur": "kasa",
+        "konum": [
+          9.3,
+          0,
+          -9
+        ],
+        "boyut": [
+          1.3,
+          1.1,
+          1.2
+        ],
+        "donus_y": 5,
+        "egim_z": 0,
+        "renk": "4b463d"
+      }
+    ]
+  },
+  "asama2": {
+    "soluk_sure": 5,
+    "soluk_bekleme": 12,
+    "sise_kapasitesi": 3,
+    "etkilesim_menzil": 1.8,
+    "etiket_y": 2.1,
+    "pencere_en": 760,
+    "pencere_boy": 550,
+    "merkez_dogum": [
+      0,
+      0,
+      2.5
+    ],
+    "merkez_kapi": [
+      0,
+      0,
+      5
+    ],
+    "bolge_kapi": [
+      0,
+      0,
+      9
+    ],
+    "merkez_zemin": [
+      12,
+      1,
+      12
+    ],
+    "zemin_yari": 0.5,
+    "zemin_renk": "594d40",
+    "merkez_sinirlar": [
+      [
+        [
+          -6,
+          0.7,
+          0
+        ],
+        [
+          0.3,
+          1.4,
+          12
+        ]
+      ],
+      [
+        [
+          6,
+          0.7,
+          0
+        ],
+        [
+          0.3,
+          1.4,
+          12
+        ]
+      ],
+      [
+        [
+          0,
+          0.7,
+          -6
+        ],
+        [
+          12,
+          1.4,
+          0.3
+        ]
+      ],
+      [
+        [
+          0,
+          0.7,
+          6
+        ],
+        [
+          12,
+          1.4,
+          0.3
+        ]
+      ]
+    ],
+    "nefes_konumlar": [
+      [
+        -4,
+        0,
+        -3
+      ],
+      [
+        4,
+        0,
+        -3
+      ]
+    ],
+    "omurga_konum": [
+      0,
+      0,
+      -4.5
+    ],
+    "bag_konum": [
+      -3,
+      0,
+      0
+    ],
+    "dinle_konum": [
+      3,
+      0,
+      0
+    ],
+    "canli_kese_konum": [
+      0,
+      1.3,
+      0
+    ],
+    "buluntu_konum": [
+      -3,
+      0,
+      -3
+    ],
+    "gecit_konum": [
+      6,
+      0,
+      -4
+    ],
+    "muhur_boyut": [
+      2,
+      2,
+      0.4
+    ],
+    "muhur_y": 1,
+    "muhur_renk": "698da1",
+    "rota_konumlar": [
+      [
+        0,
+        0.03,
+        2
+      ],
+      [
+        0,
+        0.03,
+        1
+      ],
+      [
+        0,
+        0.03,
+        0
+      ]
+    ],
+    "rota_boyut": [
+      0.3,
+      0.03,
+      0.7
+    ],
+    "rota_enerji": 1.2,
+    "amber": "ffb654",
+    "arka_plan": "201b18",
+    "ortam_enerji": 0.6,
+    "isik_enerji": 1.1,
+    "nefes_periyot": 3.5,
+    "nefes_bagli_periyot": 2.8,
+    "nefes_genlik": 0.08,
+    "tepki_menzil": 4,
+    "tepki_enerji": 1.5,
+    "nefes_ses_sure": 2.8,
+    "nefes_frekans": 74,
+    "nefes_ses_genlik": 0.05,
+    "nefes_ses_bagli": 0.85,
+    "modeller": {
+      "tasiyici_sirt": {
+        "yol": "res://varliklar/modeller/tasiyici_sirt.glb",
+        "boy": 12,
+        "uzun_eksen": true,
+        "donus_y": 0,
+        "eksene_gore_don": true,
+        "eksen_donus": 90,
+        "yedek_boyut": [
+          10,
+          0.6,
+          12
+        ],
+        "yedek_konum": [
+          0,
+          -0.3,
+          0
+        ],
+        "renk": "b69563"
+      },
+      "tasiyici_nefes_kesesi": {
+        "yol": "res://varliklar/modeller/tasiyici_nefes_kesesi.glb",
+        "boy": 1.5,
+        "uzun_eksen": false,
+        "donus_y": 0,
+        "eksene_gore_don": false,
+        "eksen_donus": 90,
+        "yedek_boyut": [
+          1.3,
+          1.5,
+          1.3
+        ],
+        "yedek_konum": [
+          0,
+          0.75,
+          0
+        ],
+        "renk": "b69563"
+      },
+      "tasiyici_omurga": {
+        "yol": "res://varliklar/modeller/tasiyici_omurga.glb",
+        "boy": 2.5,
+        "uzun_eksen": false,
+        "donus_y": 0,
+        "eksene_gore_don": true,
+        "eksen_donus": 90,
+        "yedek_boyut": [
+          1,
+          2.5,
+          4
+        ],
+        "yedek_konum": [
+          0,
+          1.25,
+          0
+        ],
+        "renk": "b69563"
+      },
+      "bag_duzenegi": {
+        "yol": "res://varliklar/modeller/bag_duzenegi.glb",
+        "boy": 1.1,
+        "uzun_eksen": false,
+        "donus_y": 90,
+        "eksene_gore_don": false,
+        "eksen_donus": 90,
+        "yedek_boyut": [
+          1.3,
+          1.1,
+          1.3
+        ],
+        "yedek_konum": [
+          0,
+          0.55,
+          0
+        ],
+        "renk": "b69563"
+      }
+    }
+  },
+  "asama2_demo": {
+    "bilgi_kare": 12,
+    "onay_kare": 30,
+    "aktar_kare": 42,
+    "kapat_kare": 53
+  },
+  "asama3": {
+    "mekan": {
+      "duvar_kalinlik": 0.5,
+      "duvar_yukseklik": 2,
+      "kapi_isaret_boyut": [
+        1.2,
+        0.06,
+        0.7
+      ],
+      "sis_hacmi": [
+        8,
+        0.8,
+        8
+      ],
+      "sis_konum": [
+        0,
+        0.4,
+        -2
+      ],
+      "sis_renk": "6b839e66"
+    },
+    "avlu_kapilar": [
+      {
+        "ad": "KoridorKapisi",
+        "hedef": "koridor",
+        "konum": [
+          -6,
+          0,
+          3
+        ],
+        "metin": "etkilesim.koridor"
+      },
+      {
+        "ad": "DerinGecitKapisi",
+        "hedef": "derin_gecit",
+        "konum": [
+          6,
+          0,
+          -2.5
+        ],
+        "metin": "etkilesim.derin_gecit",
+        "muhur": true
+      }
+    ],
+    "mekanlar": {
+      "koridor": {
+        "boyut": [
+          10,
+          1,
+          22
+        ],
+        "dogum": [
+          0,
+          0,
+          8
+        ],
+        "kapilar": [
+          {
+            "ad": "AvluKapisi",
+            "hedef": "bolge",
+            "konum": [
+              0,
+              0,
+              9
+            ],
+            "metin": "etkilesim.bolge"
+          },
+          {
+            "ad": "KuyuKapisi",
+            "hedef": "kuyu_salonu",
+            "konum": [
+              0,
+              0,
+              -9
+            ],
+            "metin": "etkilesim.kuyu_salonu"
+          },
+          {
+            "ad": "SisKapisi",
+            "hedef": "sis_cebi",
+            "konum": [
+              3,
+              0,
+              0
+            ],
+            "metin": "etkilesim.sis_cebi"
+          },
+          {
+            "ad": "DonusKapisi",
+            "hedef": "merkez",
+            "konum": [
+              -3.0,
+              0,
+              8
+            ],
+            "metin": "etkilesim.merkez"
+          }
+        ],
+        "dusmanlar": [
+          {
+            "sahne": "res://sahneler/dusmanlar/puskurtucu.tscn",
+            "konum": [
+              0,
+              0,
+              -3
+            ]
+          }
+        ]
+      },
+      "kuyu_salonu": {
+        "boyut": [
+          18,
+          1,
+          20
+        ],
+        "dogum": [
+          0,
+          0,
+          7
+        ],
+        "kapilar": [
+          {
+            "ad": "KoridorKapisi",
+            "hedef": "koridor",
+            "konum": [
+              0,
+              0,
+              8
+            ],
+            "metin": "etkilesim.koridor"
+          },
+          {
+            "ad": "KestirmeKapisi",
+            "hedef": "merkez",
+            "konum": [
+              6,
+              0,
+              -7
+            ],
+            "metin": "etkilesim.kestirme",
+            "kestirme": true
+          },
+          {
+            "ad": "DonusKapisi",
+            "hedef": "merkez",
+            "konum": [
+              -7.0,
+              0,
+              7
+            ],
+            "metin": "etkilesim.merkez"
+          }
+        ],
+        "buluntu": [
+          0,
+          0,
+          -3
+        ],
+        "duvar": [
+          6,
+          1,
+          -5
+        ],
+        "dusmanlar": [
+          {
+            "sahne": "res://sahneler/dusmanlar/agir.tscn",
+            "konum": [
+              4,
+              0,
+              0
+            ]
+          }
+        ],
+        "kestirme_yan_duvarlar": [
+          {
+            "boyut": [
+              0.5,
+              2,
+              5
+            ],
+            "konum": [
+              4,
+              1,
+              -7.5
+            ]
+          },
+          {
+            "boyut": [
+              0.5,
+              2,
+              5
+            ],
+            "konum": [
+              8,
+              1,
+              -7.5
+            ]
+          }
+        ]
+      },
+      "derin_gecit": {
+        "boyut": [
+          18,
+          1,
+          30
+        ],
+        "dogum": [
+          0,
+          0,
+          12
+        ],
+        "kapilar": [
+          {
+            "ad": "AvluKapisi",
+            "hedef": "bolge",
+            "konum": [
+              0,
+              0,
+              13
+            ],
+            "metin": "etkilesim.bolge"
+          },
+          {
+            "ad": "CekirdekKapisi",
+            "hedef": "cekirdek_odasi",
+            "konum": [
+              0,
+              0,
+              -13
+            ],
+            "metin": "etkilesim.cekirdek_odasi"
+          },
+          {
+            "ad": "DonusKapisi",
+            "hedef": "merkez",
+            "konum": [
+              -7.0,
+              0,
+              12
+            ],
+            "metin": "etkilesim.merkez"
+          }
+        ]
+      },
+      "cekirdek_odasi": {
+        "boyut": [
+          16,
+          1,
+          16
+        ],
+        "dogum": [
+          0,
+          0,
+          5
+        ],
+        "kapilar": [
+          {
+            "ad": "DerinGecitKapisi",
+            "hedef": "derin_gecit",
+            "konum": [
+              0,
+              0,
+              6
+            ],
+            "metin": "etkilesim.derin_gecit",
+            "muhur": true
+          },
+          {
+            "ad": "DonusKapisi",
+            "hedef": "merkez",
+            "konum": [
+              -6.0,
+              0,
+              5
+            ],
+            "metin": "etkilesim.merkez"
+          }
+        ]
+      },
+      "sis_cebi": {
+        "boyut": [
+          14,
+          1,
+          16
+        ],
+        "dogum": [
+          0,
+          0,
+          5
+        ],
+        "kapilar": [
+          {
+            "ad": "KoridorKapisi",
+            "hedef": "koridor",
+            "konum": [
+              0,
+              0,
+              6
+            ],
+            "metin": "etkilesim.koridor"
+          },
+          {
+            "ad": "DonusKapisi",
+            "hedef": "merkez",
+            "konum": [
+              -5.0,
+              0,
+              5
+            ],
+            "metin": "etkilesim.merkez"
+          }
+        ]
+      }
+    },
+    "dusmanlar": {
+      "agir": {
+        "can": 80,
+        "hasar": 30,
+        "hazirlik": 1.1,
+        "acik_sure": 1.2,
+        "bekleme": 1.2,
+        "hiz": 1.3,
+        "menzil": 2.3,
+        "algilama": 16,
+        "boy": 2.6,
+        "yaricap": 0.7,
+        "goz_y": 1.0,
+        "yedek_boyut": [
+          1.6,
+          2.6,
+          1.4
+        ],
+        "renk": "677b8c",
+        "vurus_aci": 0.2
+      },
+      "puskurtucu": {
+        "can": 25,
+        "hasar": 12,
+        "hazirlik": 0.8,
+        "acik_sure": 0,
+        "bekleme": 1.8,
+        "hiz": 1.8,
+        "menzil": 8,
+        "uzak_dur": 4,
+        "algilama": 16,
+        "boy": 2.2,
+        "yaricap": 0.4,
+        "goz_y": 1.0,
+        "yedek_boyut": [
+          0.65,
+          1.2,
+          0.6
+        ],
+        "boyun_boyut": [
+          0.28,
+          1.5,
+          0.28
+        ],
+        "boyun_konum": [
+          0,
+          1.45,
+          -0.2
+        ],
+        "renk": "799c8a",
+        "mermi_hiz": 4,
+        "mermi_omur": 4,
+        "mermi_yaricap": 0.18,
+        "mermi_y": 1.0
+      }
+    },
+    "son_karsilasma": {
+      "tetik_konum": [
+        0,
+        0,
+        -5
+      ],
+      "tetik_yaricap": 9,
+      "dusmanlar": [
+        {
+          "sahne": "res://sahneler/dusmanlar/agir.tscn",
+          "konum": [
+            0,
+            0,
+            -8
+          ]
+        },
+        {
+          "sahne": "res://sahneler/dusmanlar/avci.tscn",
+          "konum": [
+            -3,
+            0,
+            -7
+          ]
+        },
+        {
+          "sahne": "res://sahneler/dusmanlar/avci.tscn",
+          "konum": [
+            3,
+            0,
+            -7
+          ]
+        }
+      ]
+    },
+    "ilerleme": {
+      "nefes_kapasite_artis": 1,
+      "hazirlik_bedel": 5,
+      "hazirlik_en_fazla": 2,
+      "sise_iyilestirme": 40,
+      "sis_hasar": 12,
+      "sis_hasar_aralik": 1,
+      "soluk_konum": [
+        0,
+        0,
+        -3
+      ],
+      "nefes_konum": [
+        0,
+        0,
+        -5
+      ],
+      "canli_soluk_konum": [
+        4,
+        1,
+        -3
+      ],
+      "tezgah_konum": [
+        -3,
+        0,
+        3
+      ],
+      "tezgah_boyut": [
+        1.4,
+        0.8,
+        0.8
+      ],
+      "saglikli_nefes_periyot": 4,
+      "saglikli_nefes_ses": 0.75,
+      "sis_incelme_carpan": 1.6,
+      "kaynak_kayip_orani": 0.5,
+      "ganimet": {
+        "avci": 2,
+        "agir": 4,
+        "puskurtucu": 2
+      },
+      "yolculuk_sure": 2,
+      "yolculuk_mesafe": 2,
+      "nefes_ses_yolu": "res://varliklar/sesler/nefes.mp3"
+    }
+  },
+  "renk_agir": "677b8c",
+  "renk_puskurtucu": "799c8a",
+  "renk_soluk": "f7d998",
+  "renk_nefes": "ce9b52",
+  "ses_sis_kalkani": 780,
+  "test_asama3": {
+    "hizlandirma": 3,
+    "yurume_zaman_asimi": 30,
+    "savas_zaman_asimi": 35,
+    "etkilesim_oran": 0.7,
+    "koridor_yan_x": 2.3,
+    "iyilesme_oran": 0.5,
+    "savas_yakinlik_oran": 0.6,
+    "derin_yan_x": 4.5
+  },
+  "demo_asama3": {
+    "kuyu_salonu_oyuncu": [
+      0,
+      0,
+      -1
+    ],
+    "son_karsilasma_oyuncu": [
+      0,
+      0,
+      -6
+    ],
+    "bitis_sure": 120,
+    "bitis_olum": 2,
+    "onay_kare": 3,
+    "kabul_kare": 8
+  }
+}

@@ -22,6 +22,10 @@ Yapay zekâ ajanlarının piksel bir ofiste çalıştığı Windows masaüstü u
 - **Bildirim ve ses**, günlük rapor, kayıtlı komutlar, uzman istatistikleri.
 - **Oyun geliştirme:** Godot kuruluysa oyun uzmanları başsız test ve Windows dışa aktarma yapabilir.
 
+## Örnek proje: GÖÇ
+
+[`ornekler/goc`](ornekler/goc) — Feyzullah Ofis ekibinin dört aşamada baştan sona yaptığı Godot 4 (Windows) aksiyon-keşif RPG prototipi. Tasarım, kod, Krea ile üretilen 3B model/görsel/sesler, 60 başsız test ve dışa aktarma Ofis'teki uzmanlara komutla yaptırıldı; her aşama Reality Checker'dan geçti. Ayrıntılar: [README](ornekler/goc/README.md) · [tasarım](ornekler/goc/docs/TASARIM.md). Testleri GitHub Actions'ta `GÖÇ testleri` iş akışı çalıştırır.
+
 ## Gereksinimler
 
 - Windows 10/11 (Windows Server 2022'de de denendi)

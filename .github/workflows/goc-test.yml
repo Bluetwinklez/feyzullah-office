@@ -1,0 +1,56 @@
+# GÖÇ başsız test botu: içe aktarma + test/calistir.gd (TASARIM §14).
+# Export şablonu kurulmaz ve export adımı yoktur. Testler başsızdır (pencere/ses gerekmez; ses Dummy sürücüye düşer).
+# Şablon gerektiren tek kısım K8'in geçici paket üretimidir; şablon yoksa test bunu "ATLANDI" notuyla yazar,
+# export_presets.cfg ön koşul denetimi yine yapılır. build/GOC.exe CI'da yoktur, onun --main-pack denetimi de atlanır.
+name: GÖÇ testleri
+
+on:
+  push:
+    paths: ['ornekler/goc/**', '.github/workflows/goc-test.yml']
+  pull_request:
+    paths: ['ornekler/goc/**', '.github/workflows/goc-test.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ornekler/goc
+    timeout-minutes: 30
+    env:
+      GODOT_VERSION: "4.7.2"
+      GODOT_ZIP: Godot_v4.7.2-stable_linux.x86_64.zip
+      GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Godot 4.7.2 indir (resmi sürüm, sabit)
+        shell: bash
+        run: |
+          set -euo pipefail
+          taban="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          mkdir -p "$RUNNER_TEMP/godot"
+          cd "$RUNNER_TEMP/godot"
+          curl -fsSL --retry 3 -o "$GODOT_ZIP" "$taban/$GODOT_ZIP"
+          curl -fsSL --retry 3 -o SHA512-SUMS.txt "$taban/SHA512-SUMS.txt"
+          grep " $GODOT_ZIP\$" SHA512-SUMS.txt | sha512sum -c -
+          unzip -q "$GODOT_ZIP"
+          chmod +x "$GODOT_BIN"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+
+      - name: İçe aktar
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path . --import
+
+      - name: Testler
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path . --script res://test/calistir.gd 2>&1 | tee test.log
+          grep -q "TESTLER: .* 0 başarısız" test.log

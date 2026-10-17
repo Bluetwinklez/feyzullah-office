@@ -1,0 +1,164 @@
+anahtar,tr
+test.k1,K1 Yeni oyundan M6'ya fiziksel oynanış ve onaylı bitiş
+test.k2,K2 Ölümden devam - kaynak kaybı ve organ koruma
+test.k3,K3 Tüm kayıt alanları - atomik dosya - eski sürüm
+test.k4,K4 Tek organ konumu - onaydan önce bilgiler
+test.k5,K5 Altı geçerli ve üç geçersiz organ yerleşimi - ana yol ve dönüş
+test.k6,K6 Sis Cebi ve kestirme olmadan ana görev
+test.k7,K7 Duraklatma - devam - bitişten temiz tekrar
+test.asama3_ozet,AŞAMA 3: %d geçti - %d başarısız
+etkilesim.yolculuk,Son Yolculuğu başlat
+yolculuk.baslik,Son Yolculuk
+yolculuk.onay,Son Yolculuğu başlatıp macerayı bitirmek istiyor musun?
+bitis.baslik,Yeni bir yol açıldı
+bitis.ozet,Toplam süre: %.1f sn — Ölüm sayısı: %d
+bitis.tekrar,Tekrar oyna
+bitis.cik,Çık
+menu.olum_kaybi,Ölümde bu seferin Kehribar'ının %%%.0f kadarı kaybolur (şu an %d). Organlar korunur.
+hedef.m4,Soluk Çekirdeği'ni Taşıyıcı'ya bağla
+hedef.m5,Son Yolculuğu başlat
+hedef.m6,Yolculuk tamamlandı
+etkilesim.soluk,Soluk Çekirdeği'ni al
+etkilesim.nefes,Nefes Kesesi'ni al
+etkilesim.tezgah,Hazırlık Tezgâhı — şişe hazırla
+bilgi.yuva_dolu,Tek organ yuvan dolu. Merkez'de taşıdığın organı canlıya bağla.
+bilgi.hazirlandi,Bir sonraki sefer için ek şişe hazırlandı.
+bag.soluk_sonuc_canli,+ Canlının nefesi düzelir ve Son Yolculuk açılır. − Sis kalkanını kaybedersin.
+bag.soluk_sonuc_oyuncu,+ Sis kalkanını kazanırsın. − Son Yolculuk Soluk yeniden bağlanana kadar başlayamaz.
+bag.tek_yuva,Oyuncuda tek organ yuvası vardır. Diğer organ oyuncudaysa önce onu canlıya bağla.
+hud.soluk,Soluk — kalkan %.1f sn / bekleme %.1f sn
+hud.siseler,Şişe %d — Kehribar %d — sonraki sefer +%d şişe
+hud.iyiles,İyileşme şişesi kullan
+etkilesim.koridor,Koridor'a geç
+etkilesim.kuyu_salonu,Kuyu Salonu'na geç
+etkilesim.derin_gecit,Derin Geçit'e geç
+etkilesim.cekirdek_odasi,Çekirdek Odası'na geç
+etkilesim.sis_cebi,Sis Cebi'ne geç (yan alan)
+etkilesim.bolge,Avlu'ya dön
+etkilesim.kestirme,Kestirmeden Rampa'ya dön
+bilgi.muhur_kapali,Derin Geçit mühürlü. Yankı Kesesi'ni Merkez'de canlıya bağla.
+bilgi.kestirme_kapali,Kestirme kapalı. Duvarı tara ve yık; ana yol açık.
+oyun.ad,GÖÇ
+hud.istem_tus,[%s]
+test.ui_tema,Ortak tema yükleme ve opak onay paneli
+test.ui_modal,Onayda alt panel ve hareket kilidi - iptal ve onay sonrası odak
+test.ui_istem,InputMap tuşlu HUD istemi - yeniden bağlama ve modal gizleme
+test.asama1_ozet,AŞAMA 1: %d geçti - %d başarısız
+test.asama2_ozet,AŞAMA 2: %d geçti - %d başarısız
+test.a2_sira,Geçersiz görev sırası ve bulunmamış organla dönüş
+test.a2_kestirmesiz,Kestirme kapalıyken fiziksel buluntu ve dönüş yolu
+test.a2_aktar,Onaylı ardışık aktarımlar - tek kese - Q ve HUD
+test.a2_ekran,Onay öncesi etkiler ve kazanım-kayıp bilgisi - iptalde durum koruma
+test.a2_canli_donus,Kese canlıdayken Q reddi ve kapıdan dönüş
+test.a2_kalici,Geri aktarım sonrası açık mühür ve rota
+test.a2_kayit,Sürüm - atomik kayıt - yedek - yükleme - kalıcı geçit
+test.a2_bozuk,Bozuk JSON reddi ve yedekten kurtarma
+test.a2_eksik,Eksik alan reddi ve yedekten kurtarma
+test.a2_bos,Boş kayıt reddi ve yedekten kurtarma
+test.a2_yeni_onay,Mevcut kayıtta onaysız yeni oyun reddi
+test.a2_olum,Oyuncuda ve canlıda organın ölümde korunması - güvenli dönüş
+test.a2_gunluk,Yerel olay günlüğü alanları ve izinli olaylar
+test.kilit_olum_gecti,Ölümde güvenli Merkez dönüşü ve durum koruma: GEÇTİ
+test.kilit_olum_kaldi,Ölümde güvenli Merkez dönüşü ve durum koruma: KALDI
+test.kilit_cikis_gecti,Kayıt hatasında ikinci kapatma isteğiyle çıkış: GEÇTİ
+test.kilit_cikis_kaldi,Kayıt hatasında ikinci kapatma isteğiyle çıkış: KALDI
+hedef.m0,Taşıyıcı'yı dinle.
+hedef.m1,Durgun Tesis'e in ve Yankı Kesesi'ni bul.
+hedef.m2,Yankı Kesesi'ni Taşıyıcı'ya bağla.
+hedef.m3,Derin Geçit'ten Çekirdek Odası'na ulaş.
+menu.yeni,Yeni oyun
+menu.yukle,Kayıttan yükle
+menu.yedek,Yedekten yükle
+kayit.yeni_onay,Mevcut kayıt yeni ilerlemeyle değiştirilecek. Yeni oyun başlatılsın mı?
+kayit.eksik,Kayıt bulunamadı.
+kayit.okunamadi,Kayıt okunamadı.
+kayit.bozuk,Kayıt bozuk veya bu sürümle tutarsız.
+kayit.tutarsiz,Durum kaydedilemedi: görev ve organ konumu tutarsız.
+kayit.yazilamadi,Kayıt yazılamadı. Güvenli çıkış için yeniden deneyin.
+kayit.kurtarma,Yedekten yükleyin veya yeni oyun başlatın.
+yer.bulunmadi,Bulunmadı
+yer.oyuncu,Oyuncuda
+yer.canli,Taşıyıcı'da
+bag.baslik,Bağ Düzeneği
+bag.yanki,Yankı Kesesi
+bag.soluk,Soluk Çekirdeği
+bag.yanki_oyuncu,Oyuncuda: Q ile %.1f m tarama; %.1f sn görünürlük ve %.1f sn bekleme.
+bag.yanki_canli,Canlıda: Derin Geçit mührü ve kalıcı rota açılır.
+bag.sonuc_canli,Kazanılan: kalıcı geçit ve rota. Kaybedilen: oyuncunun Q taraması; organı burada geri alabilirsiniz.
+bag.sonuc_oyuncu,Kazanılan: oyuncunun Q taraması. Kaybedilen: canlıdaki kese tepkisi; açılmış geçit ve rota korunur.
+bag.bulunmadi,Önce organı bulun; henüz aktarım yapılamaz.
+bag.soluk_oyuncu,Oyuncuda: %.1f sn sis kalkanı; %.1f sn bekleme.
+kayit.cikis_onay,Kayıt yazılamadı; ilerleme kaybolabilir. Kaydetmeden çıkmak için pencereyi tekrar kapatın.
+bag.soluk_canli,Canlıda: nefes düzelir ve Son Yolculuk kullanılabilir olur.
+bag.soluk_sonuc,Soluk Çekirdeği Çekirdek Odası'nda bulunur. Aktarımda sis kalkanı ile canlı etkisi arasında seçim yapılır.
+bag.aktar,Aktarımı gözden geçir
+bag.onay,Aktarımı onayla
+bag.onayla,Onayla
+bag.vazgec,Vazgeç
+bag.kapat,Kapat
+bilgi.sira,Bu etkileşim için gereken koşullar henüz sağlanmadı.
+bilgi.dinlendi,Taşıyıcı seni duydu. Durgun Tesis'e in.
+bilgi.baglandi,Taşıyıcı yankıyı duydu; Derin Geçit açıldı.
+bilgi.geri_alindi,Yankı Kesesi oyuncuda; açılan geçit açık kaldı.
+bilgi.gecis_hatasi,Sahne geçişi başarısız. Yeniden deneyin.
+etkilesim.bag,Bağ Düzeneği
+etkilesim.dinle,Taşıyıcı'yı dinle
+etkilesim.avlu,Avlu'ya in
+etkilesim.merkez,Merkeze dön
+etkilesim.yanki,Yankı Kesesi'ni al
+hud.kese_yok,Yankı Kesesi: %s — Q kullanılamaz
+hud.can,Can: %d / %d
+hud.kacin,Kaçınma: %.1f sn
+hud.tarama,Yankı Kesesi (Q): %.1f sn
+hud.hedef,Q ile duvarı bul ve saldırıyla kestirmeyi aç.
+menu.duraklat,Duraklatıldı
+menu.devam,Devam et
+test.varlik_yukle,Varlık yükleme %s
+test.varlik_sahne,GLB sahne bağlantısı ve ölçüsü %s
+test.varlik_hud,HUD ikon bağlantısı %s
+test.varlik_ses,Olay ses bağlantıları %s
+test.yer_tutucu,YER TUTUCU: %s
+test.yok,Yok
+test.satir,%s: %s
+test.gecti,GEÇTİ
+test.kaldi,KALDI
+test.detay,Kontrol başarısız: %s
+test.hareket,Çapraz hareket normalizasyonu
+test.vurus,Tek vuruş tek hasar
+test.olum,Ölü düşman etkisiz
+test.tarama,Yankı tarama beklemesi
+test.duvar,Taramayla açılan kırılgan duvar
+test.duraklat,Duraklatma ve devam
+test.hareket_detay,Düz ve çapraz hız eşit ve sıfır girdi hareketsiz olmalı.
+test.vurus_detay,Gerçek saldırı ilk vuruş hasarını bir kez vermeli; yinelenen kimlik hasar ve sinyal üretmemeli.
+test.olum_detay,Hazırlıkta öldürülen Avcı sonradan hareket veya hasar vermemeli; ölüm bir kez yayılmalı ve çarpışma kapanmalı.
+test.tarama_detay,Erken tarama reddedilmeli; görünürlük sona ermeli ve bekleme bitince yeniden taranmalı.
+test.duvar_detay,Gizli duvar saldırıya dayanmalı; taranan duvar yıkılınca gerçek fizik geçişi açılmalı.
+test.duraklat_detay,Duraklatma konumları ve tarama beklemesini dondurmalı; devamda hareket sıçramadan sürmeli.
+test.sonuc,"TESTLER: %d geçti, %d başarısız"
+
+menu.ayarlar,Ayarlar
+ayarlar.baslik,Ayarlar
+ayarlar.ses,Ana ses: %%%d
+ayarlar.sarsinti,Ekran sarsıntısı
+ayarlar.gorunum,Görüntü
+ayarlar.pencere,Pencere
+ayarlar.tam_ekran,Tam ekran
+ayarlar.cozunurluk,Çözünürlük
+ayarlar.boyut,%d × %d
+ayarlar.kapat,Kapat
+ayarlar.kayit_hatasi,Ayarlar kaydedilemedi; değişiklikler yalnız bu oturumda geçerli.
+test.ayar_kayit,A1 Ayarlar kaydet - yükle aynı değerler
+test.ayar_eksik_dosya,A2 Eksik ayar dosyası - varsayılanlar
+test.ayar_bozuk,"A3 Bozuk ayar dosyası - çökme yok, varsayılanlar"
+test.ayar_eksik_anahtar,A4 Eksik ve geçersiz anahtarlar - varsayılanlar
+test.ayar_uygula,"A5 Uygulanan değerler - Master bus, pencere modu ve boyutu"
+test.ayar_sarsinti,A6 Sarsıntı kapalıyken kamera ofseti değişmez
+test.ayar_ekran,A7 Duraklatma - Ayarlar ekranı - Escape ile geri dönüş
+test.ayarlar_ozet,AYARLAR: %d geçti - %d başarısız
+test.ayar_gercek_dosya,A8 Gerçek user://ayarlar.cfg değişmedi - test dosyası silindi
+test.ayar_basiz_not,Başsız mod: pencere modu ve boyutu ölçülemez; uygulanmak istenen değer doğrulandı.
+test.k8,K8 Export ön koşulları - test dosyaları paket dışı - paket --main-pack ile başsız açılır
+test.k8_exe_yok,K8: build/GOC.exe yok; yalnız geçici paket denendi.
+test.kabul_ozet,K8 (export): %d geçti - %d başarısız
+test.k8_sablon_yok,K8: export şablonu yok (CI); paket üretme ve --main-pack kısmı ATLANDI. Ön ayar denetimi yapıldı.

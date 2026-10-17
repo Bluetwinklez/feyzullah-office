@@ -360,6 +360,74 @@ dialog .row input, dialog .row select { flex: 1; }
   .app { grid-template-columns: 68px 240px minmax(0, 1fr) 320px; }
   .tab { padding: 8px 10px; }
 }
+/* ---- sıkı düzen: ofis en büyük alan. Komut kutusu üst çubukta; kart başlığı ve alt çubuk ofisin üstüne biner. ---- */
+.app { gap: 8px 10px; padding: 0 10px 0 0;
+  grid-template-columns: 56px 230px minmax(0, 1fr) 290px; grid-template-rows: 54px minmax(0, 1fr) 28px; }
+.app.full { grid-template-columns: 56px 0 minmax(0, 1fr) 0; }
+.app.full .office { margin-left: 10px; }
+.rail { padding: 10px 0; gap: 6px; }
+.logo { width: 36px; height: 36px; font-size: 16px; margin-bottom: 8px; border-radius: 10px; }
+.nav { width: 40px; height: 40px; border-radius: 11px; }
+.nav .ic { width: 20px; height: 20px; }
+
+.hdr { gap: 14px; padding: 0 0 0 14px; }
+.brand { font-size: 17px; }
+.brand-box .dim { display: none; }
+.tabs { margin: 0; gap: 2px; }
+.tab { padding: 6px 11px; font-size: 13.5px; }
+.hdr .admin-form { flex: 1; min-width: 260px; height: 40px; padding: 0 4px 0 12px; border-radius: 12px; }
+.hdr .admin-form input:not([type]) { font-size: 13px; }
+.hdr .admin-form .icon-btn { width: 30px; height: 30px; }
+.hdr .send { height: 32px; padding: 0 16px; font-size: 13px; border-radius: 9px; }
+.hdr-right { gap: 10px; }
+.clock { font-size: 17px; }
+.saved-pop, .sched-pop { top: 50px; left: 360px; right: 230px; }
+.bell-pop { top: 50px; right: 70px; }
+
+.agents { padding: 12px 8px 8px; gap: 8px; border-radius: 16px; }
+.ag-title { font-size: 16px; }
+.search { height: 34px; }
+.chip { padding: 4px 6px; gap: 8px; }
+.chip .ava { width: 30px; height: 30px; border-radius: 8px; }
+.chip .c-name { font-size: 12.5px; }
+.chip .c-act { font-size: 11px; }
+.roster .grp { font-size: 13px; margin-top: 6px; }
+.add-agent { padding: 8px 12px; }
+.ag-foot .icon-btn { width: 36px; height: 36px; }
+
+.office { gap: 0; }
+.stage-card { position: relative; border-radius: 16px; }
+.stage { flex: 1; }
+.overlay { position: absolute; left: 10px; right: 10px; z-index: 3; border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
+  background: rgba(11,17,22,.72); backdrop-filter: blur(8px); }
+.sc-head.overlay { top: 10px; right: auto; padding: 6px 6px 6px 14px; gap: 8px; }
+.sc-head.overlay .sc-title { font-size: 14px; }
+.sc-foot.overlay { bottom: 10px; left: auto; padding: 5px; gap: 6px; border-top: 1px solid rgba(255,255,255,.08); }
+.sc-foot.overlay .grow { display: none; }
+.sc-foot .pill-s, .sc-foot .zoom { height: 30px; }
+.sc-foot .zoom button { width: 30px; height: 30px; }
+.kanban, .reports { padding-top: 60px; }
+
+.detail { gap: 8px; }
+.overview { gap: 8px; }
+.ov-card { padding: 12px; gap: 10px; border-radius: 16px; }
+.ov-h b { font-size: 14px; }
+.uc { padding: 10px 12px; }
+.uc .u-ic { width: 32px; height: 32px; font-size: 15px; }
+.uc .u-t { font-size: 13.5px; }
+.uc .u-v { font-size: 21px; }
+.uc .bar { margin-top: 8px; }
+.ring svg { width: 38px; height: 38px; }
+.ring .v { font-size: 20px; }
+.act-row { padding: 6px 2px; font-size: 12px; }
+.statusbar { padding: 0 16px; font-size: 11.5px; }
+
+@media (max-width: 1350px) {
+  .app { grid-template-columns: 56px 200px minmax(0, 1fr) 260px; }
+  .tab { padding: 6px 8px; }
+  .brand { display: none; }
+}
+
 @media (max-width: 1050px) {
   .app { grid-template-columns: 60px minmax(0, 1fr); grid-template-areas: "rail hdr" "rail office" "foot foot"; }
   .agents { display: none; }

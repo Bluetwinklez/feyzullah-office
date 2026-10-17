@@ -16,12 +16,15 @@ Tek bir komut yazarsın; ekip işi bölüşür, yapar, birbirini kontrol eder ve
 2. [Kurulum (5 dakika)](#kurulum-5-dakika)
 3. [İlk görevini ver](#i̇lk-görevini-ver)
 4. [Ekran rehberi](#ekran-rehberi)
-5. [Özellikler](#özellikler)
-6. [Ayarlar](#ayarlar)
-7. [Örnek proje: GÖÇ](#örnek-proje-göç)
-8. [Güvenlik ve gizlilik](#güvenlik-ve-gizlilik)
-9. [Sık sorulanlar](#sık-sorulanlar)
-10. [Geliştirme](#geliştirme)
+5. [Ekibi kurmak](#ekibi-kurmak)
+6. [Git ile çalışma](#git-ile-çalışma)
+7. [Kullanım limitleri ve zamanlama](#kullanım-limitleri)
+8. [Özellikler](#özellikler)
+9. [Ayarlar ve veriler](#ayarlar)
+10. [Örnek proje: GÖÇ](#örnek-proje-göç)
+11. [Güvenlik ve gizlilik](#güvenlik-ve-gizlilik)
+12. [Sık sorulanlar](#sık-sorulanlar)
+13. [Geliştirme](#geliştirme)
 
 ---
 
@@ -118,6 +121,95 @@ Konsol penceresi istemiyorsan `Feyzullah Ofis.vbs` dosyasına çift tıkla.
 
 **Ajan ayrıntısında** görev, çalıştırdığı komutlar ve çıktıları, değiştirdiği dosyaların farkı, izin istekleri (**İzin ver / Reddet**) ve ajana mesaj yazma kutusu bulunur.
 
+### Görevler sekmesi (kanban)
+
+Tüm görevler dört sütunda: **Yapılıyor · Kontrolde · Bitti · Sorunlu**. Karta tıklayınca görev panosu açılır.
+
+![Görevler](docs/gorevler.png)
+
+### Raporlar sekmesi
+
+Son görev sayısı, başarı oranı, harcanan token, ortalama görev süresi ve uzman başına başarı çubukları.
+
+![Raporlar](docs/raporlar.png)
+
+### Görev panosu
+
+Her görevin kartı: kimin yaptığı, durumu, kaçıncı turda olduğu, Reality Checker'ın notu ve git dalı. Buradan **İptal**, **Yeniden başlat**, **Farkı gör**, **Dalı birleştir**, **Dalı at**, **Birleştirmeyi geri al** yapılır.
+
+![Görev panosu](docs/pano.png)
+
+---
+
+## Ekibi kurmak
+
+### Katalogdan uzman işe almak
+
+1. Sol menüde **Ajan ekle** (👥) ya da Ekibim panelinin altındaki **+ Ajan ekle**.
+2. Arama kutusuna ne aradığını yaz (ör. `frontend`, `reviewer`, `game`) ya da bölüm seç.
+3. Uzmanın yanındaki listeden **motoru** seç, **İşe al**'a bas. Uzman ofiste bir masaya oturur.
+
+Motor önerisi otomatik gelir, istersen değiştirirsin:
+
+| Uzman türü | Önerilen motor | Neden |
+|---|---|---|
+| Mimar, inceleyici, Reality Checker, güvenlik, proje/ürün yöneticisi, oyun tasarımcısı | **Claude** | Planlama ve kontrol — "beyin" |
+| Arayüz / frontend / UX (tasarım bölümü dışı) | **agy** | Arayüz kodu |
+| Tasarımcılar (görsel üretir) | **Codex** | Krea görsel üretimi orada yetkili |
+| Diğer her şey (backend, test, DevOps…) | **Codex** | Asıl iş yükü |
+
+### API anahtarıyla kendi ajanını eklemek
+
+Ajan ekle penceresinde **API anahtarıyla özel ajan…**:
+
+| Alan | Ne yazılır |
+|---|---|
+| Ad | Ofiste görünecek isim |
+| Motor | `API anahtarı` — ya da bu bilgisayardaki Claude Code / Codex / agy |
+| Sağlayıcı | 16 hazır seçenekten biri (yerel Ollama / LM Studio anahtarsız çalışır) |
+| Model | ör. `claude-sonnet-5-5`, `deepseek-chat` |
+| Rol / talimat | Ajanın kişiliği: "Kodu inceler, kısa ve net cevap verir." |
+| API anahtarı | İsteğe bağlı. Boş bırakılırsa ajan masada "anahtar yok" diye bekler |
+| Çalışma klasörü | (CLI motorları için) boşsa `%USERPROFILE%\.feyzullah\ofis-work\<ajan>` |
+
+API ajanları sohbet eder ve cevap verir; dosya yazamaz, komut çalıştıramaz. Dosya ve kod işleri CLI motorlu uzmanlarla yapılır.
+
+---
+
+## Git ile çalışma
+
+Komutundaki klasör bir git deposuysa:
+
+1. Ofis, deponun yanında ayrı bir **çalışma kopyası** açar (`ofis/<görev>` dalı). Senin klasörüne dokunulmaz.
+2. Aynı komutun görevleri **aynı dalı** paylaşır ve sırayla çalışır; böylece biri diğerinin dosyasını görür.
+3. Ofis her uzman turunun sonunda değişiklikleri o dala **commit** eder.
+4. İş bitince panoda **Farkı gör** → **Dalı birleştir**. Birleştirmeden sonra projenin testleri (`npm test` vb.) kendiliğinden çalışır, sonuç kartta görünür.
+5. Beğenmezsen **Dalı at**; birleştirdikten sonra vazgeçersen **Birleştirmeyi geri al** (geçmiş silinmez, geri alma commit'i atılır).
+
+Dalı Ofis dışında kendin birleştirdiysen Ekibim panelinin altındaki **⟳** düğmesi (ya da 5 dakikada bir otomatik eşitleme) panoyu düzeltir. 7 günden eski çalışma kopyaları otomatik temizlenir; iş kaybolmaz, dalda kalır.
+
+---
+
+## Kullanım limitleri
+
+| Motor | Nasıl ölçülür | Limit dolunca |
+|---|---|---|
+| **Claude** | Claude uzmanları çalışırken gelen limit bilgisinden; ya da **↻ ölç** | %90'ı geçince (limit koruması) Claude'a yeni iş verilmez, Prompt Master atlanır. Dolduysa görev Codex'le sürer |
+| **Codex** | Codex'in kendi oturum kayıtlarından (bilgisayarda) | Görev Claude'la sürer; Codex, "tekrar dene" saatine kadar kapalı işaretlenir |
+| **agy** | — | Görev Codex'le, o da doluysa Claude'la sürer |
+
+Limitteki motorlar alt durum çubuğunda ve Genel bakış'ta görünür.
+
+### Zamanlanmış komut ⏰
+
+Limitler doluyken iş kaybetmemek için:
+
+1. Komutu kutuya yaz, **⏰**'a bas.
+2. **Saat** seç (ör. `07:30`) ve/veya **limitler açılınca** kutucuğunu işaretle.
+3. **Zamanla**. Zamanı gelince komut kendiliğinden Yöneticiye gider ve bildirim gelir.
+
+Bekleyen komutlar ⏰ kutusunda listelenir, ✕ ile iptal edilir. Uygulama kapanıp açılsa da kaybolmaz.
+
 ### Klavye kısayolları
 
 | Tuş | İş |
@@ -173,7 +265,22 @@ Sol alttaki ⚙️ ile açılır. Hepsi açık/kapalı anahtarıdır:
 | Ofis olayları | Pizza, kedi, elektrik dalgalanması | Açık |
 | Günlük rapor | Seçtiğin saatte özet (varsayılan 21:00) | Açık |
 
-Ayarlar ve tüm veriler `%USERPROFILE%\.feyzullah\` klasöründe durur (`FEYZULLAH_HOME` ortam değişkeniyle değiştirilebilir).
+### Veriler nerede?
+
+Hepsi `%USERPROFILE%\.feyzullah\` klasöründe (`FEYZULLAH_HOME` ortam değişkeniyle değiştirilebilir). Hiçbiri internete gönderilmez.
+
+| Dosya / klasör | İçerik |
+|---|---|
+| `ofis.json` | Ayarlar, kayıtlı komutlar |
+| `ofis-agents.json` | Ekip; API anahtarları **şifreli** |
+| `ofis-board.json` | Görev panosu |
+| `ofis-history.json` | Biten görevlerin geçmişi (uzman istatistikleri) |
+| `ofis-usage.json` | Son ölçülen kullanım limitleri |
+| `ofis-schedule.json` | Zamanlanmış komutlar |
+| `ofis-runtime.json` | Ajanların CLI oturumları (devam edebilmek için) |
+| `ofis-work\` | Ajanların çalışma klasörleri ve görev başına git çalışma kopyaları |
+
+Sıfırdan başlamak istersen uygulamayı kapatıp bu klasördeki `ofis-*` dosyalarını silebilirsin.
 
 ---
 
@@ -214,6 +321,21 @@ Karakter paketi (MetroCity) lisansı nedeniyle repoda yok, karakterler kodla çi
 
 **Bir görev takıldı.**
 Görev panosunda **İptal**, sonra **↻ Yeniden başlat**. Her görevin 60 dakikalık süre sınırı vardır.
+
+**Uzman "izin bekliyor" diyor.**
+Karakter ayağa kalkar ve başında **!** çıkar. Ona tıkla; sağda istediği komut görünür → **İzin ver** ya da **Reddet**.
+
+**Reality Checker işi sürekli geri gönderiyor.**
+En çok 2 tur geri gönderilir; ikinci turda iş Claude motorlu bir düzelticiye gider. Hâlâ olmazsa kart "düzeltilmeli" olarak kalır, notu kartta yazar. İstersen ayarlardan Reality Checker'ı kapatabilirsin.
+
+**Dalı birleştirirken "çakışma" hatası.**
+Ofis birleştirmeyi geri alır, projen bozulmaz. Dalı kendin birleştir (`git merge ofis/...`), sonra **⟳** ile panoyu eşitle.
+
+**Komutumu doğrudan Yöneticiye göndermek istiyorum.**
+Komut kutusundaki 👔 kutucuğunu işaretle; Prompt Master atlanır.
+
+**Ofis çok küçük / büyük görünüyor.**
+`+` / `−` ya da fare tekerleğiyle yakınlaştır, sürükleyerek gez, `0` ile ortala. Sağ üstteki ⤢ düğmesi yan panelleri gizler.
 
 ---
 

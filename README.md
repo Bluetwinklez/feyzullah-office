@@ -1,94 +1,241 @@
 # Feyzullah Ofis
 
-Yapay zekâ ajanlarının piksel bir ofiste çalıştığı Windows masaüstü uygulaması. Claude Code, Codex ve Antigravity (agy) CLI'larını bir **ekip** gibi yönetir: komutu yazarsın, Prompt Master netleştirir, Yönetici işi uzmanlara dağıtır, Reality Checker kontrol eder, sonuç git dalı olarak önüne gelir.
+**Yapay zekâ ajanlarından oluşan bir ekibi, piksel bir ofiste yöneten Windows uygulaması.**
+
+Tek bir komut yazarsın; ekip işi bölüşür, yapar, birbirini kontrol eder ve sonucu sana ayrı bir git dalı olarak teslim eder. Bu sırada ajanları ofiste masalarında çalışırken, mola verirken ya da senden izin beklerken görürsün.
 
 ![Feyzullah Ofis](docs/ekran.png)
 
-> **English summary:** Feyzullah Ofis is an Electron desktop app (Windows) that turns Claude Code, Codex and Antigravity CLIs into a team working in a pixel-art office. You type one command; a Prompt Master rewrites it, an Admin agent splits it into tasks for specialist agents (from the MIT-licensed Agency Agents and VoltAgent catalogs), a Reality Checker reviews each result, and every task lands on its own git worktree branch that you can diff, merge or revert from the task board. Usage limits are tracked and tasks fall back to another engine when one hits its limit. UI is in Turkish.
+> **English:** A Windows desktop app (Electron) that runs Claude Code, Codex and Antigravity CLIs as a team in a pixel-art office. Type one task; it is clarified, split among specialist agents, reviewed, and delivered as a git branch you can diff, merge or revert. UI is in Turkish.
 
-## Özellikler
+---
 
-- **Ofis:** ajanlar masalarında çalışır, izin bekleyen ayağa kalkar, işi biten mola köşesine/mutfağa gider; gece-gündüz gerçek güneşe göre değişir; duvarda yapışkan notlu görev panosu.
-- **Komut hattı:** Prompt Master → Yönetici (plan) → uzmanlar → Reality Checker (en çok 2 düzeltme turu) → rapor. Aynı klasördeki görevler sırayla çalışır.
-- **İş bölümü:** planlama, mimari ve inceleme Claude'da; uygulama yükü Codex ve agy'de. Bir motorun kullanım limiti dolarsa görev otomatik olarak yedek motorla sürer.
-- **Git:** her komut grubu ayrı bir git worktree dalında çalışır; panodan **Farkı gör / Birleştir / Geri al**, birleştirme sonrası proje testleri.
-- **Uzman kataloğu:** [Agency Agents](https://github.com/msitarzewski/agency-agents) ve [VoltAgent awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) (ikisi de MIT) uzmanları işe alınabilir; Ters Mühendis (REA MCP) uzmanı dahili.
-- **Limitler:** Claude ve Codex 5 saatlik/haftalık kullanım göstergesi, limit koruması.
-- **API ajanları:** 16 hazır sağlayıcı (Anthropic, OpenAI, Gemini, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio …). Anahtarlar Windows DPAPI (`safeStorage`) ile şifreli saklanır, pencereye gönderilmez.
-- **Arayüz:** Ofis / Görevler (kanban) / Raporlar sekmeleri; ekipte arama ve Çalışan/Molada süzgeci; ofiste yakınlaştırma, sürükleyerek gezinme ve tam ekran; son aktiviteler ve bildirim zili; alt durum çubuğu.
-- **Zamanlanmış komutlar:** bir komutu belli saatte ve/veya kullanım limitleri açılınca yöneticiye otomatik gönder.
-- **Pano ↔ git eşitleme:** Ofis dışında birleştirilen ya da silinen dallar panoda doğru görünür.
-- **Kısayollar:** Ctrl+K komut kutusu, Ctrl+F ajan ara, Alt+1/2/3 sekmeler, +/−/0 yakınlaştırma, Esc kapat, ↑/↓ komut geçmişi.
-- **Bildirim ve ses**, günlük rapor, kayıtlı komutlar, uzman istatistikleri.
-- **Oyun geliştirme:** Godot kuruluysa oyun uzmanları başsız test ve Windows dışa aktarma yapabilir.
+## İçindekiler
 
-## Örnek proje: GÖÇ
+1. [Nasıl çalışır?](#nasıl-çalışır)
+2. [Kurulum (5 dakika)](#kurulum-5-dakika)
+3. [İlk görevini ver](#i̇lk-görevini-ver)
+4. [Ekran rehberi](#ekran-rehberi)
+5. [Özellikler](#özellikler)
+6. [Ayarlar](#ayarlar)
+7. [Örnek proje: GÖÇ](#örnek-proje-göç)
+8. [Güvenlik ve gizlilik](#güvenlik-ve-gizlilik)
+9. [Sık sorulanlar](#sık-sorulanlar)
+10. [Geliştirme](#geliştirme)
 
-[`ornekler/goc`](ornekler/goc) — Feyzullah Ofis ekibinin dört aşamada baştan sona yaptığı Godot 4 (Windows) aksiyon-keşif RPG prototipi. Tasarım, kod, Krea ile üretilen 3B model/görsel/sesler, 60 başsız test ve dışa aktarma Ofis'teki uzmanlara komutla yaptırıldı; her aşama Reality Checker'dan geçti. Ayrıntılar: [README](ornekler/goc/README.md) · [tasarım](ornekler/goc/docs/TASARIM.md). Testleri GitHub Actions'ta `GÖÇ testleri` iş akışı çalıştırır.
+---
 
-## Gereksinimler
+## Nasıl çalışır?
 
-- Windows 10/11 (Windows Server 2022'de de denendi)
-- Node.js 20+ ve npm
-- En az bir CLI: [Claude Code](https://docs.claude.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) ya da Antigravity `agy` — her biri kendi hesabıyla oturum açmış olmalı
-- Git (görev dalları için)
-- İsteğe bağlı: Godot 4.x (`C:\Tools\godot\godot.cmd` olarak), [Feyzullah](#feyzullah-köprüsü) köprüsü
+```mermaid
+flowchart LR
+  S[Sen: komut] --> PM[Prompt Master<br/>komutu netleştirir]
+  PM --> Y[Yönetici<br/>işi böler]
+  Y --> U1[Uzman 1]
+  Y --> U2[Uzman 2]
+  U1 --> RC[Reality Checker<br/>kontrol eder]
+  U2 --> RC
+  RC -->|eksik varsa| U1
+  RC -->|tamam| D[Git dalı<br/>Farkı gör · Birleştir · Geri al]
+```
 
-## Kurulum
+| Rol | Ne yapar | Varsayılan motor |
+|---|---|---|
+| **Prompt Master** | Yazdığın ham komutu net bir göreve çevirir | Claude |
+| **Yönetici** | Görevi parçalara böler, doğru uzmanlara dağıtır | Claude |
+| **Uzmanlar** | Kodu yazar, tasarımı yapar, testleri çalıştırır | Çoğu Codex; arayüz işleri agy |
+| **Reality Checker** | İşi kontrol eder; eksikse en çok 2 kez geri gönderir | Claude |
+
+Kural basit: **planlama ve kontrol Claude'da, iş yükü Codex ve agy'de.** Bir motorun kullanım limiti dolarsa görev kendiliğinden diğer motorla devam eder.
+
+---
+
+## Kurulum (5 dakika)
+
+### Gerekenler
+
+| Gereken | Neden | Zorunlu mu |
+|---|---|---|
+| Windows 10 / 11 | Uygulama Windows içindir | Evet |
+| [Node.js 20+](https://nodejs.org) | Uygulamayı çalıştırmak için | Evet |
+| [Git](https://git-scm.com) | Her görev ayrı bir dalda yapılır | Evet |
+| En az bir CLI: [Claude Code](https://docs.claude.com/en/docs/claude-code), [Codex CLI](https://github.com/openai/codex) ya da Antigravity `agy` | Ajanların işi bu araçlarla yapılır | Evet (en az biri) |
+| Godot 4 (`C:\Tools\godot\godot.cmd`) | Oyun geliştirme görevleri için | Hayır |
+
+> Her CLI'da kendi hesabınla **önceden oturum açmış** olmalısın. Ofis senin adına şifre ya da anahtar girmez.
+
+### Adımlar
 
 ```powershell
+# 1. İndir
 git clone https://github.com/Bluetwinklez/feyzullah-office.git
 cd feyzullah-office
+
+# 2. Bağımlılıkları kur
 npm install
-# uzman katalogları (repoya dahil değil):
+
+# 3. Uzman kataloglarını indir (isteğe bağlı ama önerilir)
 git clone --depth 1 https://github.com/msitarzewski/agency-agents.git catalog/agency-agents
 git clone --depth 1 https://github.com/VoltAgent/awesome-claude-code-subagents.git catalog/voltagent
+
+# 4. Başlat
 npm start
 ```
 
-Konsolsuz başlatmak için `Feyzullah Ofis.vbs`. Kısayol **Ctrl+Alt+O** pencereyi gösterir/gizler; çıkış tepsi simgesinden.
+Konsol penceresi istemiyorsan `Feyzullah Ofis.vbs` dosyasına çift tıkla.
+
+**Kısayol:** `Ctrl+Alt+O` pencereyi gösterir/gizler. Uygulamadan tamamen çıkmak için sistem tepsisindeki simgeyi kullan.
+
+---
+
+## İlk görevini ver
+
+1. Üstteki kutuya ne istediğini yaz. Örnek:
+   ```
+   C:\Projeler\notlar klasöründe basit bir not alma web uygulaması yap, testlerini de yaz
+   ```
+2. **Gönder**'e bas. Prompt Master komutu netleştirir, Yönetici görevleri dağıtır.
+3. Ofiste ajanların masalarına oturduğunu görürsün. Sağdaki **Genel bakış** ve üstteki **Görevler** sekmesi ilerlemeyi gösterir.
+4. İş bitince **Görev panosu**nda (sol menüde ✓ simgesi):
+   - **Farkı gör** — ne değiştiğini incele
+   - **Dalı birleştir** — kendi projene al (sonrasında testler otomatik çalışır)
+   - **Dalı at** ya da birleştirdiysen **Geri al**
+
+> İpucu: Kutudaki 👔 kutucuğunu işaretlersen komut Prompt Master'ı atlayıp doğrudan Yöneticiye gider.
+
+---
+
+## Ekran rehberi
+
+| Bölge | Ne var |
+|---|---|
+| **Sol menü** | Ofis · Görev panosu · Uzman istatistikleri · Ajan ekle · Zamanlanmış komutlar · Ayarlar |
+| **Üst çubuk** | Ofis / Görevler / Raporlar sekmeleri, komut kutusu, ⭐ kayıtlı komutlar, ⏰ zamanla, bağlantı, 🔔 bildirimler, saat |
+| **Ekibim (sol)** | Tüm ajanlar; arama ve Tümü / Çalışan / Molada süzgeci. Bir ajana tıkla → ayrıntısı sağda açılır |
+| **Ofis (orta)** | Canlı ofis. Ajana tıkla → ne yaptığını gör. Duvardaki panoya tıkla → görev panosu |
+| **Genel bakış (sağ)** | Claude ve Codex kullanım limitleri, aktif/biten görevler, son aktiviteler |
+| **Alt çubuk** | Sistem durumu, limiti dolan motorlar, ajan sayısı |
+
+**Ajan ayrıntısında** görev, çalıştırdığı komutlar ve çıktıları, değiştirdiği dosyaların farkı, izin istekleri (**İzin ver / Reddet**) ve ajana mesaj yazma kutusu bulunur.
+
+### Klavye kısayolları
+
+| Tuş | İş |
+|---|---|
+| `Ctrl+K` | Komut kutusuna git |
+| `Ctrl+F` | Ajan ara |
+| `Alt+1` / `Alt+2` / `Alt+3` | Ofis / Görevler / Raporlar |
+| `+` / `−` / `0` | Ofisi yakınlaştır / uzaklaştır / ortala (fare tekerleği de olur) |
+| `↑` / `↓` (komut kutusunda) | Önceki komutlar |
+| `Esc` | Açık kutuyu ya da paneli kapat |
+
+---
+
+## Özellikler
+
+**Ekip ve iş akışı**
+- Prompt Master → Yönetici → Uzmanlar → Reality Checker zinciri
+- Aynı klasördeki görevler sırayla, farklı klasördekiler paralel çalışır
+- Her komut kendi git dalında (`ofis/...`); birleştirme sonrası proje testleri
+- Limit dolunca yedek motora geçiş (Codex ↔ Claude, agy → Codex → Claude)
+
+**Uzmanlar**
+- [Agency Agents](https://github.com/msitarzewski/agency-agents) ve [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) kataloglarından yüzlerce uzman (ikisi de MIT) — **Ajan ekle** → ara → **İşe al**
+- Ters Mühendis uzmanı (REA MCP ile)
+- API anahtarıyla kendi ajanını ekle: Anthropic, OpenAI, Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI, Together, Fireworks, Perplexity, Cerebras, DeepInfra, Ollama, LM Studio ya da herhangi bir OpenAI uyumlu adres
+
+**Takip**
+- Claude ve Codex 5 saatlik / haftalık kullanım göstergesi, limit koruması
+- Görevler (kanban) ve Raporlar (başarı oranı, token, ortalama süre, uzman başarıları)
+- Bildirimler, sesli okuma, akşam günlük rapor
+
+**Kolaylıklar**
+- ⏰ **Zamanlanmış komut:** belli bir saatte ya da "limitler açılınca" kendiliğinden gönder
+- ⭐ Kayıtlı komutlar, komut geçmişi
+- Ofis dışında birleştirdiğin dallar panoda doğru görünür (git ile eşitleme)
+- Gerçek güneşe göre gece/gündüz, ofis olayları (pizza, kedi…)
+
+---
 
 ## Ayarlar
 
-Uygulama içi ⚙️ panelinden ya da `~/.feyzullah/ofis.json` dosyasından:
+Sol alttaki ⚙️ ile açılır. Hepsi açık/kapalı anahtarıdır:
 
-| Anahtar | Varsayılan | Açıklama |
+| Ayar | Ne yapar | Varsayılan |
 |---|---|---|
-| `promptMaster`, `review`, `limitGuard`, `gitBranches` | açık | komut hattı adımları |
-| `codexNetwork` | açık | Codex kum havuzunda ağ erişimi (npm install vb.) |
-| `caveman` | açık | Codex/agy uzmanlarına kısa yanıt üslubu ([caveman](https://github.com/JuliusBrussee/caveman) kuruluysa) |
-| `notify`, `speak`, `events`, `dailyReport` | açık | bildirim, ses, ofis olayları, günlük rapor |
-| `reportHour` | 21 | günlük rapor saati |
-| `lat`, `lon` | 41.01, 28.98 | gün doğumu/batımı |
-| `hotkey` | `Control+Alt+O` | |
-| `feyzullahRoot` | `..\feyzullah-1` | Feyzullah köprüsü klasörü (isteğe bağlı) |
+| Prompt Master | Komutu önce netleştirir | Açık |
+| Reality Checker | Uzman işini kontrol eder | Açık |
+| Limit koruması | Claude %90'ı geçince Claude'a iş verilmez | Açık |
+| Görev başına git dalı | Git deposundaki işler ayrı dalda yapılır | Açık |
+| Codex ağ erişimi | Codex `npm install` gibi işler için internete çıkabilir | Açık |
+| caveman üslubu | Codex/agy cevapları kısa olur | Açık |
+| Bildirim · Sesli okuma | Görev bitince / izin istenince | Açık |
+| Ofis olayları | Pizza, kedi, elektrik dalgalanması | Açık |
+| Günlük rapor | Seçtiğin saatte özet (varsayılan 21:00) | Açık |
 
-Veriler `~/.feyzullah/` altındadır (`FEYZULLAH_HOME` ile değiştirilebilir): pano, geçmiş, kullanım, şifreli API ajanları, görev çalışma kopyaları.
+Ayarlar ve tüm veriler `%USERPROFILE%\.feyzullah\` klasöründe durur (`FEYZULLAH_HOME` ortam değişkeniyle değiştirilebilir).
 
-## Feyzullah köprüsü
+---
 
-Ofis, bilgisayardaki CLI oturumlarını izlemek ve telefondan komut almak için Feyzullah köprüsünü (127.0.0.1:5185) kullanabilir. Köprü yoksa Ofis yine çalışır: kendi ajanlarını CLI'larla doğrudan yürütür, yalnız dışarıdaki oturumlar ofiste görünmez.
+## Örnek proje: GÖÇ
 
-## Güvenlik
+[`ornekler/goc`](ornekler/goc) klasöründe, bu ofisin baştan sona yaptığı bir oyun var: **GÖÇ**, Godot 4 ile yapılmış Windows aksiyon-keşif RPG prototipi.
 
-- `--dangerously-skip-permissions` kullanılmaz; her uzmanın izinli araçları ayrı ayrı tanımlıdır (`src/agents/runner.js`).
-- Codex `workspace-write` kum havuzunda, agy `--sandbox` ile çalışır.
-- Yeni görev klasörleri yalnız kullanıcı klasörü altında açılır.
-- API anahtarları düz metin olarak hiçbir dosyaya ya da günlüğe yazılmaz.
+- 4 aşamada, yalnızca Ofis'e verilen komutlarla yapıldı
+- 3B modeller, görseller ve sesler [Krea AI](https://www.krea.ai) ile üretildi
+- 60 otomatik test; GitHub Actions'ta **GÖÇ testleri** iş akışı çalıştırır
+- Ayrıntılar: [GÖÇ README](ornekler/goc/README.md) · [tasarım belgesi](ornekler/goc/docs/TASARIM.md)
 
-## Deneme ve test
+---
+
+## Güvenlik ve gizlilik
+
+- **Anahtarlar bilgisayarından çıkmaz.** API anahtarları Windows şifrelemesiyle (DPAPI) `%USERPROFILE%\.feyzullah\` altında saklanır; pencereye, günlüklere ya da bu repoya yazılmaz.
+- **Tam yetki verilmez.** `--dangerously-skip-permissions` kullanılmaz; her uzmanın kullanabileceği araçlar tek tek tanımlıdır.
+- **Kum havuzu:** Codex yalnız çalışma klasörüne yazabilir; agy `--sandbox` ile çalışır.
+- **Senin kodun korunur:** Uzmanlar ayrı bir git çalışma kopyasında çalışır; projene yalnız sen **Birleştir** dediğinde girer.
+- Yeni görev klasörleri yalnız kullanıcı klasörünün altında açılabilir.
+
+---
+
+## Sık sorulanlar
+
+**Ofiste hiç ajan görünmüyor.**
+Ajan eklemen gerekir: sol menüde **Ajan ekle**. İlk açılışta çekirdek ekip otomatik gelir; katalogları indirmediysen (Kurulum 3. adım) uzman listesi boş olabilir.
+
+**"Köprü yok" yazıyor.**
+Sorun değil. Köprü, bilgisayardaki *diğer* CLI oturumlarını ofiste göstermek ve telefondan komut almak içindir. Ofis'in kendi ekibi köprü olmadan da çalışır.
+
+**Claude limiti "ölçülmedi" görünüyor.**
+Kartın altındaki **↻ ölç** düğmesine bas (çok küçük bir istek gönderir) ya da bir Claude uzmanı çalışınca kendiliğinden dolar.
+
+**Karakterler kare kafalı / sade görünüyor.**
+Karakter paketi (MetroCity) lisansı nedeniyle repoda yok, karakterler kodla çizilir. Paketi edinirsen `Suit.png`, `Suit1.png`, `Hair.png` dosyalarını `assets/packs/metrocity/` klasörüne koy.
+
+**Bir görev takıldı.**
+Görev panosunda **İptal**, sonra **↻ Yeniden başlat**. Her görevin 60 dakikalık süre sınırı vardır.
+
+---
+
+## Geliştirme
 
 ```powershell
-npm test                                         # node --test
-$env:OFIS_DEMO=1; npm start                      # köprü yerine demo verisi
-$env:OFIS_SNAPSHOT="C:\temp\ofis.png"; npm start # birkaç saniye sonra ekran görüntüsü alıp çıkar
+npm test                                          # tüm testler (node --test)
+$env:OFIS_DEMO=1; npm start                       # gerçek ajanlar yerine demo verisi
+$env:OFIS_SNAPSHOT="C:\temp\ofis.png"; npm start  # birkaç saniye sonra ekran görüntüsü alıp kapanır
 ```
 
-## Görseller
+| Klasör | İçerik |
+|---|---|
+| `main.js` | Ana süreç: pencere, ajan çalıştırıcı, yönetici, git, bildirimler |
+| `src/agents/` | Ajan motorları (CLI ve API), yönetici, katalog, sağlayıcılar |
+| `src/` | Ofis modeli, kullanım takibi, git işlemleri, zamanlama, istatistikler |
+| `renderer/` | Arayüz ve ofis çizimi |
+| `assets/` | Ofis görseli ve karakterler (Krea AI ile üretildi) |
+| `ornekler/goc/` | Örnek proje |
 
-- Ofis arka planı ve karakter görselleri [Krea AI](https://www.krea.ai) ile üretildi.
-- MetroCity karakter paketi (JIK-A-4) lisansı gereği repoda **yok**; isteğe bağlı olarak `assets/packs/metrocity/` altına `Suit.png`, `Suit1.png`, `Hair.png` konabilir. Paket yoksa karakterler kodla çizilir.
+---
 
 ## Lisans
 
-Kod [MIT](LICENSE). Dahil edilen uzman katalogları kendi lisanslarıyla (MIT) ayrıca indirilir.
+Kod [MIT](LICENSE) lisanslıdır. Uzman katalogları ayrıca, kendi (MIT) lisanslarıyla indirilir. GÖÇ'teki varlıkların kaynağı [VARLIKLAR.md](ornekler/goc/docs/VARLIKLAR.md) dosyasında yazar.

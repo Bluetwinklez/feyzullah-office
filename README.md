@@ -145,7 +145,13 @@ The default workflow moves from clarification to planning, implementation, and r
 
 When Git worktrees are prepared, tasks from the same request in the same repository share a branch so later specialists can see earlier changes.
 
-Review has a bounded correction loop. The app can hand later corrections to a Claude specialist when one is available and the usage guard permits it. A completed task still needs your review of the actual diff and test results.
+Review has a bounded correction loop. The app can hand later corrections to a Claude specialist when one is available and the usage guard permits it. Review can be skipped when the Claude usage guard is active, review is disabled, or no checker is available; a completed status alone does not prove that an independent review ran. Inspect the card's review information, actual diff, and test results.
+
+### Timeouts and interrupted work
+
+Manager-assigned tasks have a default 45-minute timeout, covering their execution and review cycle. The underlying agent runner also has a separate 60-minute limit per run; the task timeout can stop managed work earlier.
+
+On restart, task cards that were active when Ofis closed are marked as failed with an application-closed error. Saved session references do not automatically resume those tasks. Inspect existing changes and use the task board to restart work. Pending scheduled commands are stored separately and remain queued.
 
 ## Git workflow
 
@@ -353,8 +359,10 @@ To reset state, move the data directory to a backup location while Ofis is close
 | Catalog or specialist list is empty | Check that the catalog clones exist at the installation paths above; use **Ajan ekle** to hire specialists |
 | **Köprü yok** — no bridge | The optional external-session bridge is offline; the internal agent team does not require it |
 | Claude usage says **ölçülmedi** — not measured | Click **↻ ölç**, which makes a small request, or wait for a Claude session to report usage |
-| Task appears stuck | Inspect its output, then cancel/restart from the task board; each CLI run has a 60-minute timeout |
+| Task appears stuck | Inspect its output, then cancel/restart from the task board; managed tasks default to 45 minutes, with a separate 60-minute agent-run limit |
 | Agent is waiting for permission | Select the agent and inspect the available **İzin ver / Reddet** actions; some actions require the external bridge |
+| Task failed after restarting Ofis | Active tasks are marked failed on startup; inspect existing work, then restart from the task board |
+| Task completed without a review | Check whether review was disabled, the Claude usage guard was active, or a checker was unavailable |
 | No Git branch on the card | Check the branch setting, repository HEAD, and worktree preparation; the task may be running in its assigned directory |
 | Merge fails | Commit tracked local changes first; resolve branch conflicts manually and synchronize the board |
 | Post-merge tests did not run | Automatic detection currently requires a usable npm test script |
@@ -390,6 +398,8 @@ Remove-Item Env:OFIS_SNAPSHOT
 
 Snapshot mode captures the window after a short delay and exits.
 
+Demo mode populates the interface with sample data and disables the external bridge connection. It still initializes local app state and does not sandbox agent execution. Use a separate data directory for a clean preview, and avoid submitting real commands or using a profile with pending scheduled work if you only want to inspect the UI.
+
 | Path | Responsibility |
 |---|---|
 | `main.js` | Electron lifecycle, IPC, integration, and orchestration |
@@ -404,6 +414,12 @@ Snapshot mode captures the window after a short delay and exits.
 | `ornekler/goc/` | Example Godot project |
 
 The current npm scripts cover starting and testing the app. An installer/build packaging workflow is not defined in `package.json`.
+
+### Contributing
+
+Open an issue to discuss substantial changes, then submit a focused pull request with a description of the resulting behavior and relevant verification. Run `npm test` for code changes and include screenshots for interface changes. Mention the Windows and CLI versions used when changing engine integrations. Do not include API keys, account credentials, or private session data.
+
+The repository currently includes a GitHub Actions workflow for the GÖÇ example. Automated CI for the desktop application's own test suite is not configured in the checked-in workflows.
 
 ## Example project: GÖÇ
 

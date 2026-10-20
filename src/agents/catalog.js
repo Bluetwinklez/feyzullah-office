@@ -99,7 +99,7 @@ export async function readPersona(dir, entry) {
 
 /** Uzmana göre motor: tasarım/arayüz → agy; planlama, mimari, inceleme, kontrol → Claude (beyin); geri kalan iş yükü → Codex. */
 export function engineFor({ id, division }) {
-  // Görsel üreten tasarım uzmanları Codex'te (Krea orada yetkili; agy'de Krea girişi yok). Arayüz kodu agy'de.
+  // Tasarım uzmanları Codex, arayüz kodu agy kullanır.
   if (division !== 'design' && /frontend|ui-|ux-|visual/.test(id)) return 'antigravity';
   // Beyin Claude: planlama, mimari, inceleme, kontrol. Asıl iş yükü Codex ve agy'de.
   if (/architect|reviewer|reality|security|incident|project-manager|product-manager|strategist|game-designer|studio-producer/.test(id) || division === 'project-management') return 'claude';

@@ -1,6 +1,6 @@
 // Görev başına git çalışma ağacı: hazırla (ofis/<kart> dalı), birleştir, kaldır, eskileri temizle.
 // Ağaçlar ~/.feyzullah/ofis-work/worktrees altında; kullanıcının çalışma kopyasına yalnız "birleştir" dokunur.
-import { execFile, spawn } from 'node:child_process';
+import { execFile, spawn, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { readdir, stat } from 'node:fs/promises';
@@ -27,7 +27,8 @@ export async function commitAll(worktree, message) {
   const st = await git(['status', '--porcelain'], worktree);
   if (!st.ok) return { ok: false, error: st.err };
   if (!st.out) return { ok: true, committed: false };
-  await git(['add', '-A'], worktree);
+  const staged = await git(['add', '-A'], worktree);
+  if (!staged.ok) return { ok: false, error: staged.err };
   const c = await git(['-c', 'user.name=Feyzullah Ofis', '-c', 'user.email=ofis@localhost', 'commit', '-m', message], worktree);
   return c.ok ? { ok: true, committed: true } : { ok: false, error: c.err };
 }
@@ -35,23 +36,31 @@ export async function commitAll(worktree, message) {
 /** Dalı kullanıcının o anki dalına birleştirir; çalışma kopyası temiz değilse ya da çakışma olursa dokunmaz. */
 export async function mergeWorktree({ repo, worktree, branch, title }) {
   if (!repo || !branch) return { ok: false, error: 'bu görevin git dalı yok' };
-  const saved = await commitAll(worktree, `ofis: ${title ?? branch}`);
+  const saved = worktree && existsSync(worktree) ? await commitAll(worktree, `ofis: ${title ?? branch}`) : { ok: true };
   if (!saved.ok) return { ok: false, error: `dal kaydedilemedi: ${saved.error}` };
   const dirty = await git(['status', '--porcelain', '--untracked-files=no'], repo);
   if (!dirty.ok) return { ok: false, error: dirty.err };
   if (dirty.out) return { ok: false, error: 'depoda commit edilmemiş değişiklik var; önce onları commit et' };
   const m = await git(['-c', 'user.name=Feyzullah Ofis', '-c', 'user.email=ofis@localhost', 'merge', '--no-ff', '-m', `Ofis: ${title ?? branch} (${branch})`, branch], repo);
   if (!m.ok) { await git(['merge', '--abort'], repo); return { ok: false, error: 'çakışma var, birleştirme geri alındı; dalı elle birleştir' }; }
-  await removeWorktree({ repo, worktree, branch, deleteBranch: true });
   const head = await git(['rev-parse', '--short', 'HEAD'], repo);
-  return { ok: true, commit: head.out };
+  if (!head.ok) return { ok: false, error: head.err };
+  const cleanup = await removeWorktree({ repo, worktree, branch, deleteBranch: true });
+  return { ok: true, commit: head.out, ...(cleanup.ok ? {} : { cleanupError: cleanup.error, worktree }) };
 }
 
 /** Ağacı kaldırır; deleteBranch: dal da silinir (yalnız birleştirildiyse ya da kullanıcı "at" dediyse). */
 export async function removeWorktree({ repo, worktree, branch, deleteBranch = false, force = false }) {
-  if (worktree) await git(['worktree', 'remove', '--force', worktree], repo);
-  await git(['worktree', 'prune'], repo);
-  if (deleteBranch && branch) await git(['branch', force ? '-D' : '-d', branch], repo);
+  if (worktree && existsSync(worktree)) {
+    const removed = await git(['worktree', 'remove', ...(force ? ['--force'] : []), worktree], repo);
+    if (!removed.ok) return { ok: false, error: removed.err };
+  }
+  const pruned = await git(['worktree', 'prune'], repo);
+  if (!pruned.ok) return { ok: false, error: pruned.err };
+  if (deleteBranch && branch) {
+    const deleted = await git(['branch', force ? '-D' : '-d', branch], repo);
+    if (!deleted.ok) return { ok: false, error: deleted.err };
+  }
   return { ok: true };
 }
 
@@ -65,9 +74,10 @@ export async function cleanupWorktrees(root, maxAgeMs = 7 * 86_400_000, now = Da
     const common = await git(['rev-parse', '--path-format=absolute', '--git-common-dir'], wt);
     if (!common.ok) continue;
     const repo = common.out.replace(/[\\/]\.git$/, '');
-    await commitAll(wt, 'ofis: eski çalışma ağacı kaydedildi');
-    await removeWorktree({ repo, worktree: wt });
-    removed.push(name);
+    const saved = await commitAll(wt, 'ofis: eski çalışma ağacı kaydedildi');
+    if (!saved.ok) continue;
+    const removedTree = await removeWorktree({ repo, worktree: wt });
+    if (removedTree.ok) removed.push(name);
   }
   return removed;
 }
@@ -93,7 +103,10 @@ export function sharedPreparer(root) {
 /** Birleştirmeden önce bakmak için: kaydedilmemişler dahil dalın, ayrıldığı noktaya göre özeti ve farkı. */
 export async function branchDiff({ repo, worktree, branch }, max = 200_000) {
   if (!repo || !branch) return { ok: false, error: 'git dalı yok' };
-  if (worktree) await commitAll(worktree, 'ofis: inceleme öncesi kayıt');
+  if (worktree && existsSync(worktree)) {
+    const saved = await commitAll(worktree, 'ofis: inceleme öncesi kayıt');
+    if (!saved.ok) return { ok: false, error: `dal kaydedilemedi: ${saved.error}` };
+  }
   const base = await git(['merge-base', 'HEAD', branch], repo);
   if (!base.ok) return { ok: false, error: 'dal bulunamadı' };
   const stat = await git(['diff', '--stat', `${base.out}..${branch}`], repo);
@@ -107,6 +120,7 @@ export async function branchDiff({ repo, worktree, branch }, max = 200_000) {
 export async function revertMerge({ repo, commit }) {
   if (!repo || !commit) return { ok: false, error: 'birleştirme kaydı yok' };
   const dirty = await git(['status', '--porcelain', '--untracked-files=no'], repo);
+  if (!dirty.ok) return { ok: false, error: dirty.err };
   if (dirty.out) return { ok: false, error: 'depoda commit edilmemiş değişiklik var; önce onları commit et' };
   const r = await git(['-c', 'user.name=Feyzullah Ofis', '-c', 'user.email=ofis@localhost', 'revert', '-m', '1', '--no-edit', commit], repo);
   if (!r.ok) { await git(['revert', '--abort'], repo); return { ok: false, error: `geri alınamadı: ${r.err.slice(0, 200)}` }; }
@@ -122,12 +136,20 @@ export async function runProjectTests(dir, { timeoutMs = 5 * 60_000 } = {}) {
   try { pkg = JSON.parse(await readFile(join(dir, 'package.json'), 'utf8')); } catch { return { ran: false }; }
   if (!pkg?.scripts?.test || /no test specified/.test(pkg.scripts.test)) return { ran: false };
   const run = (args) => new Promise((resolve) => {
-    const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd: dir, shell: process.platform === 'win32', windowsHide: true });
+    const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, { cwd: dir, shell: process.platform === 'win32', windowsHide: true, detached: process.platform !== 'win32' });
     let out = '';
+    let timedOut = false;
     const add = (c) => { out = (out + c).slice(-6000); };
     child.stdout.on('data', add); child.stderr.on('data', add);
-    const timer = setTimeout(() => { child.kill(); add('\n(zaman aşımı)'); }, timeoutMs);
-    child.on('close', (code) => { clearTimeout(timer); resolve({ code, out }); });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      add('\n(zaman aşımı)');
+      if (process.platform === 'win32' && child.pid) spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true });
+      else {
+        try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); }
+      }
+    }, timeoutMs);
+    child.on('close', (code) => { clearTimeout(timer); resolve({ code: timedOut ? -1 : code, out }); });
     child.on('error', (e) => { clearTimeout(timer); resolve({ code: -1, out: e.message }); });
   });
   const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
@@ -148,7 +170,8 @@ export async function worktreeFate({ repo, branch, worktree }) {
   const ref = `refs/heads/${branch}`;
   if ((await git(['rev-parse', '--verify', '--quiet', ref], repo)).ok) {
     const merged = (await git(['merge-base', '--is-ancestor', ref, 'HEAD'], repo)).ok;
-    return merged ? { merged: true, worktree: null, mergeCommit: (await git(['rev-parse', '--short', 'HEAD'], repo)).out || null } : { worktree: null };
+    // Fast-forward ya da harici birleştirmede HEAD'in geri alınacak Ofis merge'i olduğu varsayılmaz.
+    return merged ? { merged: true, worktree: null, mergeCommit: null } : { worktree: null };
   }
   const m = await git(['log', '-F', `--grep=(${branch})`, '--merges', '--format=%h', '-1'], repo);
   if (m.ok && m.out) return { merged: true, worktree: null, mergeCommit: m.out };

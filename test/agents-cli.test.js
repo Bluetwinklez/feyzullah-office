@@ -33,13 +33,32 @@ test('argümanlar: devam, kimlik, izin atlatma yok', () => {
   for (const e of ['claude', 'codex', 'antigravity']) assert.ok(!cliArgs(e, { cwd: 'C:/w', persona: '', prompt: '' }).includes('--dangerously-skip-permissions'));
 });
 
+test('nonzero CLI exit is a failure even after a final response', async () => {
+  const spawnImpl = (_bin, _args, opts) => spawn(process.execPath, ['-e', "console.log(JSON.stringify({type:'result',result:'partial'}));process.exit(3)"], opts);
+  await assert.rejects(() => cliChat({ engine: 'claude', bin: 'fake', cwd: root, prompt: 'task', spawnImpl }), /çıkış kodu 3/);
+});
+
+test('already aborted requests do not launch a CLI process', async () => {
+  const controller = new AbortController(); controller.abort();
+  let launched = false;
+  await assert.rejects(() => cliChat({ engine: 'codex', bin: 'fake', cwd: root, signal: controller.signal, spawnImpl: () => { launched = true; } }), /durduruldu/);
+  assert.equal(launched, false);
+});
+
+test('native CLI discovery handles Windows PATH casing and quoted directories', async () => {
+  const { findExecutable } = await import('../src/agents/cli.js');
+  const wanted = 'C:\\Tools Folder\\codex.exe';
+  assert.equal(findExecutable('codex', { platform: 'win32', env: { Path: ';"C:\\Tools Folder";C:\\Other' }, exists: (p) => p === wanted }), wanted);
+  assert.equal(findExecutable('codex', { platform: 'win32', env: { PATH: 'C:\\Other' }, exists: () => false }), null);
+});
+
 test('cli: CLI yoksa anlaşılır hata', async () => {
   await assert.rejects(() => cliChat({ engine: 'codex', bin: null, cwd: root, persona: '', prompt: 'x' }), /Codex CLI bulunamadı/);
 });
 
-test('izin verilen araçlar (ör. Krea MCP) claude argümanlarına eklenir', () => {
-  const c = cliArgs('claude', { cwd: 'C:/w', persona: 'P', prompt: 'G', allowedTools: ['mcp__krea-ai'] });
-  assert.ok(c.join(' ').includes('--allowedTools mcp__krea-ai'));
+test('izin verilen araçlar (ör. özel MCP) claude argümanlarına eklenir', () => {
+  const c = cliArgs('claude', { cwd: 'C:/w', persona: 'P', prompt: 'G', allowedTools: ['mcp__example'] });
+  assert.ok(c.join(' ').includes('--allowedTools mcp__example'));
   assert.ok(!cliArgs('claude', { cwd: 'C:/w', persona: 'P', prompt: 'G' }).includes('--allowedTools'));
 });
 

@@ -1,6 +1,6 @@
-// Görsel arka planlı ofis çizimi: Krea ile üretilmiş boş ofis görseli yarım çözünürlükte önbelleğe alınır;
+// Görsel arka planlı ofis çizimi: üretilmiş boş ofis görseli yarım çözünürlükte önbelleğe alınır;
 // üstüne monitör ekranları, karakterler ve gece karartması çizilir. İki tarz: 'pixel' (MetroCity katmanları)
-// ve 'real' (Krea ile üretilmiş stilize 3B karakterler: ayakta / masada sırtı dönük / önden oturan).
+// ve 'real' (üretilmiş stilize 3B karakterler: ayakta / masada sırtı dönük / önden oturan).
 import { drawCharacter } from './sprites.js';
 import { TILE } from './scene-logic.js';
 import { drawEvents } from './events.js';
@@ -28,7 +28,7 @@ export function loadOfficeImage(IMG) {
   });
 }
 
-/** Krea karakterleri: assets/realistic/chars/c<n>-{stand,sitback,sitfront}.png (yüklenebilenler). */
+/** Ofis karakterleri: assets/realistic/chars/c<n>-{stand,sitback,sitfront}.png (yüklenebilenler). */
 export async function loadCast(max = 12) {
   const load = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
   const cast = [];

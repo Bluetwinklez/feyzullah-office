@@ -1,5 +1,7 @@
 # Durum — AŞAMA 4 belgeleri tamamlandı (yayın öncesi açık işler aşağıda)
 
+> Bu belge geçmiş geliştirme kayıtlarını içerir. Servis adları ve kaynak adresleri yayımdan kaldırılmıştır. Eski araç ve indirme talimatları güncel entegrasyon değildir; varlıkların lisans kısıtları korunur.
+
 
 ## Proje tamamlandı — özet
 
@@ -9,7 +11,7 @@
 
 | Aşama | Kapsam | Doğrulama |
 |---|---|---|
-| 1 — Beş dakikalık çekirdek | Avlu, hareket, sabit açılı kamera, 3 vuruşluk saldırı, kaçınma, Avcı, Yankı Kesesi taraması, Kırılgan Duvar, HUD, duraklatma. Krea GLB/PNG/MP3 bağlandı | 19 test; EXE başsız ve pencereli açıldı (2026-10-15) |
+| 1 — Beş dakikalık çekirdek | Avlu, hareket, sabit açılı kamera, 3 vuruşluk saldırı, kaçınma, Avcı, Yankı Kesesi taraması, Kırılgan Duvar, HUD, duraklatma. harici servis GLB/PNG/MP3 bağlandı | 19 test; EXE başsız ve pencereli açıldı (2026-10-15) |
 | 2 — Ayırt edici karar | Merkez, Taşıyıcı nefesi, Bağ Düzeneği ekranı, onaylı geri alınabilir aktarma, kalıcı Derin Geçit mührü, kayıt sistemi (atomik yazma, `.bak`, kurtarma), ana menü | +16 test; EXE başsız açıldı |
 | 3 — Tam macera | Koridor, Kuyu Salonu, Derin Geçit, Çekirdek Odası, Sis Cebi; Ağır, Püskürtücü, son karşılaşma; Soluk Çekirdeği, Nefes Kesesi, Hazırlık Tezgâhı, Kehribar, ölüm/kaynak kaybı, M0–M6, Son Yolculuk, bitiş ekranı, kayıt sürümü 2, 12 olaylı yerel günlük | +16 test (K1–K7 dahil); `--main-pack` ile paket açıldı |
 | 4 — Doğrulama ve teslim | Ayarlar ekranı, K8 başsız kabul testi, performans notu (`PERFORMANS.md`), README görselleri, README, LICENSE, varlık lisans bölümü, gizli bilgi taraması | Toplam **60 geçti, 0 başarısız** (2026-10-16, bu adımda yeniden çalıştırıldı) |
@@ -22,14 +24,14 @@
 - **KARARLAR.md'deki varsayımlar** belgede değeri olmayan sayılar için seçildi: oda yerleşimleri ve kapı koordinatları, belirtilmeyen düşman hız/menzil/mermi değerleri, son karşılaşma tetik yarıçapı (9 m), ganimet miktarları (Avcı 2, Ağır 4, Püskürtücü 2), şişe iyileştirmesi (40), sis hasarı (12 / 1 sn), kaynak kaybında yukarı yuvarlama, ayarlardaki çözünürlük listesi ve lineer ses birimi. Oyuncu testiyle sınanmadılar.
 - **Belgeden bilinçli sapmalar** (KARARLAR.md): renderer Forward+/Mobile yerine `gl_compatibility`; sesler `.ogg|wav` yerine MP3.
 - **Doğrulanmamış maddeler:** gerçek pencerede tam ekran/çözünürlük değişimi; hoparlörden ses kalitesi ve `nefes.mp3` döngü dikişi (VDS'de ses aygıtı yok); model ön yönlerinin gözle kontrolü (kısmen kayıt karelerinde); gerçek kullanıcı `user://` dizininin yazılabilirliği; gerçek oyuncuyla oyun hissi ve 15–20 dk hedef süresi.
-- **Varlık lisansı:** Krea koşullarının ticari kullanım, plan bağlılığı, atıf ve yeniden dağıtım maddeleri `[DOĞRULANMALI]` (VARLIKLAR.md → Lisans).
+- **Varlık lisansı:** harici servis koşullarının ticari kullanım, plan bağlılığı, atıf ve yeniden dağıtım maddeleri `[DOĞRULANMALI]` (VARLIKLAR.md → Lisans).
 - **Godot uzmanına devredilen tarama bulgusu:** aşağıdaki "Gizli bilgi taraması — Godot uzmanına devir" bölümü.
 
 ### Sonraki adımlar
 
 1. Gerçek GPU'lu bir Windows makinesinde `build/GOC.exe`'yi pencereli çalıştır; `PERFORMANS.md`'deki ölçüm komutunu yeniden koş.
 2. Reality Checker denetimi: README'deki komutları temiz bir kopyada uygula; K1–K8 ve iddiaları bağımsız doğrula.
-3. Yayın öncesi lisans doğrulaması: VARLIKLAR.md'deki her `[DOĞRULANMALI]` maddesini Krea'nın güncel koşulları ve hesap planıyla kapat. Varlıkları açık depoda yayımlamak uygun değilse depo dışında tutma kararı ver.
+3. Yayın öncesi lisans doğrulaması: VARLIKLAR.md'deki her `[DOĞRULANMALI]` maddesini harici servisin güncel koşulları ve hesap planıyla kapat. Varlıkları açık depoda yayımlamak uygun değilse depo dışında tutma kararı ver.
 4. Git geçmişindeki yerel yollar ve commit e-postaları için yayın kararı ver (aşağıdaki tarama). Geçmiş bu adımda değiştirilmedi.
 5. `.gitattributes`, `.gitignore` ve CI yapıldı (AŞAMA 4 (4)). Açık kalanlar: temiz kopya denetimi ve EXE pencereli koşusu onay bekliyor; CI ilk koşusu GitHub'da görülmeli.
 6. ObjectDB kapanış uyarısının kaynağını bul; geçiş takılması için ön yükleme düşün.
@@ -124,9 +126,9 @@ Oyun tanıtımı · ekran görüntüleri (`docs/ekran/` altındaki 3 PNG, görel
 
 Kontrol tablosu kaynağı: `ileri`=W(87), `geri`=S(83), `sol`=A(65), `sag`=D(68), `kacin`=Space(32), `organ_kullan`=Q(81), `etkilesim`=E(69), `duraklat`=Escape(4194305), hepsi `physical_keycode`; `saldir`=fare `button_index` 1.
 
-#### Krea kullanım koşulları
+#### harici servis kullanım koşulları
 
-`https://www.krea.ai/terms` WebFetch ile açıldı (2026-10-16). Başlık "Terms of Use | Krea"; tarih yok. `https://www.krea.ai/terms-of-use` aynı metni verir. Çıktı sahipliği, ticari kullanım, plan bağlılığı, atıf, yeniden dağıtım ve alt model koşulları `[DOĞRULANMALI]` olarak işaretlendi. Uydurma lisans iddiası yazılmadı.
+`[external source URL omitted]` WebFetch ile açıldı (2026-10-16). Başlık "Terms of Use | harici servis"; tarih yok. `[external source URL omitted]` aynı metni verir. Çıktı sahipliği, ticari kullanım, plan bağlılığı, atıf, yeniden dağıtım ve alt model koşulları `[DOĞRULANMALI]` olarak işaretlendi. Uydurma lisans iddiası yazılmadı.
 
 #### Gizli bilgi taraması
 
@@ -138,12 +140,11 @@ Aranan kalıplar: `sk-`, `ghp_`, `gho_`, `github_pat_`, `xox?-`, `Bearer`, `api_
 |---|---|---|
 | API anahtarı / jeton / parola | — | Bulunmadı |
 | E-posta adresi | — | Bulunmadı |
-| Krea indirme aracının yerel yolu (Windows kullanıcı klasörü altında, `…/tools/krea-indir.mjs`) | `AGENTS.md:14` | **İstisna:** geliştirme notu olarak kalır (görev kararı). Yayımlanırsa yerel kullanıcı adı ve klasör düzeni görünür |
 | Ajan oturum klasörünün yolu (kullanıcı klasörü altında `.claude/projects/…/tool-results`) | `docs/VARLIKLAR.md:246` (değişiklik öncesi satır) | Genel ifadeye çevrildi |
 | Godot editör ayarlarının yolu (kullanıcı klasörü altında `AppData/Roaming/Godot`) | `docs/DURUM.md:785–786` (değişiklik öncesi satırlar) | `%APPDATA%` ile kısaltıldı, not düşüldü |
 | Godot motorunun yerel kurulum yolu (`godot.cmd`) | `docs/DURUM.md:398, 677, 743` (değişiklik öncesi satırlar) | "PATH'teki `godot`" olarak genelleştirildi |
-| Krea indirme betikleri, günlükler | — | Depoda izlenen `.js/.mjs` betiği ve günlük dosyası yok (`build/` Git dışı) |
-| Krea URL'leri (`gen.krea.ai`, `app-uploads.krea.ai`) | `docs/VARLIKLAR.md`, 62 adres | Gizli bilgi değil; genel erişimli bağlantılar. VARLIKLAR.md → Lisans bölümünde not edildi |
+| harici servis indirme betikleri, günlükler | — | Depoda izlenen `.js/.mjs` betiği ve günlük dosyası yok (`build/` Git dışı) |
+| harici servis URL'leri (sağlayıcı varlık adresleri) | `docs/VARLIKLAR.md`, 62 adres | Gizli bilgi değil; genel erişimli bağlantılar. VARLIKLAR.md → Lisans bölümünde not edildi |
 
 Taramadan sonra izlenen belgelerde kalan tek mutlak yerel yol `AGENTS.md:14`'tür.
 
@@ -179,7 +180,7 @@ Bu adımda export yapılmadı; kod değişmedi. README'deki ekran görüntüsü 
 - TASARIM §12 Forward+/Mobile der; proje `gl_compatibility` kullanır (KARARLAR 2026-10-15). README buna göre yazıldı.
 - Genel ajan talimatındaki örnek `build/Oyun.exe` ile TASARIM §12/§14 ve `export_presets.cfg`'deki `build/GOC.exe` çelişir. Belgeye uyuldu: `build/GOC.exe`.
 - Görev README'de "OpenGL 3.3 ya da ANGLE" ister. Bu makinede yerel OpenGL 3.3 yoktu, yalnız ANGLE yolu çalıştırıldı. Yerel OpenGL 3.3 yolu doğrulanmadı.
-- Görev Krea'yı "görsel, 3B ve ses varlıklarının" kaynağı olarak yazdırır. Oda geometrisi, taş shader'ı ve yedek sesler kodla üretilir; README bunu ayrıca belirtir.
+- Görev harici servis'yı "görsel, 3B ve ses varlıklarının" kaynağı olarak yazdırır. Oda geometrisi, taş shader'ı ve yedek sesler kodla üretilir; README bunu ayrıca belirtir.
 
 
 ### (1) Ayarlar — 2026-10-16
@@ -540,14 +541,14 @@ Koridor'da bir Püskürtücü, Kuyu'da bir Ağır bulunur. Son karşılaşma Der
 
 ### (1) Varlıklar — 2026-10-16
 
-- Dal: `ofis/gmvahymt0`. Yalnız Krea üretimi ve belge; `.gd`, `.tscn`, `project.godot` değişmedi. Commit yapılmadı.
-- Krea bakiyesi: başta 17052,37 CU, sonda 16118,22 CU.
+- Dal: `ofis/gmvahymt0`. Yalnız harici servis üretimi ve belge; `.gd`, `.tscn`, `project.godot` değişmedi. Commit yapılmadı.
+- harici servis bakiyesi: başta 17052,37 CU, sonda 16118,22 CU.
 - **İndirilenler:** yok.
-- **Üretildi ama indirilemedi (10):** kavram PNG'leri `varliklar/gorseller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}_kavram.png` (`krea/krea-2/medium`); GLB'ler `varliklar/modeller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}.glb` (`tripo/h3.1`); sesler `varliklar/sesler/{sis_kalkani,nefes}.mp3` (`bytedance/seed-audio-1.0`).
-- **Neden:** görev yalnız "Krea talimatında belirtilen node indirme aracı"na izin veriyor; böyle bir araç Krea MCP talimatında, araç açıklamalarında ve depoda yok. curl/PowerShell/Python/Godot yasak olduğundan indirme denenmedi. Krea URL'leri ve promptlar `docs/VARLIKLAR.md` en üstünde.
+- **Üretildi ama indirilemedi (10):** kavram PNG'leri `varliklar/gorseller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}_kavram.png` (`image-generation-model`); GLB'ler `varliklar/modeller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}.glb` (`tripo/h3.1`); sesler `varliklar/sesler/{sis_kalkani,nefes}.mp3` (`bytedance/seed-audio-1.0`).
+- **Neden:** görev yalnız "harici servis talimatında belirtilen node indirme aracı"na izin veriyor; böyle bir araç harici servis MCP talimatında, araç açıklamalarında ve depoda yok. curl/PowerShell/Python/Godot yasak olduğundan indirme denenmedi. harici servis URL'leri ve promptlar `docs/VARLIKLAR.md` en üstünde.
 - **Üretilemeyen:** yok.
 - **Reality Checker turu (2026-10-16):** hedef yollarda dosya hâlâ yok. Engel izin değil; görev var olmayan bir araç istiyor. Karar kullanıcıda/Ofis'te: (1) kullanıcı VARLIKLAR.md'deki 10 satırlık `curl` listesini proje kökünde çalıştırır (ya da onay verir), sonra uzman ölçer; ya da (2) adım "üretildi, indirilemedi" olarak kapanır. Görev metni değişmeden uzmanı yeniden çalıştırmak sonucu değiştirmez.
-- **Üçüncü düzeltme turu (2026-10-16):** Krea MCP araç listesi yeniden tarandı. Yerel diske indiren bir araç yok: `read_files` yalnız `file:<uuid>` alır ve kısa ömürlü URL döndürür; `write_files*` buluta yükler. `get_more_tools` ve `get_balance` çağrıları `permission ... not granted` verdi, bakiye okunamadı. Hedef yollarda 10 dosya hâlâ yok. Aşama 2 dosyaları (`tasiyici_*`, `bag_duzenegi*`) artık diskte; engel yalnız Aşama 3'ü etkiliyor. Döngü durduruldu; karar yukarıdaki (1)/(2) seçeneğinde.
+- **Üçüncü düzeltme turu (2026-10-16):** harici servis MCP araç listesi yeniden tarandı. Yerel diske indiren bir araç yok: `read_files` yalnız `file:<uuid>` alır ve kısa ömürlü URL döndürür; `write_files*` buluta yükler. `get_more_tools` ve `get_balance` çağrıları `permission ... not granted` verdi, bakiye okunamadı. Hedef yollarda 10 dosya hâlâ yok. Aşama 2 dosyaları (`tasiyici_*`, `bag_duzenegi*`) artık diskte; engel yalnız Aşama 3'ü etkiliyor. Döngü durduruldu; karar yukarıdaki (1)/(2) seçeneğinde.
 - **Godot uzmanına:** dosyalar gelene kadar Ağır, Püskürtücü, Soluk Çekirdeği ve Nefes Kesesi için basit geometri; sis kalkanı için kod sesi; nefes için mevcut `TasiyiciNefes.gd` PCM sesi. Ölçek/yön tahminleri (Ağır ≈ 2,6 m, Püskürtücü ≈ 2,2 m, karakterlerde +90°) VARLIKLAR.md'de; gerçek AABB ile değiştirilmeli.
 - Doğrulama: `godot --headless --path . --import` → SCRIPT ERROR/parse hatası 0; `godot --headless --path . --script res://test/calistir.gd` → `TESTLER: 35 geçti, 0 başarısız`.
 
@@ -725,7 +726,7 @@ Sonraki testler için: `Oyun.yeni_oyun()` sonrası gerçek Merkez örneğini kur
 
 #### Varlıklar ve ölçekler
 
-Önceki notların aksine dört GLB bu görev başında diskte bulundu; indirme veya yeni Krea üretimi yapılmadı. Import ve gerçek mesh AABB ölçümü başarıyla tamamlandı. **Merkezde yer tutucu kalan GLB yok.**
+Önceki notların aksine dört GLB bu görev başında diskte bulundu; indirme veya yeni harici servis üretimi yapılmadı. Import ve gerçek mesh AABB ölçümü başarıyla tamamlandı. **Merkezde yer tutucu kalan GLB yok.**
 
 | Düğüm | Model | Ham boyut | Ölçek / Y dönüş |
 |---|---|---|---|
@@ -787,10 +788,10 @@ Belge çelişkisi yok: AGENTS §3 ve güncel TASARIM §8 matematik sabitlerini k
 
 ### (1) Varlıklar
 
-Tarih: 2026-10-16. Dal: `ofis/gmva70r2p`. Yalnız Krea üretimi ve belge; `.gd`, `.tscn`, `project.godot` değişmedi. Commit yapılmadı.
+Tarih: 2026-10-16. Dal: `ofis/gmva70r2p`. Yalnız harici servis üretimi ve belge; `.gd`, `.tscn`, `project.godot` değişmedi. Commit yapılmadı.
 
-- Krea bakiyesi: başta 17977,26 CU, sonda 17052,37 CU.
-- **Üretildi (Krea), indirilemedi:** 4 kavram PNG (`krea/krea-2/medium`) + 4 GLB (`tripo/h3.1`):
+- harici servis bakiyesi: başta 17977,26 CU, sonda 17052,37 CU.
+- **Üretildi (harici servis), indirilemedi:** 4 kavram PNG (`image-generation-model`) + 4 GLB (`tripo/h3.1`):
   - `varliklar/modeller/tasiyici_sirt.glb` → `Merkez/TasiyiciSirt`
   - `varliklar/modeller/tasiyici_nefes_kesesi.glb` → `Merkez/NefesKeseleri/*`
   - `varliklar/modeller/tasiyici_omurga.glb` → `Merkez/TasiyiciOmurga/*`
@@ -800,7 +801,7 @@ Tarih: 2026-10-16. Dal: `ofis/gmva70r2p`. Yalnız Krea üretimi ve belge; `.gd`,
 - **Üretilemeyen:** yok.
 - Reality Checker turu (2026-10-16): hedef yollarda `tasiyici_*`/`bag_duzenegi*` dosyası yok; `curl ... bag_duzenegi.glb` yeniden `This command requires approval`. Çözüm kullanıcıda: `curl` onayı ya da VARLIKLAR.md'deki listeyi proje kökünde çalıştırmak. Sonra `wc -c` + AABB/ön yön ölçümü yapılıp tahminler değiştirilmeli. Dosyalar inmeden sonraki adım başlarsa dört parça basit geometriyle kurulur.
 - Üçüncü düzeltme turu (2026-10-16): aynı `curl` yine `This command requires approval`. Ajan döngüsü durduruldu; karar kullanıcıda: (a) `curl` onayı ya da listeyi elle çalıştırmak, (b) adımı "üretildi, indirilemedi" ile kapatıp dört parçayı basit geometriyle kurmak. Aşama 1 GLB/PNG'leri (`oyuncu`, `avci`, `yanki_kesesi`) diskte mevcut; bu engel yalnız Aşama 2 parçalarını etkiliyor.
-- Krea URL'leri, tam promptlar, hazır `curl` komut listesi ve ölçek/yön önerileri `docs/VARLIKLAR.md` en üst bölümünde.
+- harici servis URL'leri, tam promptlar, hazır `curl` komut listesi ve ölçek/yön önerileri `docs/VARLIKLAR.md` en üst bölümünde.
 - **Godot uzmanına:** indirme onaylanana kadar dört parça için basit geometri kullanın. Dosyalar gelince gerçek AABB ölçülmeli; tahminler Aşama 1 Tripo davranışına dayanır (Y=1,0 normalize, merkez orijin, ön +X).
 - Test botu: `godot --headless --path . --script res://test/calistir.gd` → `TESTLER: 19 geçti, 0 başarısız`; SCRIPT ERROR yok. Kod/sahne/veri değişmedi, yalnız belge değişti.
 
@@ -888,7 +889,7 @@ Tarih: 2026-10-15. Dal: `ofis/gmv9wp6ez`. Çalışma yalnız bu worktree içinde
 
 ## Tamamlananlar
 
-- Mevcut üç GLB, dört MP3 ve Yankı HUD ikonu bağlandı. Yeni Krea üretimi veya indirme yapılmadı.
+- Mevcut üç GLB, dört MP3 ve Yankı HUD ikonu bağlandı. Yeni harici servis üretimi veya indirme yapılmadı.
 - `ModelBaglantisi.gd`, GLB'yi ilgili sahnenin `Model/GLB` düğümünde PackedScene örneği olarak oluşturur. Gerçek mesh AABB'lerini dönüşümleriyle birleştirip ölçek/hizalama hesaplar. Kaynak yüklenemezse önceki geometri yedeği korunur.
 - Başarılı GLB bağlantısında CapsuleMesh/BoxMesh/SphereMesh ve oyuncu yön kutusu oluşturulmaz. Mevcut kapsül çarpışmalarının biçimi, boyutu, konumu ve katmanları değiştirilmedi.
 - GLB malzemeleri örneğe özel kopyalanır; dokular korunur. Hazırlık/hasar rengi kopyaya uygulanır ve ardından özgün renge döner.
@@ -1016,7 +1017,7 @@ ERROR: Failed to read the root certificate store.
 - TASARIM §12 Forward+/Mobile önerisi yerine görevdeki Vulkan çökmesi gerekçesiyle Compatibility seçildi. Karar KARARLAR.md'ye işlendi.
 - Kese için görevdeki taban y=0 yerine VARLIKLAR.md'nin merkez orijini/offset 0 kuralı uygulandı. Karakterler tabana hizalıdır.
 - Etkileşim sesi Aşama 1'deki tek uygun olay olan duvar yıkımına bağlandı; E için yeni mekanik kurulmadı.
-- MP3 biçimi önceki Krea üretimi ve KARARLAR.md kararıyla korundu; kayıplı format yeniden dönüştürülmedi.
+- MP3 biçimi önceki harici servis üretimi ve KARARLAR.md kararıyla korundu; kayıplı format yeniden dönüştürülmedi.
 - Belgelerdeki önceki "dosyalar yok" kayıtları tarihçedir; bu worktree'de mevcut kaynaklar import ile doğrulandı.
 
 ## Sonraki aşama için notlar ve AŞAMA 1 durumu
@@ -1046,3 +1047,8 @@ Gerçek oyuncu hissi testi, işitsel değerlendirme ve başka donanımda perform
 - Aynı hedefte aynı boş olmayan vuruş kimliği tekrarlanırsa hasar uygulanmaz. Boş kimlik doğrudan hasar denemeleri içindir.
 - Tarama grubu `taranabilir`, saldırı hedef grubu `hasar_alabilir`. Test sahnesi kurulduktan sonra bir fizik karesi bekleyin.
 - InputMap: ileri=W, geri=S, sol=A, sag=D, saldir=sol fare, kacin=Space, organ_kullan=Q, etkilesim=E, duraklat=Escape. Girdiyi yalnız Oyuncu okur.
+
+
+## 2026-10-20 — Belge temizliği
+
+Servis adı ve bağlantıları kaldırıldı; oynanış kodu, sahneler ve varlık dosyaları değiştirilmedi. Bu değişiklik için yerelde Godot bulunmadığından oyun çalıştırılmadı; örnek projenin CI kontrolü ayrıca izlenir.

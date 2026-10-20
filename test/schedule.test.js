@@ -14,6 +14,23 @@ test('parseAt: "HH:MM" bugünün o saati, geçtiyse yarın; geçersiz → null',
   assert.equal(parseAt('abc', NOW), null);
 });
 
+test('failed dispatches remain queued while accepted commands are removed', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'ofis-sch-retry-'));
+  let accept = false;
+  const schedule = await createSchedule({ dir, now: () => NOW, send: (text) => {
+    if (text === 'throw' && !accept) throw new Error('unavailable');
+    return { ok: accept || text === 'accepted' };
+  } });
+  for (const text of ['reject', 'throw', 'accepted']) schedule.add({ text, whenLimit: true });
+  assert.deepEqual(schedule.tick().map((x) => x.text), ['accepted']);
+  await schedule.flush();
+  assert.deepEqual(JSON.parse(await readFile(join(dir, 'ofis-schedule.json'), 'utf8')).map((x) => x.text), ['reject', 'throw']);
+  accept = true;
+  assert.equal(schedule.tick().length, 2);
+  await schedule.flush();
+  assert.equal(schedule.list().length, 0);
+});
+
 test('isDue: saatli komut zamanı gelince; limit komutu motorlar açık ve Claude düşük değilse', () => {
   assert.equal(isDue({ at: NOW + 1000 }, { now: NOW }), false);
   assert.equal(isDue({ at: NOW }, { now: NOW }), true);

@@ -32,7 +32,7 @@ export function demoBoard(now = Date.now()) {
     t('d1', 'Backend Architect', 'Kimlik doğrulama API tasarımı', 'done', 900_000),
     t('d2', 'Frontend Developer', 'Giriş sayfası formu ve doğrulama', 'redo', 60_000, { round: 1, feedback: 'Form doğrulaması eksik' }),
     t('d3', 'DevOps Automator', 'CI iş akışı (npm test)', 'review', 30_000),
-    t('d4', 'UI Designer', 'Logo ve renk paleti (Krea)', 'doing', 20_000),
+    t('d4', 'UI Designer', 'Logo ve renk paleti', 'doing', 20_000),
     t('d5', 'Ters Mühendis', 'eski istemci.exe protokol çözümlemesi', 'doing', 10_000),
   ];
 }

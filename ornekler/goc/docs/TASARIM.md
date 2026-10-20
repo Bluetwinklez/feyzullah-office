@@ -140,16 +140,16 @@ sezon, ödeme, günlük ödül, seri giriş, loot box, gerçek zamanlı bekleme,
 - Basit geometri, stilize karanlık fantastik. Sis: önce Godot'un ucuz mesafe/yükseklik sisi; sis cebi için
   yarı saydam hacim + parçacık. Yol ve saldırı hazırlıkları her zaman okunur kalmalı.
 - Taşıyıcı: birkaç beden parçası + nefes animasyonu (ölçek dalgası). Yolculuk: kısa geçiş (kararma + hareket).
-- Ses: saldırı, hasar, organ kullanımı, etkileşim, canlının nefesi. Kaynak: Krea ile üretim ya da kod ile üretilmiş
+- Ses: saldırı, hasar, organ kullanımı, etkileşim, canlının nefesi. Kaynak: harici servis ile üretim ya da kod ile üretilmiş
   basit sesler. Her varlık `docs/VARLIKLAR.md`'ye kaynak + lisans + geçici mi diye yazılır. Ücretli/lisansı belirsiz içerik yok.
 - Kritik bilgi yalnız renkle verilmez (şekil + simge + metin).
 
-### 10.1 Varlık üretimi: Krea (krea-ai MCP)
-Karakterler ve önemli nesneler **Krea ile üretilir**; Krea araçları tasarım ve oyun geliştirme uzmanlarında açıktır.
+### 10.1 Varlık üretimi
+Karakterler ve önemli nesneler haricen hazırlanabilir. Ofis herhangi bir görsel üretim servisini kurmaz, yetkilendirmez veya otomatik kullanmaz.
 Akış: önce tutarlı stil için kavram görseli (`generate_image`, aynı stil tarifi + gerekirse ilham panosu/moodboard),
 sonra 3B model (`generate_3d` → GLB) ya da düşük poligon gerekiyorsa basit geometriyle yeniden kurulur.
 
-| Varlık | Aşama | Krea çıktısı | Not |
+| Varlık | Aşama | harici servis çıktısı | Not |
 |---|---|---|---|
 | Oyuncu (fenerli gezgin) | 1 | kavram + GLB | basit iskeletsiz model; yürüme hissi kod animasyonu (eğilme/zıplama) |
 | Avcı | 1 | kavram + GLB | hızlı, ince, okunur siluet |
@@ -164,9 +164,9 @@ sonra 3B model (`generate_3d` → GLB) ya da düşük poligon gerekiyorsa basit 
 - Stil tarifi (tüm üretimlerde aynı): “stylized dark fantasy, simple low-poly shapes, muted cold blues and greys for
   the fog world, warm amber accents for the hub and organs, clean readable silhouettes, no text”.
 - Dosyalar: `varliklar/modeller/*.glb`, `varliklar/gorseller/*.png`, `varliklar/sesler/*.ogg|wav`.
-- Her üretim `docs/VARLIKLAR.md`'ye: dosya · Krea modeli · tarih · lisans (Krea kullanım koşulları) · geçici mi.
+- Her üretim `docs/VARLIKLAR.md`'ye: dosya · harici servis modeli · tarih · lisans (harici servis kullanım koşulları) · geçici mi.
 - Model yüklenemezse ya da oyunu yavaşlatırsa basit geometri yedeğe geçilir; bu `docs/KARARLAR.md`'ye yazılır.
-- Krea kredisi bitecekse (hata alınırsa) üretim durur, basit geometriyle devam edilir ve durumda belirtilir.
+- harici servis kredisi bitecekse (hata alınırsa) üretim durur, basit geometriyle devam edilir ve durumda belirtilir.
 
 ## 11. Arayüz, metinler, ayarlar
 
@@ -189,7 +189,7 @@ data/denge.json          tüm ayar sayıları
 data/metinler.csv        Türkçe metinler
 test/                    başsız test botu ve senaryolar
 docs/                    TASARIM, KARARLAR, VARLIKLAR, DURUM (her aşama sonu)
-varliklar/               Krea çıktıları: modeller/*.glb, gorseller/*.png, sesler/*
+varliklar/               harici servis çıktıları: modeller/*.glb, gorseller/*.png, sesler/*
 export_presets.cfg       "Windows Desktop" → build/GOC.exe
 ```
 - Kayıt alanları: `surum`, `gorev_asamasi`, `organlar{yanki,soluk: BULUNMADI|OYUNCU|CANLI}`, `kehribar`,

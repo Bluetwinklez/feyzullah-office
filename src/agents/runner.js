@@ -3,19 +3,11 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { cliChat } from './cli.js';
 import { chat } from './providers.js';
 
 const MAX_HISTORY = 20;
 const MAX_ENTRIES = 200;
-// Tasarım uzmanları Krea MCP ile görsel/video üretebilir (izin + talimat çalışma anında eklenir).
-// Krea indirme aracı (node ile; Claude'un izin kuralı 'node' önekini zaten kapsar).
-const KREA_TOOL = fileURLToPath(new URL('../../tools/krea-indir.mjs', import.meta.url)).split('\\').join('/');
-const KREA_HINT = `
-
-## Görsel araçları
-Görsel, video ya da 3B üretmen gerekirse krea-ai MCP araçlarını kullan (generate_image vb.). Ürettiğin dosyaları çalışma klasörüne şu araçla indir — bu araç Ofis'in kendi aracıdır, Krea MCP açıklamalarında GEÇMEZ ama vardır ve izinlidir (curl yerine; yalnız Krea adresleri ve bu klasörün içi): node "${KREA_TOOL}" <krea-adresi> <hedef-yol> — ör. node "${KREA_TOOL}" https://app-uploads.krea.ai/public/....glb varliklar/modeller/x.glb. Cevabında yolunu yaz.`;
 // claude -p'de izin soracak kimse yok: güvenli geliştirme komutları önceden izinli (push, silme vb. değil).
 const SAFE_BASH = ['npm test', 'npm run', 'npm install', 'npm ci', 'npx', 'node', 'git status', 'git diff', 'git log', 'git show', 'git add', 'git commit',
   'ls', 'dir', 'cat', 'type', 'python', 'py', 'pytest', 'pip install', 'tsc', 'eslint', 'prettier', 'godot',
@@ -27,7 +19,7 @@ const READ_BASH = ['ls', 'dir', 'cat', 'type', 'git status', 'git log', 'git sho
 function toolsFor(agent, godotTools = []) {
   if (agent.division === 'reverse') return agent.engine === 'claude' ? [...READ_BASH, 'mcp__rea', 'WebSearch', 'WebFetch'] : [];
   // WebSearch/WebFetch: araştırma ve doğrulama için web okuma (yazma/gönderme yok).
-  return [...(agent.engine === 'claude' ? [...SAFE_BASH, ...godotTools, 'WebSearch', 'WebFetch'] : []), ...(VISUAL.has(agent.division) ? ['mcp__krea-ai', ...(agent.engine === 'claude' ? KREA_DL : [])] : [])];
+  return agent.engine === 'claude' ? [...SAFE_BASH, ...godotTools, 'WebSearch', 'WebFetch'] : [];
 }
 /** Windows'ta rename anlık EPERM/EBUSY verebilir (antivirüs, okuyan süreç): birkaç kez dene, olmazsa doğrudan yaz. */
 async function renameRetry(from, to, tries = 6) {
@@ -49,10 +41,6 @@ Komut satırında \`godot\` hazır. Doğrulama ve derleme başsız (ekransız) y
 - Windows .exe: proje kökünde export_presets.cfg ([preset.0] name="Windows Desktop", platform="Windows Desktop", runnable=true, export_filter="all_resources", include_filter="", exclude_filter="", export_path="build/Oyun.exe"; [preset.0.options] binary_format/embed_pck=true) sonra \`godot --headless --path . --export-release "Windows Desktop" build/Oyun.exe\`
 - Derlenen oyunu dene: \`build/Oyun.exe --headless --quit-after 120\`
 - .gitignore: .godot/ ve build/. "root certificate store" ve "editor settings" kaydetme hataları zararsızdır.`;
-// Görsel üretebilen bölümler: Krea MCP (görsel, sprite, video, 3B) izni ve talimatı.
-const VISUAL = new Set(['design', 'game-development']);
-// Krea çıktısını indirmek için yalnız Krea dosya sunucularından curl (adres önce yazılır; başka adres izinli değil).
-const KREA_DL = ['Bash(curl -sSfL https://app-uploads.krea.ai/:*)', 'Bash(curl -sSfL https://gen.krea.ai/:*)'];
 // Kullanım limiti hatası ve yedek motorlar (Codex/agy limiti dolarsa Claude; Claude'unki dolarsa Codex).
 const LIMIT_RE = /usage limit|rate limit|hit your .{0,20}limit|quota exceeded|limit reached/i;
 const FALLBACK = { codex: ['claude'], antigravity: ['codex', 'claude'], claude: ['codex'] };
@@ -90,7 +78,7 @@ export function createAgentRunner({ store, chatImpl = chat, cliImpl = cliChat, b
     saveTimer = null;
     if (!persistFile) return;
     const data = { entries: entries.filter((e) => e.status !== 'running').slice(-MAX_ENTRIES), agents: {} };
-    for (const [id, r] of runtime) data.agents[id] = { resumeId: r.resumeId, resumeEngine: r.resumeEngine ?? null, linked: [...r.linked], history: r.history };
+    for (const [id, r] of runtime) data.agents[id] = { resumeId: r.resumeId, resumeEngine: r.resumeEngine ?? null, resumeCwd: r.resumeCwd ?? null, linked: [...r.linked], history: r.history };
     const tmp = `${persistFile}.tmp`;
     saving = saving.then(() => writeFile(tmp, JSON.stringify(data)).then(() => renameRetry(tmp, persistFile))).catch(() => {});
     await saving;
@@ -110,7 +98,7 @@ export function createAgentRunner({ store, chatImpl = chat, cliImpl = cliChat, b
     return e;
   };
 
-  // Kimlik + (tasarımda) Krea talimatı + (Codex/agy'de) caveman kısa üslup. Claude'da caveman eklentisi hook'la gelir;
+  // Kimlik + Codex/agy için kısa üslup. Claude'da caveman eklentisi hook'la gelir;
   // Prompt Master'ın çıktısı yöneticiye giden temiz prompt olmalı, üslup eklenmez.
   // Godot: uzmanlar bazen tam yolla çağırır (C:/Tools/..., C:\Tools\..., /c/Tools/...); hepsi izinli.
   const godotTools = [];
@@ -124,7 +112,6 @@ export function createAgentRunner({ store, chatImpl = chat, cliImpl = cliChat, b
   const personaFor = (agent) => {
     let p = agent.system ?? '';
     const styleHint = typeof styleHintOpt === 'function' ? styleHintOpt() : styleHintOpt;
-    if (VISUAL.has(agent.division) && agent.engine !== 'antigravity') p += KREA_HINT; // agy'de Krea yetkisiz
     if (bins.godotDir && GODOT_DIVS.has(agent.division)) p += GODOT_HINT;
     if (styleHint && agent.role !== 'prompt' && (agent.engine === 'codex' || agent.engine === 'antigravity')) p += `
 
@@ -166,12 +153,12 @@ ${styleHint}`;
         await mkdirImpl(cwd);
         usedCwd = cwd;
         // Limit dolunca yedek motor: motor kapalı işaretlenir (açılış saatine kadar), görev sıradaki motorla sürer.
-        const engines = [agent.engine, ...(FALLBACK[agent.engine] ?? [])].filter((e, i) => i === 0 || bins[e]);
+        const engines = [agent.engine, ...(FALLBACK[agent.engine] ?? [])].filter((e) => bins[e]);
         let res = null; let lastErr = null;
         for (const [i, eng] of engines.entries()) {
-          if (isDown(eng) && i < engines.length - 1) continue;
+          if (isDown(eng)) { lastErr = new Error(`${ENG_NAME[eng]} kullanım limiti dolu`); continue; }
           const a2 = eng === agent.engine ? agent : { ...agent, engine: eng };
-          const resumeId = (r.resumeEngine ?? agent.engine) === eng ? r.resumeId : null;
+          const resumeId = (r.resumeEngine ?? agent.engine) === eng && r.resumeCwd === cwd ? r.resumeId : null;
           if (i > 0) { reply.text = ''; }
           try {
             res = await cliImpl({
@@ -180,13 +167,14 @@ ${styleHint}`;
               allowedTools: toolsFor(a2, godotTools),
               signal: r.ctrl.signal, onDelta, onRate: (info) => onRate(eng, info), network: eng === 'codex' && codexNetwork(),
               extraPath: bins.godotDir ?? null, // kurulu araçlar (Godot) PATH'e eklenir; sistem ayarı değişmez
-              onSession: (sid) => { r.resumeId = sid; r.resumeEngine = eng; r.linked.add(`${eng}:${sid}`); changed(); },
+              onSession: (sid) => { r.resumeId = sid; r.resumeEngine = eng; r.resumeCwd = cwd; r.linked.add(`${eng}:${sid}`); changed(); },
             });
             if (eng !== agent.engine) {
               const until = down[agent.engine] ? new Date(down[agent.engine]).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '?';
-              addEntry({ id: `api:${id}:${++counter}`, agent: 'api', session: id, kind: 'note', title: `${ENG_NAME[agent.engine] ?? agent.engine} limiti dolu (${until}'e kadar) — görev ${ENG_NAME[eng] ?? eng} ile sürdürüldü`, at: Date.now(), status: 'ok' });
+              const reason = !bins[agent.engine] ? 'CLI bulunamadı' : `limiti dolu (${until}'e kadar)`;
+              addEntry({ id: `api:${id}:${++counter}`, agent: 'api', session: id, kind: 'note', title: `${ENG_NAME[agent.engine] ?? agent.engine} ${reason} — görev ${ENG_NAME[eng] ?? eng} ile sürdürüldü`, at: Date.now(), status: 'ok' });
             }
-            if (res.sessionId) { r.resumeId = res.sessionId; r.resumeEngine = eng; r.linked.add(`${eng}:${res.sessionId}`); }
+            if (res.sessionId) { r.resumeId = res.sessionId; r.resumeEngine = eng; r.resumeCwd = cwd; r.linked.add(`${eng}:${res.sessionId}`); }
             break;
           } catch (err) {
             if (r.ctrl?.signal.aborted || !LIMIT_RE.test(err.message)) throw err;
@@ -194,7 +182,7 @@ ${styleHint}`;
             lastErr = err;
           }
         }
-        if (!res) throw lastErr ?? new Error('kullanılabilir motor yok');
+        if (!res) throw lastErr ?? new Error('kullanılabilir CLI motoru yok; kurulum ve giriş durumunu kontrol et');
         full = res.text;
         used = res.usage ?? null;
       } else {
@@ -233,6 +221,7 @@ ${styleHint}`;
         const r = rt(id);
         r.resumeId = a.resumeId ?? null;
         r.resumeEngine = a.resumeEngine ?? null;
+        r.resumeCwd = a.resumeCwd ?? null;
         r.linked = new Set(a.linked ?? []);
         r.history = Array.isArray(a.history) ? a.history : [];
       }

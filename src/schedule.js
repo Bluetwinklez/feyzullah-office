@@ -59,9 +59,16 @@ export async function createSchedule({ dir, now = Date.now, send }) {
       const t = now();
       const due = items.filter((x) => isDue(x, { now: t, down, claudeLow }));
       if (!due.length) return [];
-      items = items.filter((x) => !due.includes(x)); save();
-      for (const x of due) send(x.text, { direct: x.direct });
-      return due;
+      const sent = [];
+      for (const x of due) {
+        try {
+          const result = send(x.text, { direct: x.direct });
+          if (result?.ok === false) continue;
+          sent.push(x);
+        } catch { /* Keep rejected commands queued for a later tick. */ }
+      }
+      if (sent.length) { items = items.filter((x) => !sent.includes(x)); save(); }
+      return sent;
     },
     flush: () => saving,
   };

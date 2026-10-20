@@ -19,7 +19,7 @@ const world = document.createElement('canvas');
 world.width = W; world.height = H;
 const wctx = world.getContext('2d');
 
-// Sahne: varsayılan, Krea ile üretilmiş ofis görseli (assets/office/ofis.png); yüklenemezse kodla çizilen ofis.
+// Sahne: varsayılan, üretilmiş ofis görseli (assets/office/ofis.png); yüklenemezse kodla çizilen ofis.
 const codeScene = {
   W, H,
   newActor: () => newActor(LAYOUT.door),
@@ -380,7 +380,7 @@ function renderBoard() {
     const act = async (action, msg) => { const r = await api.boardAction(t.id, action); toast(r?.ok ? msg : `Olmadı: ${r?.error ?? ''}`); };
     if (['doing', 'review', 'redo'].includes(t.status)) { const b = el('button', 'deny', 'İptal'); b.onclick = () => act('cancel', 'İptal edildi'); btns.append(b); }
     else if (t.task) { const b = el('button', null, '↻ Yeniden başlat'); b.onclick = () => act('retry', 'Yeniden başlatıldı'); btns.append(b); }
-    if (t.branch && t.worktree && !t.merged && !t.discarded && !['doing', 'review', 'redo'].includes(t.status)) {
+    if (t.branch && !t.merged && !t.discarded && !board.some((other) => other.repo === t.repo && other.branch === t.branch && ['todo', 'doing', 'review', 'redo'].includes(other.status))) {
       const v = el('button', null, cardDiffs.has(t.id) ? 'Farkı gizle' : '🔍 Farkı gör');
       v.dataset.test = 'diff';
       v.onclick = async () => {
@@ -1220,7 +1220,7 @@ for (const b of [...document.querySelectorAll('.tab'), ...$('rosterTabs').queryS
 
 (async () => {
   pack = await loadPack(cfg.pack);
-  // Tema: 'real' (Krea gerçekçi ofis + stilize karakterler) → 'pixel' (Krea piksel ofis + MetroCity) → kod çizimi
+  // Tema: 'real' (gerçekçi ofis + stilize karakterler) → 'pixel' (piksel ofis + MetroCity) → kod çizimi
   const theme = cfg.theme ?? 'pixel';
   const cast = theme === 'real' && REAL ? await loadCast() : [];
   const sceneDef = cast.length ? REAL : PIXEL2;

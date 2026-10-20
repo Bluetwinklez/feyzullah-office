@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createAgentStore } from '../src/agents/store.js';
@@ -31,6 +31,29 @@ test('ajan ekle: anahtar dosyada düz metin olarak yok, listede yalnızca son 4 
     assert.equal(listed.key, undefined);
     assert.equal(listed.keyEnc, undefined);
     assert.equal(s.store.getKey(a.id), 'sk-ant-GIZLI-1234');
+  } finally { await s.cleanup(); }
+});
+
+test('concurrent agent mutations are serialized without lost entries', async () => {
+  const s = await setup();
+  try {
+    const agents = await Promise.all(Array.from({ length: 15 }, (_, i) => s.store.add({ name: `Agent ${i}`, engine: 'codex' })));
+    await Promise.all(agents.map((a, i) => s.store.update(a.id, { name: `Updated ${i}` })));
+    const saved = await createAgentStore({ file: s.file, crypto: fakeCrypto });
+    assert.equal(saved.list().length, 15);
+    assert.ok(saved.list().every((a) => a.name.startsWith('Updated')));
+  } finally { await s.cleanup(); }
+});
+
+test('a failed disk write does not change the live agent store', async () => {
+  const s = await setup();
+  try {
+    await mkdir(`${s.file}.tmp`);
+    await assert.rejects(() => s.store.add({ name: 'Unsaved', engine: 'codex' }));
+    assert.equal(s.store.list().length, 0);
+    await rm(`${s.file}.tmp`, { recursive: true });
+    await s.store.add({ name: 'Saved', engine: 'codex' });
+    assert.equal(s.store.list()[0].name, 'Saved');
   } finally { await s.cleanup(); }
 });
 

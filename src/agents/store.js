@@ -13,13 +13,26 @@ const LIMITS = { system: 60000, workdir: 500 };
 /** crypto: { available(), encrypt(str) → base64, decrypt(base64) → str } */
 export async function createAgentStore({ file, crypto }) {
   let agents = [];
-  try { agents = JSON.parse(await readFile(file, 'utf8')).agents ?? []; } catch {}
+  try { const saved = JSON.parse(await readFile(file, 'utf8')).agents; if (Array.isArray(saved)) agents = saved.filter((a) => a && typeof a.id === 'string'); } catch {}
 
-  async function save() {
+  async function save(next) {
     await mkdir(dirname(file), { recursive: true });
     const tmp = `${file}.tmp`;
-    await writeFile(tmp, `${JSON.stringify({ agents }, null, 2)}\n`);
+    await writeFile(tmp, `${JSON.stringify({ agents: next }, null, 2)}\n`);
     await rename(tmp, file);
+  }
+
+  let writing = Promise.resolve();
+  function mutate(change) {
+    const result = writing.catch(() => {}).then(async () => {
+      const next = agents.map((a) => ({ ...a }));
+      const value = change(next);
+      await save(next);
+      agents = next;
+      return value;
+    });
+    writing = result;
+    return result;
   }
 
   const pub = (a) => ({
@@ -52,26 +65,21 @@ export async function createAgentStore({ file, crypto }) {
 
   return {
     list: () => agents.map(pub),
-    async add(fields) {
+    add(fields) { return mutate((next) => {
       const a = clean(fields, { id: randomUUID().slice(0, 8) });
       setKey(a, fields.key);
-      agents.push(a);
-      await save();
+      next.push(a);
       return pub(a);
-    },
-    async update(id, fields) {
-      const i = agents.findIndex((x) => x.id === id);
+    }); },
+    update(id, fields) { return mutate((next) => {
+      const i = next.findIndex((x) => x.id === id);
       if (i < 0) throw new Error('ajan yok');
-      const a = clean(fields, agents[i]);
+      const a = clean(fields, next[i]);
       setKey(a, fields.key);
-      agents[i] = a;
-      await save();
+      next[i] = a;
       return pub(a);
-    },
-    async remove(id) {
-      agents = agents.filter((x) => x.id !== id);
-      await save();
-    },
+    }); },
+    remove(id) { return mutate((next) => { const i = next.findIndex((a) => a.id === id); if (i >= 0) next.splice(i, 1); }); },
     /** Yalnızca ana süreç kullanır; pencereye gönderilmez. */
     getKey(id) {
       const a = agents.find((x) => x.id === id);

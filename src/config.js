@@ -15,7 +15,7 @@ export const DEFAULTS = Object.freeze({
   lat: 41.01, // İstanbul (gün doğumu/batımı için)
   lon: 28.98,
   pack: 'metrocity', // assets/packs/<ad>; yüklenemezse kodla çizilen karakterler
-  theme: 'pixel', // 'pixel' (Krea piksel ofis, düz masalar + MetroCity yürüme animasyonu) | 'real' (gerçekçi ofis + stilize karakterler)
+  theme: 'pixel', // 'pixel' (piksel ofis, düz masalar + MetroCity yürüme animasyonu) | 'real' (gerçekçi ofis + stilize karakterler)
   restMinutes: 10, // işi biten ajan dinlenme köşesinde bu kadar kalır
 });
 

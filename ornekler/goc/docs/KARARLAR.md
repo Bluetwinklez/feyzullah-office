@@ -1,5 +1,7 @@
 # Kararlar
 
+> Bu belge geçmiş geliştirme kayıtlarını içerir. Servis adları ve kaynak adresleri yayımdan kaldırılmıştır. Eski araç ve indirme talimatları güncel entegrasyon değildir; varlıkların lisans kısıtları korunur.
+
 ## 2026-10-16 — AŞAMA 4 (2): kabul ve performans
 
 - K8'in başsız testi, release EXE'yi değil geçici bir `--export-pack` ZIP'ini ve varsa `build/GOC.exe`'nin gömülü paketini editör ikilisiyle `--main-pack` üzerinden açar. EXE'nin kendisini test içinden `OS.execute` ile çalıştırmak, ortamın EXE onay denetimini atlatmak olacağından yapılmadı. Doğrudan pencereli EXE koşusu onay verilmediği için "doğrulanmadı — onay gerekli" kaldı.
@@ -33,7 +35,7 @@
 - Kayıt sürümü 2. Geçerli sürüm 1 doğrulanıp yeni sayaçlar/süre/şişe ve Soluk zamanları güvenli varsayılanlarla eklenir. Tanınmayan sürüm, eksik veya tutarsız veri kurtarma akışına gider; kısmi durum uygulanmaz. Geçerli sürüm 2 iki organın tek yuva kuralını ve M0–M6 tutarlılığını doğrular.
 - Yeni oyun ve bitişteki açık Tekrar oyna seçimi kaydı atomik olarak değiştirir, eski dosya .bak olur. Yeni oyun disk yazımı başarısız olsa da oynanabilir; görünür kayıt hata sinyali ve güvenli çıkıştaki ikinci istek kuralı korunur. Bu durumda diskte eski kayıt kalabilir; başarı iddia edilmez.
 - Son Yolculuk yalnız Merkez'deki Taşıyıcı etkileşimi + ayrı onay, M5 ve canlıda Soluk ile başlar. JSON'daki 2 sn kararma/model hareketi sonunda ortak temalı bitiş ekranı görünür. Tamamlanmış kayıt yüklenince bitiş ekranı yeniden açılır; otomatik tekrar başlamaz. Süre duraklatma hariç aktif oyun süresidir; tamamlanınca donar.
-- Görev başında Soluk/Nefes GLB'leri ve sesleri yoktu; son kontrol sırasında dört yeni GLB, dört kavram PNG ve iki MP3 çalışma kopyasına dışarıdan geldi. Hepsi import edilip bağlandı; ölçekler gerçek AABB'den ölçüldü, VARLIKLAR.md'ye yazıldı. Bu uzman Krea indirme/üretimi yapmadı. Yükleme yedekleri korunur. Export, kayıt ve kalıcı yeni kabul testleri sonraki görevde; bu teslimde her alt adımın mevcut 35 testi ve geçici duman doğrulaması çalıştırılır. Yer tutucu listesi gerçek dosyalar için kaldırılınca mevcut veri güdümlü varlık testleri otomatik genişler.
+- Görev başında Soluk/Nefes GLB'leri ve sesleri yoktu; son kontrol sırasında dört yeni GLB, dört kavram PNG ve iki MP3 çalışma kopyasına dışarıdan geldi. Hepsi import edilip bağlandı; ölçekler gerçek AABB'den ölçüldü, VARLIKLAR.md'ye yazıldı. Bu uzman harici servis indirme/üretimi yapmadı. Yükleme yedekleri korunur. Export, kayıt ve kalıcı yeni kabul testleri sonraki görevde; bu teslimde her alt adımın mevcut 35 testi ve geçici duman doğrulaması çalıştırılır. Yer tutucu listesi gerçek dosyalar için kaldırılınca mevcut veri güdümlü varlık testleri otomatik genişler.
 
 ## 2026-10-16 — AŞAMA 3 (2a–2b): mekânlar ve düşmanlar
 
@@ -45,9 +47,9 @@
 - Ağır/Püskürtücü GLB'leri hâlâ diskte yoktur. §10.1 uyarınca özgün basit geometri kullanılır; indirme/üretim denenmez. `Model` bağlayıcıları dosyalar gelince gerçek AABB ile 2,6/2,2 m boy ve önerilen +90° Y dönüşü uygular; dosyalar olmadığından yön gözle doğrulanamadı.
 - TASARIM §12 Forward+/Mobile der; önceki Compatibility kararı korunur. Yeni odalar mevcut ucuz mesafe sisi, gölgesiz ışık ve taş shader'ını kullanır; volumetrik sis eklenmez. Bu alt teslimde export/kayıt yapılmaz; aşama sonu doğrulamasına bırakılır.
 
-## 2026-10-16 — AŞAMA 3, Adım (1): Krea varlıkları
+## 2026-10-16 — AŞAMA 3, Adım (1): harici servis varlıkları
 
-- Görev indirmeyi yalnız "Krea talimatında/araç açıklamasında belirtilen node indirme aracı"yla sınırlıyor; Krea MCP'de böyle bir araç yok ve depoda node betiği yok. Diğer yöntemler görevce yasak olduğundan 10 varlık üretildi ama indirilmedi; URL'ler VARLIKLAR.md'de. Godot uzmanı TASARIM §10.1 yedek kuralıyla basit geometri kullanır.
+- Görev indirmeyi yalnız "harici servis talimatında/araç açıklamasında belirtilen node indirme aracı"yla sınırlıyor; harici servis MCP'de böyle bir araç yok ve depoda node betiği yok. Diğer yöntemler görevce yasak olduğundan 10 varlık üretildi ama indirilmedi; URL'ler VARLIKLAR.md'de. Godot uzmanı TASARIM §10.1 yedek kuralıyla basit geometri kullanır.
 - Ses biçimi MP3: Seed Audio yalnız MP3 verir (AŞAMA 1 kararıyla aynı); TASARIM §10.1 `.ogg|wav` der.
 - TASARIM §10.1 "nefes döngülü" der. `nefes.mp3` döngüye uygun istendi, dikiş doğrulanmadı; mevcut kod PCM nefesi yedek kalır.
 - Ad: yan alan ödülü `nefes_kesesi`, Taşıyıcı keseleri `tasiyici_nefes_kesesi` (AŞAMA 2 kararı) korunur.
@@ -66,20 +68,20 @@
 - VARLIKLAR.md etkileşim sesini sonraki aşamanın E etkileşimlerine ayırır; Aşama 1'de etkileşim noktası yoktur. Görevdeki yedek varsayımla ses `Olaylar.kestirme_acildi` üzerinden duvar yıkımına bağlanır; yeni etkileşim sistemi eklenmez.
 - Küçük grafik oturumunda Windows pencereyi 604×648'e sınırlar; movie çıktısı 1152×648 kalırken doğrudan çizim HUD'ı kırptı. Kontrol düğümlerinin mantıksal konumları doğruydu. `display/window/stretch/mode="viewport"` ile ayrı viewport çizimi seçildi; aynı oturumda HUD ve ikonun tam göründüğü PNG ile doğrulandı. Fizik/kamera açısı değiştirilmedi.
 
-## 2026-10-15 — Aşama 1, Adım 1: Krea varlıkları
+## 2026-10-15 — Aşama 1, Adım 1: harici servis varlıkları
 
 - Görev `git commit` istiyor; AGENTS.md §7 ve görev notu commit/merge'i yasaklıyor. Belgeye uyuldu: commit yapılmadı, Ofis'e bırakıldı.
 - Görev PNG'ler için `varliklar/kavram/` ve `varliklar/ikonlar/` diyor; TASARIM §10.1 `varliklar/gorseller/*.png` diyor. Belge önceliği gereği hedef yollar `varliklar/gorseller/` altındadır.
-- Görev `.ogg` ya da `.wav` istiyor; Krea `bytedance/seed-audio-1.0` yalnız MP3 döndürdü. Godot 4 MP3'ü `AudioStreamMP3` ile doğrudan içe aktarır; dönüştürme bağlama adımına bırakıldı. TASARIM §10.1 `sesler/*.ogg|wav` der; bu sapma bilinçlidir.
+- Görev `.ogg` ya da `.wav` istiyor; harici servis `bytedance/seed-audio-1.0` yalnız MP3 döndürdü. Godot 4 MP3'ü `AudioStreamMP3` ile doğrudan içe aktarır; dönüştürme bağlama adımına bırakıldı. TASARIM §10.1 `sesler/*.ogg|wav` der; bu sapma bilinçlidir.
 - Görev tarama sesi için "tarama", TASARIM §10 "organ kullanımı" der; aynı olaydır (`YankiKesesi.tara()`), ad `tarama` olarak korundu.
-- Tüm Krea üretimleri tamamlandı, fakat `curl` indirmesi ortam onay politikasıyla engellendi. URL'ler VARLIKLAR.md'ye yazıldı. Yer tutucular oyunda korunur.
+- Tüm harici servis üretimleri tamamlandı, fakat `curl` indirmesi ortam onay politikasıyla engellendi. URL'ler VARLIKLAR.md'ye yazıldı. Yer tutucular oyunda korunur.
 - Reality Checker düzeltmesi: WebFetch ile 11 dosya indirildi, ama oturum önbelleğine (`~/.claude/.../tool-results`) kaydedildi. Projeye `cp` izin denetiminde "sensitive file" olarak reddedildi. Reddedilen kopyalamayı başka komutla (Python, Godot vb.) yapmak izin engelini aşmak olacağından denenmedi; açık onay istendi.
 - Tripo GLB'lerinin ön yönü glTF'nin olağan +Z'si değil, +X çıktı (geometriden çıkarım). Bağlamada Y ekseninde +90° önerildi; ilk taslaktaki 180° önerisi geçersiz.
 
 ## 2026-10-15 — Aşama 1, Adım 2/3 ve 3/3
 
 - Görevin sonundaki zorunlu commit isteği, aynı görevin başındaki yasak ve AGENTS.md §7 ile çelişiyor. Kullanıcının belgeye öncelik kuralıyla commit/merge yapılmadı; Ofis'e bırakıldı.
-- Krea araçları ve bakiye okunabildi, fakat üç kavram üretimi otomatik onay denetiminde reddedildi. Kullanıcının açık yedek akışı gereği yer tutucular korundu; üretim engelini aşmak için başka yol denenmedi.
+- harici servis araçları ve bakiye okunabildi, fakat üç kavram üretimi otomatik onay denetiminde reddedildi. Kullanıcının açık yedek akışı gereği yer tutucular korundu; üretim engelini aşmak için başka yol denenmedi.
 - Kavram/ikon için beklenen PNG yolları, görevdeki örnek klasörler yerine TASARIM §10.1 uyarınca `varliklar/gorseller` altındadır. Dosyalar üretilmedi.
 - Ham CSV, include_filter bulunmasına rağmen export paketinde yer almadı. Release açılışı takıldı; debug motoruyla paket içinden null CSV okuyucu hatası doğrulandı. Çeviriler CSV'den Godot tarafından üretilen Translation kaynağı üzerinden yüklenir. Metinlerin tek kaynağı `data/metinler.csv` olarak kaldı; bu export uyumluluğu düzeltmesidir.
 - `--script` başlangıcında autoload sınıf kayıtları hazır olmadığından test giriş noktası, tipli sahne senaryolarını ertelenmiş olarak yükler. Oynanış sınıfları testsiz veya tipsiz hale getirilmedi.
@@ -123,7 +125,12 @@ Belgeden sapmalar ve gerekçeleri (tarih, karar, neden).
 - Görevde sabit kamera ifadesi var; TASARIM §4 gereği açı sabit, konum yumuşak takip eder.
 - Görevde tarama için örnek eylem adı verilmiş; belgeye uygun `organ_kullan` kullanıldı. Beklenen GLB yolları `assets` yerine belgedeki `varliklar/modeller` altında.
 - Olaylar bu adımda istenen sinyal veri yoludur. TASARIM §12/13 yerel günlük görevini tanımlar; günlük kapsam gereği Aşama 3'e bırakıldı. Kayit da Aşama 2'ye kadar iskelettir.
-- Belge Aşama 1 için Krea varlıklarını içerir; bu alt görev açıkça basit geometri ve sonraki model bağlantısını ister. Yer tutucular kullanıldı, Krea üretimi yapılmadı.
+- Belge Aşama 1 için harici servis varlıklarını içerir; bu alt görev açıkça basit geometri ve sonraki model bağlantısını ister. Yer tutucular kullanıldı, harici servis üretimi yapılmadı.
 - AGENTS test botu komutu denendi; dosya yok. Bu adımda bot yazma yasağı korundu; geçici ve silinen assert betiğiyle çekirdek durumlar denetlendi.
 - TASARIM §14 tam aşama sonu exe/görsel kayıt bekler. Bu alt adım kod teslimidir; dışa aktarma ve görsel kayıt tamamlanmadı, DURUM'da açıkça belirtildi.
 
+
+
+## 2026-10-20 — Servis bağımsız belgeler
+
+Kullanıcı isteğiyle belirli görsel üretim sağlayıcısının entegrasyonu, adı ve kaynak bağlantıları güncel depodan kaldırıldı. Varlıklar ve mevcut lisans kısıtları değişmedi; görsel ve ses dosyaları kodun MIT lisansına dahil edilmedi. Eski günlükler önceki çalışmaların kaydıdır, güncel kurulum talimatı değildir.

@@ -1,5 +1,7 @@
 # Varlıklar ve lisanslar
 
+> Bu belge geçmiş geliştirme kayıtlarını içerir. Servis adları ve kaynak adresleri yayımdan kaldırılmıştır. Eski araç ve indirme talimatları güncel entegrasyon değildir; varlıkların lisans kısıtları korunur.
+
 ## Lisans
 
 Bu bölüm 2026-10-16'da, GitHub yayını hazırlığında eklendi. Aşağıdaki tarihli kayıtlar değiştirilmedi.
@@ -8,19 +10,17 @@ Bu bölüm 2026-10-16'da, GitHub yayını hazırlığında eklendi. Aşağıdaki
 
 | Grup | Dosyalar | Kaynak | Lisans |
 |---|---|---|---|
-| Krea çıktıları | `varliklar/modeller/*.glb`, GLB'lerden Godot'un çıkardığı `varliklar/modeller/*_Color_*.jpg` dokuları, `varliklar/gorseller/*.png`, `varliklar/sesler/*.mp3` | Krea AI ile üretildi (görsel: `krea/krea-2/medium`, `openai/gpt-image-2.5-flare`; 3B: `tripo/h3.1`; ses: `bytedance/seed-audio-1.0`). Model, tarih ve prompt kayıtları aşağıda | Krea kullanım koşulları (aşağıya bakın). MIT kapsamında **değildir** |
+| harici servis çıktıları | `varliklar/modeller/*.glb`, GLB'lerden Godot'un çıkardığı `varliklar/modeller/*_Color_*.jpg` dokuları, `varliklar/gorseller/*.png`, `varliklar/sesler/*.mp3` | yapay zekâ destekli harici bir servis ile üretildi (görsel: `image-generation-model`, `openai/gpt-image-2.5-flare`; 3B: `tripo/h3.1`; ses: `bytedance/seed-audio-1.0`). Model, tarih ve prompt kayıtları aşağıda | harici servis kullanım koşulları (aşağıya bakın). MIT kapsamında **değildir** |
 | Özgün kod ile üretilen içerik | `varliklar/shaderlar/tas_karo.gdshader`, koddaki yedek geometri ve PCM sesler | Bu proje için yazıldı | Projenin kod lisansı: MIT (`LICENSE`) |
 | `.import`, `.uid` metadata | Godot'un ürettiği yan dosyalar | Godot içe aktarıcısı | Ait olduğu dosyanın lisansını izler |
 
-Tüm Krea çıktıları prototip için **geçicidir**.
+Tüm harici servis çıktıları prototip için **geçicidir**.
 
-### Krea kullanım koşulları
+### harici servis kullanım koşulları
 
-- Resmî metin: [Terms of Use | Krea](https://www.krea.ai/terms). Erişim 2026-10-16'da doğrulandı. `https://www.krea.ai/terms-of-use` adresi de aynı metni açar. Sayfada "son güncelleme" tarihi yok.
+- Resmî metin: sağlayıcının kullanım koşulları (bağlantı yayımdan kaldırıldı). Erişim 2026-10-16'da doğrulandı. `[external source URL omitted]` adresi de aynı metni açar. Sayfada "son güncelleme" tarihi yok.
 - Üretim sırasında hesap planı **Individual Pro** (ücretli) olarak kaydedildi (aşağıdaki bakiye notları).
 - Metinde doğrulanan ifadeler (2026-10-16 okuması):
-  - Krea, kullanıcılara hizmet için "worldwide, non-exclusive, non-sublicensable and non-transferable" bir lisans verir.
-  - "Krea may allow you to commercialize certain Content generated from the Services, subject to your adherence to our copyright dispute policy".
   - "Your rights to use, reproduce, modify, distribute, or store of any Content may be dependent on specific purchases or plans".
 - Kesin olmayan, yayından önce doğrulanması gereken noktalar:
   - Üretilen içeriğin sahipliği kimde? Okunan metin çıktı sahipliğini açıkça belirtmiyor. **[DOĞRULANMALI]**
@@ -28,16 +28,16 @@ Tüm Krea çıktıları prototip için **geçicidir**.
   - Haklar plan türüne bağlı mı? Metne göre olabilir. Individual Pro'nun bu varlıkları kapsadığı ayrıca doğrulanmadı. **[DOĞRULANMALI]**
   - Atıf gerekli mi? Okunan metinde açık bir atıf şartı bulunmadı, ama bu "atıf gerekmez" demek değildir. **[DOĞRULANMALI]**
   - Varlıkları açık bir depoda yeniden dağıtmak (GitHub'da GLB/PNG/MP3 yayımlamak) serbest mi? **[DOĞRULANMALI]**
-  - Krea'nın kullandığı üçüncü taraf modellerin (Tripo, OpenAI, ByteDance) koşulları ek kısıt getiriyor mu? **[DOĞRULANMALI]**
+  - harici servisin kullandığı üçüncü taraf modellerin (Tripo, OpenAI, ByteDance) koşulları ek kısıt getiriyor mu? **[DOĞRULANMALI]**
 - Bu belge hukuki görüş değildir. Yayından önce koşulların güncel metni ve hesap planı yeniden okunmalıdır.
 
-### Krea URL'leri
+### harici servis URL'leri
 
-Aşağıdaki kayıtlardaki `gen.krea.ai` ve `app-uploads.krea.ai` adresleri gizli bilgi değildir. Ancak bunlar **genel erişimli** bağlantılardır: adresi bilen herkes dosyayı indirebilir. Ne kadar süre açık kalacakları da garanti değildir.
+Aşağıdaki kayıtlardaki harici varlık sunucularındaki adresleri gizli bilgi değildir. Ancak bunlar **genel erişimli** bağlantılardır: adresi bilen herkes dosyayı indirebilir. Ne kadar süre açık kalacakları da garanti değildir.
 
 ## 2026-10-16 — AŞAMA 3 (2c–2f) bağlantıları
 
-- Görev başında dosyalar yoktu; son dosya kontrolünde 08:43'te çalışma kopyasına dışarıdan eklenmiş dört GLB, dört kavram PNG ve iki MP3 bulundu. Bu uzman indirme/üretim yapmadı. Kaynak/lisans: aşağıdaki AŞAMA 3 (1) Krea üretim kaydı ve Krea kullanım koşulları; tümü geçici prototip.
+- Görev başında dosyalar yoktu; son dosya kontrolünde 08:43'te çalışma kopyasına dışarıdan eklenmiş dört GLB, dört kavram PNG ve iki MP3 bulundu. Bu uzman indirme/üretim yapmadı. Kaynak/lisans: aşağıdaki AŞAMA 3 (1) harici servis üretim kaydı ve harici servis kullanım koşulları; tümü geçici prototip.
 - `sahneler/soluk_cekirdegi.tscn` ve `sahneler/nefes_kesesi.tscn`: `OrganGorseli.gd` çalışma anında `Model` bağlantısını kurar. Gerçek GLB'ler bağlıdır; yükleme başarısız olursa özgün küre yedeği kalır. Soluk merkezli; yerdeki buluntusu +0,2 m yukarıda. Nefes Kesesi tabanı y=0; dönüş 0°, ön yön önemsizdir.
 - Gerçek bağlantılar: Çekirdek Odası `Organlar/SolukCekirdegi/Gorsel/Model`; Sis Cebi `Organlar/NefesKesesi/Gorsel/Model`; oyuncu `SolukCekirdegi/Gorsel/Model`; Merkez `CanliSoluk/Model`. Bu bağlantı düğümlerine sabit adlar verildi.
 - Yedek küreler, tezgâh kutusu ve kararma geçişi bu proje için özgün kodla üretildi; üçüncü taraf içerik/lisans yok. Gerçek `sis_kalkani.mp3` Q açılışına, `nefes.mp3` Merkez nefes oyuncularına bağlandı. Nefes MP3 kopyasında loop açık; mevcut özgün PCM ve 780 Hz kalkan sesi yükleme yedeği olarak korunur. Soluk canlıdayken ritim değişir. Döngü dikişi dinlenerek doğrulanmadı.
@@ -52,11 +52,11 @@ Aşağıdaki kayıtlardaki `gen.krea.ai` ve `app-uploads.krea.ai` adresleri gizl
 | `sesler/sis_kalkani.mp3` | 17598 | — | Q kullanımı, tek ses |
 | `sesler/nefes.mp3` | 65663 | — | Merkez, döngü açık |
 
-Kavram PNG boyutları: `agir_kavram.png` 629569, `puskurtucu_kavram.png` 408951, `soluk_cekirdegi_kavram.png` 498641, `nefes_kesesi_kavram.png` 417978 bayt. Kavramlar oyuna bağlanmaz. İçe aktarmada çıkarılan `*_Color_*.jpg` dosyaları bu Krea GLB'lerinin dokularıdır; kaynak/lisans aynıdır. Ham AABB ve ölçek kanıtı: `build/asama3-2cf/smoke-varlik.log`.
+Kavram PNG boyutları: `agir_kavram.png` 629569, `puskurtucu_kavram.png` 408951, `soluk_cekirdegi_kavram.png` 498641, `nefes_kesesi_kavram.png` 417978 bayt. Kavramlar oyuna bağlanmaz. İçe aktarmada çıkarılan `*_Color_*.jpg` dosyaları bu harici servis GLB'lerinin dokularıdır; kaynak/lisans aynıdır. Ham AABB ve ölçek kanıtı: `build/asama3-2cf/smoke-varlik.log`.
 
 ## 2026-10-16 — AŞAMA 3 (2a–2b) bağlantı durumu
 
-- `varliklar/modeller/agir.glb` ve `puskurtucu.glb` çalışma kopyasında yok. Yeni indirme/üretim yapılmadı; aşağıdaki Krea kaynak/lisans notları korunur.
+- `varliklar/modeller/agir.glb` ve `puskurtucu.glb` çalışma kopyasında yok. Yeni indirme/üretim yapılmadı; aşağıdaki harici servis kaynak/lisans notları korunur.
 - `sahneler/dusmanlar/agir.tscn` → `Dusman/Model`: özgün kutu yer tutucu, 1,6 × 2,6 × 1,4 m, taban y=0, -Z ileri. GLB gelirse mevcut AABB bağlayıcısı 2,6 m boy, +90° Y, taban y=0 uygular.
 - `sahneler/dusmanlar/puskurtucu.tscn` → `Dusman/Model`: özgün dar gövde ve uzun boyun yer tutucu; toplam boy 2,2 m, taban y=0, -Z ileri. GLB gelirse 2,2 m boy, +90° Y, taban y=0 uygulanır. Şekiller yalnız renkle ayrılmaz.
 - Yeni mekân geometri/sis hacmi, hazırlık halkaları ve mermi küresi kodla oluşturuldu (`Mekan.gd`, `YeniDusman.gd`, `DusmanMermisi.gd`). Kaynak: bu proje için özgün kod; üçüncü taraf varlık/lisans yok. Geçici prototip görselleridir.
@@ -64,31 +64,31 @@ Kavram PNG boyutları: `agir_kavram.png` 629569, `puskurtucu_kavram.png` 408951,
 
 ## 2026-10-16 — AŞAMA 3, Adım (1): düşmanlar, organ, ödül ve sesler (üretildi, indirilemedi)
 
-Krea bakiyesi: başta 17052,37 CU, sonda 16118,22 CU (harcanan ≈ 934,2 CU). Plan: Individual Pro.
-Lisans: Krea kullanım koşulları (ücretli Pro planı). Tümü geçici: evet (prototip). Tarih: 2026-10-16.
+harici servis bakiyesi: başta 17052,37 CU, sonda 16118,22 CU (harcanan ≈ 934,2 CU). Plan: Individual Pro.
+Lisans: harici servis kullanım koşulları (ücretli Pro planı). Tümü geçici: evet (prototip). Tarih: 2026-10-16.
 
-**10 varlığın hepsi Krea'da üretildi. Hiçbiri diske inmedi; hedef yollarda dosya yoktur, bayt boyutu ölçülemedi.**
-Görev indirme için yalnız "Krea talimatında/araç açıklamasında belirtilen node indirme aracı"na izin verir; curl, PowerShell, Python ve Godot HTTPRequest yasaktır.
+**10 varlığın hepsi harici serviste üretildi. Hiçbiri diske inmedi; hedef yollarda dosya yoktur, bayt boyutu ölçülemedi.**
+Görev indirme için yalnız "harici servis talimatında/araç açıklamasında belirtilen node indirme aracı"na izin verir; curl, PowerShell, Python ve Godot HTTPRequest yasaktır.
 Böyle bir araç bulunamadı:
-- Krea MCP sunucu talimatı ve `generate_*`/`get_job` açıklamaları indirme aracından söz etmez; sonuçlar yalnız URL olarak döner.
-- Krea'nın dosya araçları (`read_files`, `write_files*`, `list_files`) Krea Files içindir. `read_files` açıklaması "not a URL fetcher: https:// URLs (generated images, uploads) ... fail" der ve yerel diske yazmaz.
+- harici servis MCP sunucu talimatı ve `generate_*`/`get_job` açıklamaları indirme aracından söz etmez; sonuçlar yalnız URL olarak döner.
+- harici servisin dosya araçları (`read_files`, `write_files*`, `list_files`) harici servis Files içindir. `read_files` açıklaması "not a URL fetcher: https:// URLs (generated images, uploads) ... fail" der ve yerel diske yazmaz.
 - Depoda node indirme betiği yok (`**/*.{js,mjs,cjs}` eşleşmesi 0).
 Bu yüzden indirme denenmedi; izin denetimi başka yolla dolanılmadı. Godot uzmanı dosyalar gelene kadar bu parçalar için basit geometri ve mevcut kod sesini kullanmalı.
-Krea URL'lerinin süresiz kalacağı garanti değildir. Onaylı bir yöntemle aşağıdaki URL'ler hedef yollara indirilmeli, `wc -c` ile boyut ölçülmeli ve GLB AABB'si ölçülüp aşağıdaki tahminlerin yerine yazılmalıdır.
+harici servis URL'lerinin süresiz kalacağı garanti değildir. Onaylı bir yöntemle aşağıdaki URL'ler hedef yollara indirilmeli, `wc -c` ile boyut ölçülmeli ve GLB AABB'si ölçülüp aşağıdaki tahminlerin yerine yazılmalıdır.
 
 **Kullanıcının çalıştıracağı liste** (Aşama 2'de işe yarayan yol; uzman bu görevin kuralı gereği çalıştırmadı). Proje kökünde, Git Bash:
 
 ```sh
-curl -sSfL https://app-uploads.krea.ai/public/d1ddf6ac-778b-49f2-9491-88fa829b10a3.glb -o varliklar/modeller/agir.glb
-curl -sSfL https://app-uploads.krea.ai/public/aeb5953b-66a4-4c87-b227-0ee9e1a6d19e.glb -o varliklar/modeller/puskurtucu.glb
-curl -sSfL https://app-uploads.krea.ai/public/c35415f5-2668-475f-9061-60fb7ecc2062.glb -o varliklar/modeller/soluk_cekirdegi.glb
-curl -sSfL https://app-uploads.krea.ai/public/1bbcf28b-c01c-4fa5-83d9-b438527e4d64.glb -o varliklar/modeller/nefes_kesesi.glb
-curl -sSfL https://gen.krea.ai/images/c6861218-7bf3-4543-a6d8-1a38f4da169e.png -o varliklar/gorseller/agir_kavram.png
-curl -sSfL https://gen.krea.ai/images/56acedea-a41e-4dd4-b621-a5470419d94a.png -o varliklar/gorseller/puskurtucu_kavram.png
-curl -sSfL https://gen.krea.ai/images/8ad9f60a-824a-47a6-8de6-f93495e73fba.png -o varliklar/gorseller/soluk_cekirdegi_kavram.png
-curl -sSfL https://gen.krea.ai/images/aeaac64a-13bf-4c67-a0a0-29f2b86220e9.png -o varliklar/gorseller/nefes_kesesi_kavram.png
-curl -sSfL https://app-uploads.krea.ai/audio/55905be8-ed4e-4789-a829-35dfe0aff381.mp3 -o varliklar/sesler/sis_kalkani.mp3
-curl -sSfL https://app-uploads.krea.ai/audio/a6984001-8a3d-44a6-adad-77de812d01aa.mp3 -o varliklar/sesler/nefes.mp3
+curl -sSfL [external source URL omitted] -o varliklar/modeller/agir.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/puskurtucu.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/soluk_cekirdegi.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/nefes_kesesi.glb
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/agir_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/puskurtucu_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/soluk_cekirdegi_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/nefes_kesesi_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/sesler/sis_kalkani.mp3
+curl -sSfL [external source URL omitted] -o varliklar/sesler/nefes.mp3
 wc -c varliklar/modeller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}.glb varliklar/gorseller/{agir,puskurtucu,soluk_cekirdegi,nefes_kesesi}_kavram.png varliklar/sesler/{sis_kalkani,nefes}.mp3
 ```
 
@@ -98,14 +98,14 @@ Ortak stil metni (TASARIM §10.1), tüm kavram promptlarının başında; ardın
 
 > stylized dark fantasy, simple low-poly shapes, muted cold blues and greys for the fog world, warm amber accents for the hub and organs, clean readable silhouettes, no text
 
-### Kavram görselleri — `krea/krea-2/medium`, 1K, `creativity=raw`
+### Kavram görselleri — `image-generation-model`, 1K, `creativity=raw`
 
-| Hedef yol | Krea URL | En-boy | Nesne promptu | Bayt |
+| Hedef yol | harici servis URL | En-boy | Nesne promptu | Bayt |
 |---|---|---|---|---|
-| `varliklar/gorseller/agir_kavram.png` | https://gen.krea.ai/images/c6861218-7bf3-4543-a6d8-1a38f4da169e.png | 3:4 | `single full-body huge heavy brute creature, massive hunched shoulders, thick stone-like grey-blue armored hide, very large club-like forearms, short thick legs, small head sunk between shoulders, slow and powerful silhouette clearly bigger and bulkier than a human, neutral A-pose with arms away from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` | indirilemedi |
-| `varliklar/gorseller/puskurtucu_kavram.png` | https://gen.krea.ai/images/56acedea-a41e-4dd4-b621-a5470419d94a.png | 3:4 | `single full-body ranged spitter creature with a very long thin neck, small head with wide open tube-like mouth for spitting projectiles, lean four-limbed body standing upright on two legs, short arms, cold grey-blue skin, faint amber glow in the throat, tall distinctive silhouette, neutral A-pose with limbs separated from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` | indirilemedi |
-| `varliklar/gorseller/soluk_cekirdegi_kavram.png` | https://gen.krea.ai/images/8ad9f60a-824a-47a6-8de6-f93495e73fba.png | 1:1 | `single small isolated pale breath core organ, smooth faceted crystal-like heart shape wrapped in soft misty membrane, gentle warm amber light inside, thin wisps of pale fog curling around it, compact simple form, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game prop model concept` | indirilemedi |
-| `varliklar/gorseller/nefes_kesesi_kavram.png` | https://gen.krea.ai/images/aeaac64a-13bf-4c67-a0a0-29f2b86220e9.png | 1:1 | `single small isolated breath pouch pickup item, soft rounded leathery bladder bag tied with a cord at the top, two folded lung-like lobes, warm amber glow seeping through thin skin, compact readable collectible shape, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game pickup prop model concept` | indirilemedi |
+| `varliklar/gorseller/agir_kavram.png` | [external source URL omitted] | 3:4 | `single full-body huge heavy brute creature, massive hunched shoulders, thick stone-like grey-blue armored hide, very large club-like forearms, short thick legs, small head sunk between shoulders, slow and powerful silhouette clearly bigger and bulkier than a human, neutral A-pose with arms away from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` | indirilemedi |
+| `varliklar/gorseller/puskurtucu_kavram.png` | [external source URL omitted] | 3:4 | `single full-body ranged spitter creature with a very long thin neck, small head with wide open tube-like mouth for spitting projectiles, lean four-limbed body standing upright on two legs, short arms, cold grey-blue skin, faint amber glow in the throat, tall distinctive silhouette, neutral A-pose with limbs separated from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` | indirilemedi |
+| `varliklar/gorseller/soluk_cekirdegi_kavram.png` | [external source URL omitted] | 1:1 | `single small isolated pale breath core organ, smooth faceted crystal-like heart shape wrapped in soft misty membrane, gentle warm amber light inside, thin wisps of pale fog curling around it, compact simple form, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game prop model concept` | indirilemedi |
+| `varliklar/gorseller/nefes_kesesi_kavram.png` | [external source URL omitted] | 1:1 | `single small isolated breath pouch pickup item, soft rounded leathery bladder bag tied with a cord at the top, two folded lung-like lobes, warm amber glow seeping through thin skin, compact readable collectible shape, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game pickup prop model concept` | indirilemedi |
 
 Kavramlar oyuna bağlanmaz; 3B üretim girdisi ve stil referansıdır.
 
@@ -116,10 +116,10 @@ Ad: Aşama 3 yan alan ödülü `nefes_kesesi` adını kullanır; Taşıyıcı'n�
 
 | Hedef yol | face_limit | GLB URL | Önizleme URL | Hedef sahne / düğüm | Bayt |
 |---|---|---|---|---|---|
-| `varliklar/modeller/agir.glb` | 10000 | https://app-uploads.krea.ai/public/d1ddf6ac-778b-49f2-9491-88fa829b10a3.glb | https://app-uploads.krea.ai/public/0758d0c3-f754-4c39-b811-f2dc0f204ffa.png | `sahneler/dusmanlar/agir.tscn` → `Agir/Model` | indirilemedi |
-| `varliklar/modeller/puskurtucu.glb` | 10000 | https://app-uploads.krea.ai/public/aeb5953b-66a4-4c87-b227-0ee9e1a6d19e.glb | https://app-uploads.krea.ai/public/a76c7dd0-6939-48a3-98ce-55d0c2e16d9b.png | `sahneler/dusmanlar/puskurtucu.tscn` → `Puskurtucu/Model` | indirilemedi |
-| `varliklar/modeller/soluk_cekirdegi.glb` | 3000 | https://app-uploads.krea.ai/public/c35415f5-2668-475f-9061-60fb7ecc2062.glb | https://app-uploads.krea.ai/public/639cb8ef-ec64-4d53-b1e9-89be8b2305b3.png | Çekirdek Odası ödül/buluntu düğümü (`.../SolukCekirdegi/Model`); Bağ Düzeneği canlı yuvası ve oyuncu organ konumu (Yankı ile aynı düzen) | indirilemedi |
-| `varliklar/modeller/nefes_kesesi.glb` | 3000 | https://app-uploads.krea.ai/public/1bbcf28b-c01c-4fa5-83d9-b438527e4d64.glb | https://app-uploads.krea.ai/public/322b333d-1993-407c-a7d9-b2cbcaa21f02.png | Sis Cebi yan alan ödülü (`.../NefesKesesi/Model`) | indirilemedi |
+| `varliklar/modeller/agir.glb` | 10000 | [external source URL omitted] | [external source URL omitted] | `sahneler/dusmanlar/agir.tscn` → `Agir/Model` | indirilemedi |
+| `varliklar/modeller/puskurtucu.glb` | 10000 | [external source URL omitted] | [external source URL omitted] | `sahneler/dusmanlar/puskurtucu.tscn` → `Puskurtucu/Model` | indirilemedi |
+| `varliklar/modeller/soluk_cekirdegi.glb` | 3000 | [external source URL omitted] | [external source URL omitted] | Çekirdek Odası ödül/buluntu düğümü (`.../SolukCekirdegi/Model`); Bağ Düzeneği canlı yuvası ve oyuncu organ konumu (Yankı ile aynı düzen) | indirilemedi |
+| `varliklar/modeller/nefes_kesesi.glb` | 3000 | [external source URL omitted] | [external source URL omitted] | Sis Cebi yan alan ödülü (`.../NefesKesesi/Model`) | indirilemedi |
 
 **Ölçek ve yön (tahmin; dosyalar inmediği için ölçülmedi).** Önceki 7 Tripo çıktısında ölçülen davranış: **en uzun eksen 1,0 birime** normalize (karakterlerde Y, sırt/omurga/düzenekte X ya da Z), AABB merkezi orijinde, +Y yukarı, düğüm dönüşümü yok. Karakterlerin ön yönü +X çıktı; Godot'ta Y ekseninde +90° ile -Z'ye çevrildi. Mevcut `ModelBaglantisi.gd` gerçek AABB'yi ölçer; aşağıdakiler başlangıç değeridir.
 
@@ -137,16 +137,16 @@ Ağır/Püskürtücü hazırlıkları (TASARIM §8) yer dairesi + renk değişim
 
 Seed Audio süre parametresi almaz; süre promptla istendi, ölçülmedi. Format MP3 (AŞAMA 1 KARARLAR kararıyla aynı sapma; TASARIM §10.1 `.ogg|wav` der).
 
-| Hedef yol | Krea URL | Bağlanacağı olay | Prompt | Bayt |
+| Hedef yol | harici servis URL | Bağlanacağı olay | Prompt | Bayt |
 |---|---|---|---|---|
-| `varliklar/sesler/sis_kalkani.mp3` | https://app-uploads.krea.ai/audio/55905be8-ed4e-4789-a829-35dfe0aff381.mp3 | Soluk Çekirdeği oyuncudayken Q (`organ_kullan`) → sis kalkanı açılışı; konumsal, döngü kapalı | `Sound effect only, about 1.0 second: a protective mist shield activating, soft airy whoosh of fog swirling inward then a gentle shimmering hum with a warm magical tone, stylized dark fantasy game ability, single event, no voice, no speech, no music, no ambience` | indirilemedi |
-| `varliklar/sesler/nefes.mp3` | https://app-uploads.krea.ai/audio/a6984001-8a3d-44a6-adad-77de812d01aa.mp3 | Taşıyıcı nefesi (`Merkez`, şu an `TasiyiciNefes.gd` kod PCM sesi); **döngü açık** içe aktarılmalı. Organ takılınca ritim değişimi (§5) `pitch_scale` ile | `Sound effect only, about 4 seconds: one full slow deep breath of a giant creature, a long low inhale followed by a long low exhale, wet organic airflow with a soft rumbling chest resonance, steady even volume, starts and ends at the same quiet level so it can loop seamlessly, stylized dark fantasy game, no voice, no speech, no music, no ambience, no other sounds` | indirilemedi |
+| `varliklar/sesler/sis_kalkani.mp3` | [external source URL omitted] | Soluk Çekirdeği oyuncudayken Q (`organ_kullan`) → sis kalkanı açılışı; konumsal, döngü kapalı | `Sound effect only, about 1.0 second: a protective mist shield activating, soft airy whoosh of fog swirling inward then a gentle shimmering hum with a warm magical tone, stylized dark fantasy game ability, single event, no voice, no speech, no music, no ambience` | indirilemedi |
+| `varliklar/sesler/nefes.mp3` | [external source URL omitted] | Taşıyıcı nefesi (`Merkez`, şu an `TasiyiciNefes.gd` kod PCM sesi); **döngü açık** içe aktarılmalı. Organ takılınca ritim değişimi (§5) `pitch_scale` ile | `Sound effect only, about 4 seconds: one full slow deep breath of a giant creature, a long low inhale followed by a long low exhale, wet organic airflow with a soft rumbling chest resonance, steady even volume, starts and ends at the same quiet level so it can loop seamlessly, stylized dark fantasy game, no voice, no speech, no music, no ambience, no other sounds` | indirilemedi |
 
 Döngü dikişi dinlenerek doğrulanmadı; tık sesi duyulursa içe aktarmada `loop_offset` ya da baş/son kırpma gerekir. Kod PCM nefesi yedek olarak kalmalı.
 
 ## 2026-10-16 — AŞAMA 2 kod bağlantıları (güncel)
 
-Önceki indirme engeli kaydı tarihçedir: bu kod görevinin başlangıcında dört GLB ve dört kavram PNG hedef yollarda mevcuttu. Yeni indirme/üretim yapılmadı. Kaynak ve lisans önceki Krea `tripo/h3.1` / Krea kullanım koşulları kaydıdır; prototip varlıkları geçicidir.
+Önceki indirme engeli kaydı tarihçedir: bu kod görevinin başlangıcında dört GLB ve dört kavram PNG hedef yollarda mevcuttu. Yeni indirme/üretim yapılmadı. Kaynak ve lisans önceki harici servis `tripo/h3.1` / harici servis kullanım koşulları kaydıdır; prototip varlıkları geçicidir.
 
 | Dosya | Bağlantı | Gerçek AABB min / boyut | Ölçek; Y dönüş; yerel Y offset |
 |---|---|---|---|
@@ -157,38 +157,38 @@ Döngü dikişi dinlenerek doğrulanmadı; tık sesi duyulursa içe aktarmada `l
 
 Godot'ta dört model yüklendi; yer tutucu kullanılmadı. `MerkezModeli` yükleme başarısızlığı için basit kutu yedeği korur. Sırtın uzun X ekseni Z'ye çevrildi; üst nokta y=0. Omurganın uzun ekseni zaten Z. Ön yönler belgenin önerisidir; pencereli görsel denetim sonraki adımdadır. Nefes animasyonu taban pivotlu Node3D'ye uygulanır.
 
-Godot GLB'lerden dört `*_Color_*.jpg` dokusu ve `.import` metadata çıkardı; dokular aynı GLB/Krea kaynak ve lisansına tabidir. Kavram görselleri oyunda kullanılmaz. Mevcut Yankı GLB'si mantıksal konuma göre oyuncu, buluntu veya Bağ Düzeneği görselinde gösterilir; tek konum kaynağı Oyun'dadır.
+Godot GLB'lerden dört `*_Color_*.jpg` dokusu ve `.import` metadata çıkardı; dokular aynı GLB/harici servis kaynak ve lisansına tabidir. Kavram görselleri oyunda kullanılmaz. Mevcut Yankı GLB'si mantıksal konuma göre oyuncu, buluntu veya Bağ Düzeneği görselinde gösterilir; tek konum kaynağı Oyun'dadır.
 
 `TasiyiciNefes.gd` nefes sesi: özgün matematiksel PCM sinüs döngüsü, harici örnek/ücretli içerik yok. Diskte yeni ses dosyası yoktur. Basit mühür, rota ve geometri yedekleri özgün kod + Godot yerleşik API kaynaklıdır; Godot motoru MIT. Geçici: evet.
 
 ## 2026-10-16 — AŞAMA 2, Adım (1): Merkez varlıkları (üretildi, indirilemedi)
 
-Krea bakiyesi: başta 17977,26 CU, sonda 17052,37 CU (harcanan ≈ 924,9 CU). Plan: Individual Pro.
-Lisans: Krea kullanım koşulları (ücretli Pro planı). Tümü geçici: evet (prototip). Tarih: 2026-10-16.
+harici servis bakiyesi: başta 17977,26 CU, sonda 17052,37 CU (harcanan ≈ 924,9 CU). Plan: Individual Pro.
+Lisans: harici servis kullanım koşulları (ücretli Pro planı). Tümü geçici: evet (prototip). Tarih: 2026-10-16.
 
-**8 varlığın hepsi Krea'da üretildi. Hiçbiri diske inmedi.** Zorunlu indirme yöntemi engellendi:
+**8 varlığın hepsi harici serviste üretildi. Hiçbiri diske inmedi.** Zorunlu indirme yöntemi engellendi:
 
 ```text
-$ curl -sSfL "https://gen.krea.ai/images/dd13578b-4e3d-488b-a462-5fd9637696f4.png" -o ".../varliklar/gorseller/tasiyici_sirt_kavram.png"
+$ curl -sSfL "[external source URL omitted]" -o ".../varliklar/gorseller/tasiyici_sirt_kavram.png"
 This command requires approval
-$ curl -sSfL "https://app-uploads.krea.ai/public/8748f2d8-ba4e-41f8-b63d-36ff8e75da37.glb" -o ".../varliklar/modeller/tasiyici_sirt.glb"
+$ curl -sSfL "[external source URL omitted]" -o ".../varliklar/modeller/tasiyici_sirt.glb"
 This command requires approval
 ```
 
 Görev gereği izin denetimi başka araçla (WebFetch, Python, Godot) dolanılmadı. Aşağıdaki hedef yollarda dosya **yoktur**; bayt boyutu ölçülemedi.
-Godot uzmanı indirme onaylanana kadar bu parçalar için basit geometri kullanmalı. Krea URL'lerinin süresiz kalacağı garanti değildir.
+Godot uzmanı indirme onaylanana kadar bu parçalar için basit geometri kullanmalı. harici servis URL'lerinin süresiz kalacağı garanti değildir.
 
 Onaylı ortamda proje kökünden (Git Bash):
 
 ```sh
-curl -sSfL https://app-uploads.krea.ai/public/8748f2d8-ba4e-41f8-b63d-36ff8e75da37.glb -o varliklar/modeller/tasiyici_sirt.glb
-curl -sSfL https://app-uploads.krea.ai/public/988b983e-f053-4960-b38c-3975c390dc6a.glb -o varliklar/modeller/tasiyici_nefes_kesesi.glb
-curl -sSfL https://app-uploads.krea.ai/public/a1d298b0-69ff-4fca-896d-8750d2a6c1d8.glb -o varliklar/modeller/tasiyici_omurga.glb
-curl -sSfL https://app-uploads.krea.ai/public/b2d41394-1c18-4738-aa0f-4b36cf3f04f3.glb -o varliklar/modeller/bag_duzenegi.glb
-curl -sSfL https://gen.krea.ai/images/dd13578b-4e3d-488b-a462-5fd9637696f4.png -o varliklar/gorseller/tasiyici_sirt_kavram.png
-curl -sSfL https://gen.krea.ai/images/c206e49d-88d6-4292-9459-b34e5db72203.png -o varliklar/gorseller/tasiyici_nefes_kesesi_kavram.png
-curl -sSfL https://gen.krea.ai/images/c37a50b0-a24e-411b-9e31-9fa88d42f487.png -o varliklar/gorseller/tasiyici_omurga_kavram.png
-curl -sSfL https://gen.krea.ai/images/ea3bac83-f7f6-4538-8972-01bc42b21f42.png -o varliklar/gorseller/bag_duzenegi_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/modeller/tasiyici_sirt.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/tasiyici_nefes_kesesi.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/tasiyici_omurga.glb
+curl -sSfL [external source URL omitted] -o varliklar/modeller/bag_duzenegi.glb
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/tasiyici_sirt_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/tasiyici_nefes_kesesi_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/tasiyici_omurga_kavram.png
+curl -sSfL [external source URL omitted] -o varliklar/gorseller/bag_duzenegi_kavram.png
 wc -c varliklar/modeller/tasiyici_*.glb varliklar/modeller/bag_duzenegi.glb varliklar/gorseller/tasiyici_*_kavram.png varliklar/gorseller/bag_duzenegi_kavram.png
 ```
 
@@ -198,14 +198,14 @@ Ortak stil metni (TASARIM §10.1), tüm kavram promptlarının başında; ardın
 
 > stylized dark fantasy, simple low-poly shapes, muted cold blues and greys for the fog world, warm amber accents for the hub and organs, clean readable silhouettes, no text
 
-### Kavram görselleri — `krea/krea-2/medium`, 1K, `creativity=raw`
+### Kavram görselleri — `image-generation-model`, 1K, `creativity=raw`
 
-| Hedef yol | Krea URL | En-boy | Nesne promptu | Bayt |
+| Hedef yol | harici servis URL | En-boy | Nesne promptu | Bayt |
 |---|---|---|---|---|
-| `varliklar/gorseller/tasiyici_sirt_kavram.png` | https://gen.krea.ai/images/dd13578b-4e3d-488b-a462-5fd9637696f4.png | 4:3 | `single isolated section of a giant creature's back used as a walkable platform, broad gently curved slab of thick grey-blue hide with flat top surface, subtle bony plates and leathery folds, rounded organic edges, a few small warm amber glowing veins, whole piece visible, three-quarter top view, isolated on plain light grey background, no characters, no buildings, no scenery, no shadow, game environment prop concept` | indirilemedi |
-| `varliklar/gorseller/tasiyici_nefes_kesesi_kavram.png` | https://gen.krea.ai/images/c206e49d-88d6-4292-9459-b34e5db72203.png | 1:1 | `single isolated breathing sac organ of a giant creature, round dome-shaped translucent membrane bulb growing from a short fleshy grey-blue base ring, warm amber glow inside, a few thin vein lines, symmetrical simple form, whole object centered, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game prop model concept` | indirilemedi |
-| `varliklar/gorseller/tasiyici_omurga_kavram.png` | https://gen.krea.ai/images/c37a50b0-a24e-411b-9e31-9fa88d42f487.png | 4:3 | `single isolated spine ridge segment of a giant creature, a row of three large curved bony dorsal spikes rising from a short strip of grey-blue hide, pale bone color with cold blue tint, simple chunky shapes, whole object visible, side view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game environment prop concept` | indirilemedi |
-| `varliklar/gorseller/bag_duzenegi_kavram.png` | https://gen.krea.ai/images/ea3bac83-f7f6-4538-8972-01bc42b21f42.png | 1:1 | `single isolated organ binding apparatus shrine, a waist-high round stone and bone altar with two cradle sockets on top for holding glowing organs, thick fleshy tubes and brass rings connecting it to the base, warm amber glowing core in the center, sturdy symmetrical silhouette, whole object visible, front three-quarter view, isolated on plain light grey background, no characters, no scenery, no shadow, game interactable prop concept` | indirilemedi |
+| `varliklar/gorseller/tasiyici_sirt_kavram.png` | [external source URL omitted] | 4:3 | `single isolated section of a giant creature's back used as a walkable platform, broad gently curved slab of thick grey-blue hide with flat top surface, subtle bony plates and leathery folds, rounded organic edges, a few small warm amber glowing veins, whole piece visible, three-quarter top view, isolated on plain light grey background, no characters, no buildings, no scenery, no shadow, game environment prop concept` | indirilemedi |
+| `varliklar/gorseller/tasiyici_nefes_kesesi_kavram.png` | [external source URL omitted] | 1:1 | `single isolated breathing sac organ of a giant creature, round dome-shaped translucent membrane bulb growing from a short fleshy grey-blue base ring, warm amber glow inside, a few thin vein lines, symmetrical simple form, whole object centered, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game prop model concept` | indirilemedi |
+| `varliklar/gorseller/tasiyici_omurga_kavram.png` | [external source URL omitted] | 4:3 | `single isolated spine ridge segment of a giant creature, a row of three large curved bony dorsal spikes rising from a short strip of grey-blue hide, pale bone color with cold blue tint, simple chunky shapes, whole object visible, side view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game environment prop concept` | indirilemedi |
+| `varliklar/gorseller/bag_duzenegi_kavram.png` | [external source URL omitted] | 1:1 | `single isolated organ binding apparatus shrine, a waist-high round stone and bone altar with two cradle sockets on top for holding glowing organs, thick fleshy tubes and brass rings connecting it to the base, warm amber glowing core in the center, sturdy symmetrical silhouette, whole object visible, front three-quarter view, isolated on plain light grey background, no characters, no scenery, no shadow, game interactable prop concept` | indirilemedi |
 
 Kavramlar oyuna bağlanmaz; 3B üretim girdisi ve stil referansıdır. Bağ Düzeneği'ndeki iki yuva, TASARIM §1'deki canlının iki organ yuvasını görselleştirir.
 
@@ -215,10 +215,10 @@ Prompt: metin yok; girdi yalnız ilgili kavram görselinin URL'sidir (`input_mod
 
 | Hedef yol | face_limit | GLB URL | Önizleme URL | Hedef sahne / düğüm | Bayt |
 |---|---|---|---|---|---|
-| `varliklar/modeller/tasiyici_sirt.glb` | 4000 | https://app-uploads.krea.ai/public/8748f2d8-ba4e-41f8-b63d-36ff8e75da37.glb | https://app-uploads.krea.ai/public/58afe621-9af4-4b3b-a1e3-57fc47a34538.png | `Merkez/TasiyiciSirt` (gerekirse `Merkez/TasiyiciSirt/Parca*` ile döşenir) | indirilemedi |
-| `varliklar/modeller/tasiyici_nefes_kesesi.glb` | 2000 | https://app-uploads.krea.ai/public/988b983e-f053-4960-b38c-3975c390dc6a.glb | https://app-uploads.krea.ai/public/1586e27c-369b-4c49-8371-bdf5895e41f6.png | `Merkez/NefesKeseleri/*` (tek parça, çoğaltılır) | indirilemedi |
-| `varliklar/modeller/tasiyici_omurga.glb` | 3000 | https://app-uploads.krea.ai/public/a1d298b0-69ff-4fca-896d-8750d2a6c1d8.glb | https://app-uploads.krea.ai/public/2bc092d0-bc32-4326-b857-53b7a3bfceef.png | `Merkez/TasiyiciOmurga/*` (sırt kenarı/ortası, çoğaltılabilir) | indirilemedi |
-| `varliklar/modeller/bag_duzenegi.glb` | 5000 | https://app-uploads.krea.ai/public/b2d41394-1c18-4738-aa0f-4b36cf3f04f3.glb | https://app-uploads.krea.ai/public/8ae873b3-63aa-4d71-8bfc-04330b59c8d6.png | `Merkez/BagDuzenegi/Model` | indirilemedi |
+| `varliklar/modeller/tasiyici_sirt.glb` | 4000 | [external source URL omitted] | [external source URL omitted] | `Merkez/TasiyiciSirt` (gerekirse `Merkez/TasiyiciSirt/Parca*` ile döşenir) | indirilemedi |
+| `varliklar/modeller/tasiyici_nefes_kesesi.glb` | 2000 | [external source URL omitted] | [external source URL omitted] | `Merkez/NefesKeseleri/*` (tek parça, çoğaltılır) | indirilemedi |
+| `varliklar/modeller/tasiyici_omurga.glb` | 3000 | [external source URL omitted] | [external source URL omitted] | `Merkez/TasiyiciOmurga/*` (sırt kenarı/ortası, çoğaltılabilir) | indirilemedi |
+| `varliklar/modeller/bag_duzenegi.glb` | 5000 | [external source URL omitted] | [external source URL omitted] | `Merkez/BagDuzenegi/Model` | indirilemedi |
 
 **Ölçek ve yön (tahmin; dosyalar inmediği için ölçülmedi).** Aşama 1'de aynı modelin üç çıktısı ölçüldü: Y boyu tam 1,0 birim, AABB merkezi orijinde, +Y yukarı, düğüm dönüşümü yok, ön yön +X. Aynı davranış beklenir, ama yatay parçalarda normalize ekseni farklı olabilir. Godot uzmanı içe aktarmada gerçek AABB'yi ölçmeli (`ModelBaglantisi.gd` zaten bunu yapar).
 
@@ -239,7 +239,7 @@ Bütçe: tek LOD; Godot içe aktarmada `meshes/generate_lods` açık bırakılma
 
 ## Güncel durum — 2026-10-15, Aşama 1 son bağlama
 
-Bu worktree'de üç GLB, dört MP3 ve dört PNG mevcuttur. İlk import başarıyla tamamlandı. Aşağıdaki eski üretim/indirme engeli notları tarihçedir; güncel bağlantılar bu bölümde ve DURUM.md'dedir. Yeni Krea üretimi veya indirme yapılmadı; mevcut Krea kullanım koşulları ve önceki lisans kaydı korunur. Varlıklar prototip için geçicidir.
+Bu worktree'de üç GLB, dört MP3 ve dört PNG mevcuttur. İlk import başarıyla tamamlandı. Aşağıdaki eski üretim/indirme engeli notları tarihçedir; güncel bağlantılar bu bölümde ve DURUM.md'dedir. Yeni harici servis üretimi veya indirme yapılmadı; mevcut harici servis kullanım koşulları ve önceki lisans kaydı korunur. Varlıklar prototip için geçicidir.
 
 | Kaynak dosya | Bağlantı | Uygulanan ölçek / Y dönüşü / Y offset |
 |---|---|---|
@@ -262,28 +262,28 @@ Gerçek Godot mesh AABB ölçümü: oyuncu Y boyu 1,0, min Y -0,5; Avcı 1,0/-0,
 
 | Dosya | Kaynak | Lisans / durum |
 |---|---|---|
-| `varliklar/modeller/oyuncu_Color_a02d4fb7-9264-4672-8d81-2ebe647ddad8.jpg` | oyuncu.glb gömülü JPEG; Godot importu | Aynı Krea varlığının dokusu, mevcut Krea lisans kaydı; geçici |
-| `varliklar/modeller/avci_Color_faabfd7b-7612-4aed-9a36-59e7152d74d7.jpg` | avci.glb gömülü JPEG; Godot importu | Aynı Krea varlığının dokusu, mevcut Krea lisans kaydı; geçici |
-| `varliklar/modeller/yanki_kesesi_Color_019f6ecb-b182-4ab6-b6bc-08b6df072587.jpg` | yanki_kesesi.glb gömülü JPEG; Godot importu | Aynı Krea varlığının dokusu, mevcut Krea lisans kaydı; geçici |
+| `varliklar/modeller/oyuncu_Color_a02d4fb7-9264-4672-8d81-2ebe647ddad8.jpg` | oyuncu.glb gömülü JPEG; Godot importu | Aynı harici servis varlığının dokusu, mevcut harici servis lisans kaydı; geçici |
+| `varliklar/modeller/avci_Color_faabfd7b-7612-4aed-9a36-59e7152d74d7.jpg` | avci.glb gömülü JPEG; Godot importu | Aynı harici servis varlığının dokusu, mevcut harici servis lisans kaydı; geçici |
+| `varliklar/modeller/yanki_kesesi_Color_019f6ecb-b182-4ab6-b6bc-08b6df072587.jpg` | yanki_kesesi.glb gömülü JPEG; Godot importu | Aynı harici servis varlığının dokusu, mevcut harici servis lisans kaydı; geçici |
 
 Bu dokular için yeni harici içerik veya farklı lisans eklenmedi. Model malzemeleri dokuyu koruyan örnek kopyalarıyla çalışır. Ses kaynaklarının yüklenmesi/olayda oynatılması test edildi; bu VDS'de fiziksel ses aygıtı olmadığından işitsel kalite ayrıca değerlendirilmelidir.
 
 ## Önceki üretim ve indirme kayıtları (tarihçe)
 
-## 2026-10-15 — Aşama 1, Adım 1: Krea üretimi (üretildi, indirildi, projeye kopyalanamadı)
+## 2026-10-15 — Aşama 1, Adım 1: harici servis üretimi (üretildi, indirildi, projeye kopyalanamadı)
 
-Krea bakiyesi: başta 18772,37 CU, sonda 18063,55 CU (harcanan ≈ 708,8 CU). Plan: Individual Pro.
+harici servis bakiyesi: başta 18772,37 CU, sonda 18063,55 CU (harcanan ≈ 708,8 CU). Plan: Individual Pro.
 
-**Tüm 11 varlık Krea'da üretildi ve WebFetch ile ikili olarak indirildi; tüm değerler aşağıda gerçek dosyadan ölçüldü.**
+**Tüm 11 varlık harici serviste üretildi ve WebFetch ile ikili olarak indirildi; tüm değerler aşağıda gerçek dosyadan ölçüldü.**
 İndirme geçmişi:
-1. `curl -sSfL -o ".../varliklar/gorseller/oyuncu_kavram.png" https://gen.krea.ai/...` → `This command requires approval`.
+1. `curl -sSfL -o ".../varliklar/gorseller/oyuncu_kavram.png" [external source URL omitted]` → `This command requires approval`.
 2. WebFetch: 11/11 dosya oturumun araç sonuç klasörüne kaydedildi
    (ajan oturumunun yerel araç sonuç klasörü: `~/.claude/projects/<proje>/<oturum>/tool-results/webfetch-*.{png,bin,mp3}`; depo dışı, kalıcı değil).
 3. Oradan `cp` ile hedef yola kopyalama → `Claude requested permissions to edit ...\tool-results\webfetch-1792090273119-exqojj.bin which is a sensitive file.`
    Kopyalama ya da `curl` için açık kullanıcı onayı bekleniyor. Onaysız başka kopyalama yolu denenmedi.
 
 **Durum: hedef yollarda (`varliklar/modeller`, `varliklar/sesler`, `varliklar/gorseller`) dosya henüz yok.** Oyunda yer tutucular (CapsuleMesh, BoxMesh, SphereMesh, kod sinüs sesleri) korunur.
-Onaydan sonra her dosya kopyalanmalı ve aşağıdaki bayt değeriyle karşılaştırılmalı. Krea URL'lerinin süresiz kalacağı garanti değildir.
+Onaydan sonra her dosya kopyalanmalı ve aşağıdaki bayt değeriyle karşılaştırılmalı. harici servis URL'lerinin süresiz kalacağı garanti değildir.
 
 | Hedef yol | Önbellekteki dosya (`tool-results/`) | Bayt |
 |---|---|---|
@@ -301,40 +301,40 @@ Onaydan sonra her dosya kopyalanmalı ve aşağıdaki bayt değeriyle karşıla�
 
 Ölçüm: glTF JSON başlığı, PNG IHDR + çözülmüş alfa kanalı, MP3 kare sayımı (Python, salt okuma).
 
-**Üçüncü düzeltme turu (2026-10-15):** `curl -sSfL -o varliklar/modeller/oyuncu.glb https://app-uploads.krea.ai/public/0a91263a-...glb` yeniden `This command requires approval` verdi. Önbellekteki `tool-results/` dosyaları önceki oturuma (`f7cdbeb4-...`) ait; kalıcı değiller. Önerilen yol Krea URL'lerinden doğrudan indirmek. Proje kökünde (Git Bash) çalıştırın:
+**Üçüncü düzeltme turu (2026-10-15):** `curl -sSfL -o varliklar/modeller/oyuncu.glb [external source URL omitted]` yeniden `This command requires approval` verdi. Önbellekteki `tool-results/` dosyaları önceki oturuma (`f7cdbeb4-...`) ait; kalıcı değiller. Önerilen yol harici servis URL'lerinden doğrudan indirmek. Proje kökünde (Git Bash) çalıştırın:
 
 ```sh
 cd varliklar
-curl -sSfL -o modeller/oyuncu.glb          https://app-uploads.krea.ai/public/0a91263a-f29f-40f1-b4f3-f2f0b8fce625.glb
-curl -sSfL -o modeller/avci.glb            https://app-uploads.krea.ai/public/774c8555-8058-423a-9532-da9d328d57cb.glb
-curl -sSfL -o modeller/yanki_kesesi.glb    https://app-uploads.krea.ai/public/9c03bf1f-c3d2-4f97-96f7-e002e933e8e8.glb
-curl -sSfL -o gorseller/oyuncu_kavram.png  https://gen.krea.ai/images/33da89d2-80d4-4c5d-9fd7-c0f48522ad87.png
-curl -sSfL -o gorseller/avci_kavram.png    https://gen.krea.ai/images/fe098a60-4258-4f17-b37f-2bfed39cb757.png
-curl -sSfL -o gorseller/yanki_kesesi_kavram.png https://gen.krea.ai/images/cd5409d7-e80a-48d9-9544-f7f0f49ebd3d.png
-curl -sSfL -o gorseller/yanki_ikon.png     https://app-uploads.krea.ai/<kullanici-id>/412c70f4-1618-4c51-9911-9e86f7a50037-image.png
-curl -sSfL -o sesler/saldiri.mp3   https://app-uploads.krea.ai/audio/ce8e4959-18a7-4d08-afcf-956cc84b6e47.mp3
-curl -sSfL -o sesler/hasar.mp3     https://app-uploads.krea.ai/audio/2d26e5a6-72d0-40c6-b98c-65d978924098.mp3
-curl -sSfL -o sesler/tarama.mp3    https://app-uploads.krea.ai/audio/3ecff37f-7471-486c-990f-547a97a71be1.mp3
-curl -sSfL -o sesler/etkilesim.mp3 https://app-uploads.krea.ai/audio/08d36ec1-deec-4dbc-a7ae-2a407db22f85.mp3
+curl -sSfL -o modeller/oyuncu.glb          [external source URL omitted]
+curl -sSfL -o modeller/avci.glb            [external source URL omitted]
+curl -sSfL -o modeller/yanki_kesesi.glb    [external source URL omitted]
+curl -sSfL -o gorseller/oyuncu_kavram.png  [external source URL omitted]
+curl -sSfL -o gorseller/avci_kavram.png    [external source URL omitted]
+curl -sSfL -o gorseller/yanki_kesesi_kavram.png [external source URL omitted]
+curl -sSfL -o gorseller/yanki_ikon.png     [external source URL omitted]<kullanici-id>/412c70f4-1618-4c51-9911-9e86f7a50037-image.png
+curl -sSfL -o sesler/saldiri.mp3   [external source URL omitted]
+curl -sSfL -o sesler/hasar.mp3     [external source URL omitted]
+curl -sSfL -o sesler/tarama.mp3    [external source URL omitted]
+curl -sSfL -o sesler/etkilesim.mp3 [external source URL omitted]
 wc -c modeller/* gorseller/* sesler/*   # baytları yukarıdaki tabloyla karşılaştırın
 ```
 
-Bayt farklıysa ya da bir URL 403/404 verirse o varlık Krea'da yeniden üretilmeli.
+Bayt farklıysa ya da bir URL 403/404 verirse o varlık harici serviste yeniden üretilmeli.
 
-Lisans: Krea kullanım koşulları (ücretli Pro planı; "ticari kullanıma izin veren plan" ifadesi **[DOĞRULANMALI]**, bkz. en üstteki Lisans bölümü). Tümü geçici: evet (prototip).
+Lisans: harici servis kullanım koşulları (ücretli Pro planı; "ticari kullanıma izin veren plan" ifadesi **[DOĞRULANMALI]**, bkz. en üstteki Lisans bölümü). Tümü geçici: evet (prototip).
 Tarih: 2026-10-15. PNG yolları TASARIM §10.1 uyarınca `varliklar/gorseller/` (görevdeki `kavram/`, `ikonlar/` yerine; bkz. KARARLAR.md).
 
 Ortak stil metni (TASARIM §10.1), tüm görsel promptlarının başında:
 
 > stylized dark fantasy, simple low-poly shapes, muted cold blues and greys for the fog world, warm amber accents for the hub and organs, clean readable silhouettes, no text
 
-### Kavram görselleri — `krea/krea-2/medium`, 1K, `creativity=raw`
+### Kavram görselleri — `image-generation-model`, 1K, `creativity=raw`
 
-| Hedef yol | Tür | Krea URL | En-boy | Prompt (ortak stil + virgül + aşağıdaki) |
+| Hedef yol | Tür | harici servis URL | En-boy | Prompt (ortak stil + virgül + aşağıdaki) |
 |---|---|---|---|---|
-| `varliklar/gorseller/oyuncu_kavram.png` | PNG | https://gen.krea.ai/images/33da89d2-80d4-4c5d-9fd7-c0f48522ad87.png | 3:4 | `single full-body lantern-bearing hooded human wanderer, sturdy boots, short blue-grey cloak, small glowing amber lantern attached to belt, simple solid silhouette, neutral A-pose with arms slightly away from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game character model concept` |
-| `varliklar/gorseller/avci_kavram.png` | PNG | https://gen.krea.ai/images/fe098a60-4258-4f17-b37f-2bfed39cb757.png | 3:4 | `single full-body lean fast predatory biped creature, narrow angular torso, long thin arms with claws, hunched pointed head, digitigrade claw feet, cold grey skin, small amber glowing eyes, clearly nonhuman silhouette, neutral A-pose with limbs separated from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` |
-| `varliklar/gorseller/yanki_kesesi_kavram.png` | PNG | https://gen.krea.ai/images/cd5409d7-e80a-48d9-9544-f7f0f49ebd3d.png | 1:1 | `single small glowing amber organic echo sac, pear-shaped membranous pouch with a short neck and three curved ribs, smooth low-poly solid form, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game prop model concept` |
+| `varliklar/gorseller/oyuncu_kavram.png` | PNG | [external source URL omitted] | 3:4 | `single full-body lantern-bearing hooded human wanderer, sturdy boots, short blue-grey cloak, small glowing amber lantern attached to belt, simple solid silhouette, neutral A-pose with arms slightly away from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game character model concept` |
+| `varliklar/gorseller/avci_kavram.png` | PNG | [external source URL omitted] | 3:4 | `single full-body lean fast predatory biped creature, narrow angular torso, long thin arms with claws, hunched pointed head, digitigrade claw feet, cold grey skin, small amber glowing eyes, clearly nonhuman silhouette, neutral A-pose with limbs separated from body, both feet visible on same ground baseline, front view, isolated on plain light grey background, no scenery, no pedestal, no shadow, game creature model concept` |
+| `varliklar/gorseller/yanki_kesesi_kavram.png` | PNG | [external source URL omitted] | 1:1 | `single small glowing amber organic echo sac, pear-shaped membranous pouch with a short neck and three curved ribs, smooth low-poly solid form, whole object centered, front view, isolated on plain light grey background, no hands, no scenery, no pedestal, no shadow, game prop model concept` |
 
 Kavramlar oyuna bağlanmaz; yalnız 3B üretim girdisi ve stil referansıdır. Ölçülen: oyuncu ve Avcı 896×1184, kese 1024×1024; üçü de RGB (alfa yok), gri düz zemin.
 
@@ -345,9 +345,9 @@ Prompt: metin yok; girdi yalnız ilgili kavram görselinin URL'sidir (`input_mod
 
 | Hedef yol | face_limit | GLB URL | Önizleme URL | Bağlanacağı düğüm |
 |---|---|---|---|---|
-| `varliklar/modeller/oyuncu.glb` | 10000 | https://app-uploads.krea.ai/public/0a91263a-f29f-40f1-b4f3-f2f0b8fce625.glb | https://app-uploads.krea.ai/public/876bd8bd-b107-4dfe-9e43-6000344b2f45.png | `sahneler/oyuncu.tscn` → `Oyuncu/Model` |
-| `varliklar/modeller/avci.glb` | 10000 | https://app-uploads.krea.ai/public/774c8555-8058-423a-9532-da9d328d57cb.glb | https://app-uploads.krea.ai/public/0069abab-1de3-4517-bc96-6de7b1555700.png | `sahneler/dusmanlar/avci.tscn` → `Avci/Model` |
-| `varliklar/modeller/yanki_kesesi.glb` | 3000 | https://app-uploads.krea.ai/public/9c03bf1f-c3d2-4f97-96f7-e002e933e8e8.glb | https://app-uploads.krea.ai/public/9e3a6877-8d8b-4091-bfee-4143d4fb493c.png | `sahneler/yanki_kesesi.tscn` → `YankiKesesi/Model` ve oyuncudaki `Oyuncu/YankiKesesi/Model` |
+| `varliklar/modeller/oyuncu.glb` | 10000 | [external source URL omitted] | [external source URL omitted] | `sahneler/oyuncu.tscn` → `Oyuncu/Model` |
+| `varliklar/modeller/avci.glb` | 10000 | [external source URL omitted] | [external source URL omitted] | `sahneler/dusmanlar/avci.tscn` → `Avci/Model` |
+| `varliklar/modeller/yanki_kesesi.glb` | 3000 | [external source URL omitted] | [external source URL omitted] | `sahneler/yanki_kesesi.tscn` → `YankiKesesi/Model` ve oyuncudaki `Oyuncu/YankiKesesi/Model` |
 
 **Ölçülen değerler (gerçek dosyadan):**
 
@@ -380,9 +380,9 @@ Prompt: metin yok; girdi yalnız ilgili kavram görselinin URL'sidir (`input_mod
 
 ### Yankı HUD ikonu — `openai/gpt-image-2.5-flare`, 1K, 1:1, `background=transparent`, `quality=medium`
 
-| Hedef yol | Tür | Krea URL |
+| Hedef yol | Tür | harici servis URL |
 |---|---|---|
-| `varliklar/gorseller/yanki_ikon.png` | PNG (şeffaf zemin istendi) | https://app-uploads.krea.ai/<kullanici-id>/412c70f4-1618-4c51-9911-9e86f7a50037-image.png |
+| `varliklar/gorseller/yanki_ikon.png` | PNG (şeffaf zemin istendi) | [external source URL omitted]<kullanici-id>/412c70f4-1618-4c51-9911-9e86f7a50037-image.png |
 
 Prompt: ortak stil + `. Game HUD icon: isolated glowing amber echo sac (pear-shaped membranous organic pouch with three curved ribs) with two thin concentric sonar arcs radiating from it, centered, clean bold silhouette, readable at 64 pixels, transparent background, no lettering, no border, no frame`
 
@@ -395,18 +395,18 @@ Prompt: ortak stil + `. Game HUD icon: isolated glowing amber echo sac (pear-sha
 Seed Audio süre parametresi almaz; süre promptla istendi. **Ölçülen süreler** (MPEG-1 Layer III, 44100 Hz, stereo, kare sayımı):
 saldırı 0,653 sn · hasar 0,575 sn · tarama 1,254 sn · etkileşim 0,470 sn. Dördü de 0,3–1,5 sn aralığında. Format `.ogg`/`.wav` değil MP3 (bkz. KARARLAR.md). Godot `AudioStreamMP3` ile doğrudan oynatır; döngü kapalı içe aktarılmalı.
 
-| Hedef yol | Krea URL | Bağlanacağı olay | Prompt |
+| Hedef yol | harici servis URL | Bağlanacağı olay | Prompt |
 |---|---|---|---|
-| `varliklar/sesler/saldiri.mp3` | https://app-uploads.krea.ai/audio/ce8e4959-18a7-4d08-afcf-956cc84b6e47.mp3 | `Oyuncu.saldir()` / sinyal `saldirdi(adim, vurus_kimligi)`; şu an `Geometri.ses` | `Sound effect only, about 0.6 seconds: short dry sword whoosh ending in a light impact, stylized dark fantasy game melee attack, single event, no voice, no speech, no music, no ambience` |
-| `varliklar/sesler/hasar.mp3` | https://app-uploads.krea.ai/audio/2d26e5a6-72d0-40c6-b98c-65d978924098.mp3 | Oyuncu/Avcı `hasar_al()` / sinyal `can_degisti` (azalışta) | `Sound effect only, about 0.5 seconds: short muted body impact thud with a faint pained grunt-free cloth rustle, stylized dark fantasy game character taking damage, single event, no voice, no speech, no music, no ambience` |
-| `varliklar/sesler/tarama.mp3` | https://app-uploads.krea.ai/audio/3ecff37f-7471-486c-990f-547a97a71be1.mp3 | `YankiKesesi.tara()` / sinyal `tarama_yapildi(yaricap)` | `Sound effect only, about 1.2 seconds: single resonant organic sonar pulse, soft wet membrane thump followed by a warm ringing echo that fades out, magical echolocation scan, stylized dark fantasy game, no voice, no speech, no music, no ambience` |
-| `varliklar/sesler/etkilesim.mp3` | https://app-uploads.krea.ai/audio/08d36ec1-deec-4dbc-a7ae-2a407db22f85.mp3 | `etkilesim` (E) eylemi; Aşama 1'de etkileşim noktası yok, Aşama 2'de Taşıyıcı/Bağ Düzeneği | `Sound effect only, about 0.4 seconds: short soft interaction click, a muted wooden and stone tap with a tiny warm chime, stylized dark fantasy game UI interact sound, single event, no voice, no speech, no music, no ambience` |
+| `varliklar/sesler/saldiri.mp3` | [external source URL omitted] | `Oyuncu.saldir()` / sinyal `saldirdi(adim, vurus_kimligi)`; şu an `Geometri.ses` | `Sound effect only, about 0.6 seconds: short dry sword whoosh ending in a light impact, stylized dark fantasy game melee attack, single event, no voice, no speech, no music, no ambience` |
+| `varliklar/sesler/hasar.mp3` | [external source URL omitted] | Oyuncu/Avcı `hasar_al()` / sinyal `can_degisti` (azalışta) | `Sound effect only, about 0.5 seconds: short muted body impact thud with a faint pained grunt-free cloth rustle, stylized dark fantasy game character taking damage, single event, no voice, no speech, no music, no ambience` |
+| `varliklar/sesler/tarama.mp3` | [external source URL omitted] | `YankiKesesi.tara()` / sinyal `tarama_yapildi(yaricap)` | `Sound effect only, about 1.2 seconds: single resonant organic sonar pulse, soft wet membrane thump followed by a warm ringing echo that fades out, magical echolocation scan, stylized dark fantasy game, no voice, no speech, no music, no ambience` |
+| `varliklar/sesler/etkilesim.mp3` | [external source URL omitted] | `etkilesim` (E) eylemi; Aşama 1'de etkileşim noktası yok, Aşama 2'de Taşıyıcı/Bağ Düzeneği | `Sound effect only, about 0.4 seconds: short soft interaction click, a muted wooden and stone tap with a tiny warm chime, stylized dark fantasy game UI interact sound, single event, no voice, no speech, no music, no ambience` |
 
 Konumsal sesler (`AudioStreamPlayer3D`) için ölçek/yön uygulanmaz. Süre 0,3–1,5 sn dışında çıkarsa içe aktarmada kırpılmalı.
 
 ## 2026-10-15 — Aşama 1, Adım 2 sonucu
 
-Krea araçları listelenebildi; bakiye 18937,998888888887 CU. Üç kavram üretimi otomatik onay denetiminde reddedildi: `MCP tool call requires approval, but approval policy is never`. Hiçbir üretim işi başlamadı veya dosya indirilmedi. Görevdeki yedek akışla tüm varlıklar yer tutucu bırakıldı. Ayrıntılı erişim kaydı: `docs/VARLIK_ADIM2.md`.
+harici servis araçları listelenebildi; bakiye 18937,998888888887 CU. Üç kavram üretimi otomatik onay denetiminde reddedildi: `MCP tool call requires approval, but approval policy is never`. Hiçbir üretim işi başlamadı veya dosya indirilmedi. Görevdeki yedek akışla tüm varlıklar yer tutucu bırakıldı. Ayrıntılı erişim kaydı: `docs/VARLIK_ADIM2.md`.
 
 Tablodaki `varliklar/` yolları beklenen çıktı yollarıdır; dosyalar mevcut değildir. Harici içerik ve yeni harici lisans yoktur. Korunan yer tutucular özgün kod ve Godot yerleşik geometri/ses API'sinden gelir (motor MIT).
 
@@ -426,7 +426,7 @@ Tablodaki `varliklar/` yolları beklenen çıktı yollarıdır; dosyalar mevcut 
 
 ### Prompt kaydı
 
-Üç `generate_image` isteği `krea/krea-2/medium`, `aspect_ratio=1:1`, `resolution=1K`, `creativity=raw` ile gönderildi. Hepsi aşağıdaki ortak stil metni, virgül ve nesne metninin birleşimidir:
+Üç `generate_image` isteği `image-generation-model`, `aspect_ratio=1:1`, `resolution=1K`, `creativity=raw` ile gönderildi. Hepsi aşağıdaki ortak stil metni, virgül ve nesne metninin birleşimidir:
 
 > stylized dark fantasy, simple low-poly shapes, muted cold blues and greys for the fog world, warm amber accents for the hub and organs, clean readable silhouettes, no text
 
@@ -450,7 +450,7 @@ Tablodaki `varliklar/` yolları beklenen çıktı yollarıdır; dosyalar mevcut 
 
 - `betikler/Geometri.gd`: kutu meshler, kapsül fizik şekilleri; `Avci.gd`: hazırlık halkası; `KirilganDuvar.gd`: geometrik çatlak. Kaynak: bu görevde yazılan özgün kod ve Godot yerleşik geometri API'si. Lisans: harici varlık içermez; Godot motoru MIT. Geçici: evet.
 - `Geometri.ses()`: PCM sinüs sesleri, saldırı/hasar/tarama/Avcı hazırlığı. Kaynak: bu görevde yazılan özgün matematiksel üretim; üçüncü taraf örnek kullanılmadı. Harici lisans gerektiren varlık yok. Geçici: evet. Diskte ses dosyası üretilmez.
-- Krea üretimi ve harici model/ikon/ses indirmesi yapılmadı. Beklenen GLB bağlantıları DURUM.md'de; dosyalar henüz yok.
+- harici servis üretimi ve harici model/ikon/ses indirmesi yapılmadı. Beklenen GLB bağlantıları DURUM.md'de; dosyalar henüz yok.
 
 ## 2026-10-15 — Yer tutucu şekil düzeltmesi
 

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { mkdtemp, mkdir, readFile, utimes, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { cleanupWorktrees, git, mergeWorktree, prepareWorktree, removeWorktree } from '../src/gitwork.js';
@@ -20,6 +20,17 @@ async function repo() {
 test('git deposu değilse ya da commit yoksa ağaç açılmaz', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'gw0-'));
   assert.equal(await prepareWorktree(dir, 't1', join(dir, 'wt')), null);
+});
+
+test('post-merge test timeout terminates the npm process tree', { timeout: 15_000 }, async (t) => {
+  const dir = await mkdtemp(join(tmpdir(), 'ofis-timeout-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  await writeFile(join(dir, 'package.json'), JSON.stringify({ scripts: { test: 'node hang.cjs' } }));
+  await writeFile(join(dir, 'hang.cjs'), 'setInterval(() => {}, 1000);');
+  const { runProjectTests } = await import('../src/gitwork.js');
+  const result = await runProjectTests(dir, { timeoutMs: 1500 });
+  assert.equal(result.ok, false);
+  assert.match(result.tail, /zaman aşımı/);
 });
 
 test('hazırla → uzman yazar (commit etmeden) → birleştir: değişiklik ana dala gelir, ağaç ve dal kalkar', async () => {
@@ -151,10 +162,65 @@ test('worktreeFate: Ofis dışında birleştirilen / silinen / duran dal pano i�
   await git(['merge', '--ff-only', 'ofis/d3'], r);
   const f3 = await worktreeFate(p3);
   assert.equal(f3.merged, true); assert.equal(f3.worktree, null);
+  assert.equal(f3.mergeCommit, null, 'harici HEAD geri alınacak merge olarak varsayılmaz');
   // 5) dal duruyor ama birleştirilmemiş, kopya yok: yalnız kopya bilgisi düşer
   const p4 = await prepareWorktree(r, 'd4', wtRoot);
   await writeFile(join(p4.worktree, 'w.txt'), 'w\n');
   await git(['add', '-A'], p4.worktree); await git([...id, 'commit', '-qm', 'w'], p4.worktree);
   await git(['worktree', 'remove', '--force', p4.worktree], r);
   assert.deepEqual(await worktreeFate(p4), { worktree: null });
+});
+
+test('cleanup preserves uncommitted files when a commit hook fails', async (t) => {
+  const { dir, r, wtRoot } = await repo();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const p = await prepareWorktree(r, 'failed-save', wtRoot);
+  await writeFile(join(p.cwd, 'pending.txt'), 'keep this work');
+  const hooks = join(dir, 'hooks');
+  await mkdir(hooks);
+  await writeFile(join(hooks, 'pre-commit'), '#!/bin/sh\nexit 1\n');
+  await chmod(join(hooks, 'pre-commit'), 0o755);
+  await git(['config', 'core.hooksPath', hooks], r);
+  const old = new Date(Date.now() - 10 * 86_400_000);
+  await utimes(p.worktree, old, old);
+  assert.deepEqual(await cleanupWorktrees(wtRoot), []);
+  assert.equal(await readFile(join(p.cwd, 'pending.txt'), 'utf8'), 'keep this work');
+  const { branchDiff } = await import('../src/gitwork.js');
+  assert.equal((await branchDiff(p)).ok, false, 'failed saves must not return an incomplete diff');
+});
+
+test('cleanup preserves files when git add cannot acquire the index lock', async (t) => {
+  const { dir, r, wtRoot } = await repo();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const p = await prepareWorktree(r, 'locked-index', wtRoot);
+  await writeFile(join(p.cwd, 'pending.txt'), 'keep');
+  const index = await git(['rev-parse', '--path-format=absolute', '--git-path', 'index'], p.cwd);
+  await writeFile(`${index.out}.lock`, '');
+  assert.deepEqual(await cleanupWorktrees(wtRoot, -1), []);
+  assert.ok(existsSync(join(p.cwd, 'pending.txt')));
+});
+
+test('removal errors preserve the branch and are reported to the caller', async (t) => {
+  const { dir, r, wtRoot } = await repo();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const p = await prepareWorktree(r, 'locked-tree', wtRoot);
+  await git(['worktree', 'lock', p.worktree], r);
+  const result = await removeWorktree({ ...p, deleteBranch: true, force: true });
+  assert.equal(result.ok, false);
+  assert.ok(result.error);
+  assert.ok(existsSync(p.worktree));
+  assert.ok((await git(['rev-parse', '--verify', p.branch], r)).ok);
+  assert.equal((await removeWorktree({ repo: join(dir, 'missing') })).ok, false);
+});
+
+test('a saved branch remains reviewable and mergeable after worktree cleanup', async (t) => {
+  const { dir, r, wtRoot } = await repo();
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const p = await prepareWorktree(r, 'archived', wtRoot);
+  await writeFile(join(p.cwd, 'saved.txt'), 'saved');
+  await cleanupWorktrees(wtRoot, -1);
+  const { branchDiff } = await import('../src/gitwork.js');
+  assert.equal((await branchDiff(p)).ok, true);
+  assert.equal((await mergeWorktree(p)).ok, true);
+  assert.equal(await readFile(join(r, 'saved.txt'), 'utf8'), 'saved');
 });

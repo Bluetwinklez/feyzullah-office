@@ -10,6 +10,4 @@ Bu depoda çalışan her uzman (Claude, Codex, agy) için:
 5. Bitirmeden önce: temiz kopyada önce `godot --headless --path . --import`, sonra test botunu çalıştır (`godot --headless --path . --script res://test/calistir.gd`), gerekiyorsa
    `.exe` dışa aktar, `docs/DURUM.md`'yi güncelle. “Çalışıyor” yalnız gerçekten çalıştırdığın şey için.
 6. Varlık eklediysen `docs/VARLIKLAR.md`'ye kaynak + lisans yaz. Ücretli/lisansı belirsiz içerik yok.
-   Krea çıktısını indirmenin TEK yolu (Ofis'in aracı; Krea MCP açıklamalarında geçmez, curl kullanma):
-   `node C:/Users/ornek/Desktop/claude/feyzullah-ofis/tools/krea-indir.mjs <krea-adresi> <varliklar/...hedef>`
 7. git commit / merge yapma; Ofis yapar.

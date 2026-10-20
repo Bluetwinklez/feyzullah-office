@@ -14,7 +14,7 @@ import { ADMIN_PERSONA, createAdmin, promptMasterPersona } from './src/agents/ad
 import { loadCaveman, RE_ID, RE_PERSONA } from './src/agents/personas.js';
 import { createUsage } from './src/usage.js';
 import { approvalNotice, boardNotices, dailyReport, reportDay, reportDue } from './src/notify.js';
-import { branchDiff, cleanupWorktrees, commitAll, mergeWorktree, removeWorktree, revertMerge, runProjectTests, sharedPreparer, worktreeFate } from './src/gitwork.js';
+import { branchDiff, cleanupWorktrees, commitAll, git, mergeWorktree, removeWorktree, revertMerge, runProjectTests, sharedPreparer, worktreeFate } from './src/gitwork.js';
 import { createSchedule } from './src/schedule.js';
 import { addHistory, expertStats, statsLine } from './src/stats.js';
 import { probeClaude } from './src/usage.js';
@@ -65,7 +65,14 @@ function claudeLow() {
 const WORKTREES = () => join(dataDir(), 'ofis-work', 'worktrees');
 // Aynı komutun aynı depodaki görevleri tek dalı paylaşır (sırayla çalışanlar birbirinin dosyasını görür).
 let prepShared = null;
-const gitPrepare = (cwd, card) => (config.gitBranches === false ? null : (prepShared ??= sharedPreparer(WORKTREES()))(cwd, card.group ?? card.id));
+const gitPrepare = async (cwd, card) => {
+  if (config.gitBranches === false) return null;
+  const prepared = await (prepShared ??= sharedPreparer(WORKTREES()))(cwd, card.group ?? card.id);
+  if (!prepared && (await git(['rev-parse', '--is-inside-work-tree'], cwd)).ok) {
+    throw new Error('ayrı git çalışma kopyası açılamadı; ilk commit ve git durumunu kontrol et');
+  }
+  return prepared;
+};
 
 // Uzman geçmişi (bitmiş görevler): istatistik sayfası ve yöneticinin uzman seçimi için.
 const HISTORY_FILE = () => join(dataDir(), 'ofis-history.json');
@@ -75,6 +82,7 @@ const statsMap = () => expertStats(history);
 
 /** Kullanıcı komutu: önce Prompt Master net prompta çevirir, sonra yönetici dağıtır (direct: doğrudan yöneticiye). */
 function dispatch(text, { direct = false } = {}) {
+  if (process.env.OFIS_DEMO === '1') return { ok: false, error: 'demo modunda gerçek görev çalıştırılmaz' };
   const t = String(text ?? '').trim().slice(0, 8000);
   if (!t) return { ok: false, error: 'boş komut' };
   const pm = promptId();
@@ -254,7 +262,7 @@ app.whenReady().then(async () => {
   else if (skill) await agentStore.update(pm.id, { system: promptMasterPersona(skill) });
   promptId = () => agentStore.list().find((a) => a.role === 'prompt')?.id ?? null;
   // Ters mühendis: yalnız REA MCP ile tersine mühendislik.
-  // Görsel üreten tasarım uzmanları agy'den Codex'e (agy'de Krea yetkisiz; Codex'te çalışıyor).
+  // Mevcut tasarım uzmanlarının varsayılan motorunu Codex ile eşitle.
   for (const a of agentStore.list().filter((x) => x.division === 'design' && x.engine === 'antigravity')) await agentStore.update(a.id, { engine: 'codex' });
   const re = agentStore.list().find((a) => a.catalogId === RE_ID);
   if (!re) await agentStore.add({ name: 'Ters Mühendis', engine: 'claude', catalogId: RE_ID, division: 'reverse', emoji: '🔬', color: '#14b8a6', system: RE_PERSONA });
@@ -363,20 +371,25 @@ app.whenReady().then(async () => {
       return r;
     } catch (err) { return { ok: false, error: err.message }; }
   });
+  const repositoryActions = new Set();
   ipcMain.handle('board:action', async (_e, { id, action }) => {
     if (action === 'retry') return admin.retry(String(id));
     if (action === 'cancel') return admin.cancel(String(id));
     const card = admin.board().find((t) => t.id === String(id));
     if (!card?.branch || !card.repo) return { ok: false, error: 'bu görevin git dalı yok' };
+    const repositoryKey = resolvePath(card.repo).toLowerCase();
+    if (repositoryActions.has(repositoryKey)) return { ok: false, error: 'bu depoda başka bir git işlemi sürüyor' };
+    repositoryActions.add(repositoryKey);
+    try {
     if (action === 'revert') {
       if (!card.merged || !card.mergeCommit || card.reverted) return { ok: false, error: 'geri alınacak birleştirme yok' };
       const r = await revertMerge({ repo: card.repo, commit: card.mergeCommit });
       if (r.ok) for (const t of admin.board().filter((x) => x.branch === card.branch && x.repo === card.repo)) admin.annotate(t.id, { reverted: true });
       return r;
     }
-    if (card.merged || card.discarded || !card.worktree) return { ok: false, error: card.merged ? 'bu dal zaten birleştirildi' : 'bu dal artık yok' };
-    if (action === 'diff') return branchDiff(card); // birleştirmeden önce değişikliklere bakmak için
-    if (['doing', 'review', 'redo'].includes(card.status)) return { ok: false, error: 'görev sürüyor' };
+    if (card.merged || card.discarded) return { ok: false, error: card.merged ? 'bu dal zaten birleştirildi' : 'bu dal artık yok' };
+    if (admin.board().some((t) => t.branch === card.branch && t.repo === card.repo && ['todo', 'doing', 'review', 'redo'].includes(t.status))) return { ok: false, error: 'bu dalda görev sürüyor' };
+    if (action === 'diff') return branchDiff(card);
     // Birleştir: kullanıcının o anki dalına (temiz değilse ya da çakışırsa dokunmaz). At: ağaç + dal silinir.
     // Aynı dalı paylaşan kartların hepsi birlikte işaretlenir.
     const sameBranch = () => admin.board().filter((t) => t.branch === card.branch && t.repo === card.repo);
@@ -386,7 +399,8 @@ app.whenReady().then(async () => {
       const title = String(card.title ?? card.command ?? '').replace(/[*`#>_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 72);
       const r = await mergeWorktree({ ...card, title });
       if (r.ok) {
-        for (const t of sameBranch()) admin.annotate(t.id, { merged: true, worktree: null, mergeCommit: r.commit, postTest: r.commit ? 'çalışıyor' : null });
+        for (const t of sameBranch()) admin.annotate(t.id, { merged: true, worktree: r.worktree ?? null, mergeCommit: r.commit, postTest: r.commit ? 'çalışıyor' : null });
+        if (r.cleanupError) notify({ title: 'Dal birleştirildi, temizlik tamamlanamadı', body: r.cleanupError });
         // Birleştirme sonrası asıl depoda testler: kırılırsa uyarı + "geri al" düğmesi.
         runProjectTests(card.repo).then((t) => {
           const text = !t.ran ? 'test betiği yok' : t.ok ? 'geçti' : 'BAŞARISIZ';
@@ -396,8 +410,14 @@ app.whenReady().then(async () => {
       }
       return r;
     }
-    if (action === 'discard') { await removeWorktree({ ...card, deleteBranch: true, force: true }); for (const t of sameBranch()) admin.annotate(t.id, { discarded: true, worktree: null }); return { ok: true }; }
+    if (action === 'discard') {
+      const r = await removeWorktree({ ...card, deleteBranch: true, force: true });
+      if (!r.ok) return r;
+      for (const t of sameBranch()) admin.annotate(t.id, { discarded: true, worktree: null });
+      return r;
+    }
     return { ok: false, error: 'bilinmeyen işlem' };
+    } finally { repositoryActions.delete(repositoryKey); }
   });
   // Claude limitini şimdi ölç: hook'suz, kayıtsız en küçük sorgu (limitten çok az harcar).
   let probing = null;
@@ -423,7 +443,7 @@ app.whenReady().then(async () => {
   // Zamanlanmış komutlar: saati gelen / limitleri açılan komut yöneticiye gider.
   schedule = await createSchedule({ dir: dataDir(), send: (text, opts) => {
     const r = dispatch(text, opts);
-    notify({ title: 'Zamanlanmış komut gönderildi', body: text.slice(0, 120) });
+    if (r.ok) notify({ title: 'Zamanlanmış komut gönderildi', body: text.slice(0, 120) });
     return r;
   } });
   setInterval(() => { if (schedule.tick({ down: agentRunner.downEngines(), claudeLow: claudeLow() }).length) schedulePush(); }, 30_000);
@@ -477,7 +497,6 @@ app.whenReady().then(async () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
-  agentRunner?.flush();
   // Bekleyen pano/geçmiş kaydı kaybolmasın (zamanlayıcıyı beklemeden yaz).
   // admin varsa açılış tamamlanmış ve geçmiş yüklenmiştir (yoksa boş geçmişle ezilmesin).
   try { if (admin) { writeFileSync(join(dataDir(), 'ofis-board.json'), JSON.stringify(admin.board())); writeFileSync(join(dataDir(), 'ofis-history.json'), JSON.stringify(history)); } } catch {}
@@ -485,10 +504,12 @@ app.on('will-quit', () => {
 // Kapanırken köprüdeki "Ofis Yöneticisi" oturumu bitti olarak işaretlenir: telefon boşuna yazmasın.
 let endedSent = false;
 app.on('before-quit', (e) => {
-  if (endedSent || !client || process.env.OFIS_DEMO === '1') return;
+  if (endedSent) return;
   e.preventDefault();
   endedSent = true;
   app.isQuitting = true;
-  Promise.race([client.post('/ofis', { state: 'ended', entries: [] }), new Promise((r) => setTimeout(r, 1500))]).finally(() => app.quit());
+  const pending = [agentRunner?.flush(), schedule?.flush()];
+  if (client && process.env.OFIS_DEMO !== '1') pending.push(client.post('/ofis', { state: 'ended', entries: [] }));
+  Promise.race([Promise.allSettled(pending), new Promise((r) => setTimeout(r, 1500))]).finally(() => app.quit());
 });
 app.on('window-all-closed', (e) => e.preventDefault());

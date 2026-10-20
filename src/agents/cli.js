@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { readdir, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
 
 const NAMES = { claude: 'Claude', codex: 'Codex', antigravity: 'agy' };
@@ -67,6 +67,7 @@ export const TASK_FILE = '.ofis-gorev.md';
 
 let fileSeq = 0;
 export async function cliChat(opts) {
+  if (opts.signal?.aborted) throw new Error('durduruldu');
   const { engine, bin, cwd, persona, prompt, resumeId = null } = opts;
   if (!bin) throw new Error(`${NAMES[engine] ?? engine} CLI bulunamadı`);
   if (engine === 'antigravity') {
@@ -132,7 +133,7 @@ function runCli({ engine, bin, cwd, persona, personaFile = null, network = false
     child.on('close', (code) => {
       handle(buf);
       if (error) return reject(new Error(error));
-      if (code !== 0 && final == null) return reject(new Error(`çıkış kodu ${code}: ${stderr.trim().slice(-300)}`));
+      if (code !== 0) return reject(new Error(`çıkış kodu ${code}: ${stderr.trim().slice(-300)}`));
       resolve({ text: (final ?? streamed).trim(), sessionId, usage });
     });
   });
@@ -140,6 +141,19 @@ function runCli({ engine, bin, cwd, persona, personaFile = null, network = false
 
 const local = () => process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local');
 const roaming = () => process.env.APPDATA ?? join(homedir(), 'AppData', 'Roaming');
+
+/** Native executable lookup; Windows .cmd shims are not executed through a shell. */
+export function findExecutable(name, { env = process.env, platform = process.platform, exists = existsSync } = {}) {
+  const key = Object.keys(env).find((k) => k.toLowerCase() === 'path');
+  const pathJoin = platform === 'win32' ? win32.join : join;
+  for (const entry of String(env[key] ?? '').split(platform === 'win32' ? ';' : ':')) {
+    const dir = entry.trim().replace(/^"|"$/g, '');
+    if (!dir) continue;
+    const candidate = pathJoin(dir, platform === 'win32' ? `${name}.exe` : name);
+    if (exists(candidate)) return candidate;
+  }
+  return null;
+}
 
 async function newest(dir, name) {
   try {
@@ -169,5 +183,16 @@ export async function findBins() {
   // PC oyunu için Godot: C:\Tools\godot\godot.cmd (Ofis kurulumu) varsa uzmanların PATH'ine eklenir.
   const godotDir = [join(process.env.SystemDrive ?? 'C:', '\\', 'Tools', 'godot')].find((d) => existsSync(join(d, 'godot.cmd'))) ?? null;
   const godotExe = godotDir ? (await readdir(godotDir).catch(() => [])).find((f) => /_console\.exe$/i.test(f)) ?? null : null;
-  return { claude, codex: await newest(join(local(), 'OpenAI', 'Codex', 'bin'), 'codex.exe'), antigravity: existsSync(agy) ? agy : null, godotDir, godotExe };
+  const override = (name) => {
+    const value = process.env[name];
+    if (!value) return null;
+    if (!existsSync(value) || (process.platform === 'win32' && !/\.exe$/i.test(value))) throw new Error(`${name}: native CLI executable bulunamadı`);
+    return value;
+  };
+  return {
+    claude: override('OFIS_CLAUDE_BIN') || claude || findExecutable('claude'),
+    codex: override('OFIS_CODEX_BIN') || await newest(join(local(), 'OpenAI', 'Codex', 'bin'), 'codex.exe') || findExecutable('codex'),
+    antigravity: override('OFIS_AGY_BIN') || (existsSync(agy) ? agy : null) || findExecutable('agy'),
+    godotDir, godotExe,
+  };
 }

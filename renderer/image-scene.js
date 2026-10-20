@@ -95,7 +95,7 @@ export const PIXEL = makeScene(PIXEL_DEF);
 export const { IMG, SPOTS, targetPx, advancePx } = PIXEL;
 export const newActorPx = PIXEL.newActorPx;
 
-// Gerçekçi ofis (assets/realistic/ofis.png, Krea): 4 sıra düz masa. 0–2: 2. sıra, 3–4: 3. sıra, 5–7: 4. sıra,
+// Gerçekçi ofis (assets/realistic/ofis.png): 4 sıra düz masa. 0–2: 2. sıra, 3–4: 3. sıra, 5–7: 4. sıra,
 // 8: üst sıranın ortası, 9: köşe masası (yönetici). Ekran dikdörtgenleri [x, y, g, y] önizleme pikseli.
 export const REAL_DEF = {
   w: 2752, h: 1536, src: '../assets/realistic/ofis.png',
@@ -115,12 +115,12 @@ export const REAL_DEF = {
 };
 export const REAL = makeScene(REAL_DEF);
 
-// Piksel ofis, odalı (assets/office/ofis-oda.png, Krea): soldaki masa sıraları eskisiyle aynı; mola köşesi ve mutfak
+// Piksel ofis, odalı (assets/office/ofis-oda.png): soldaki masa sıraları eskisiyle aynı; mola köşesi ve mutfak
 // arkada (pencereler önünde), yönetici sağ önde cam duvarlı özel odasında. Masa sırası: 0–2 2. sıra, 3–4 3. sıra,
 // 5–7 4. sıra, 8 üst sıranın ortası, 9 yönetici (oda, yüzü sola), 10–11 üst sıranın solu/sağı.
 // occluders: oturan karakterin önüne yeniden çizilen arka plan parçası (koltuk/sandalye arkalığı) — "içine oturma".
 export const PIXEL2_DEF = {
-  // Krea ile yukarı (tuğla duvar/tavan) ve aşağı (ahşap zemin) genişletilmiş sürüm; ortası özgün ofis-oda.png ile birebir aynı.
+  // Yukarı (tuğla duvar/tavan) ve aşağı (ahşap zemin) genişletilmiş sürüm; ortası özgün ofis-oda.png ile birebir aynı.
   w: 2752, h: 1536, pad: [250, 414], src: '../assets/office/ofis-oda-genis.png',
   desks: [
     [[202, 265], 'up', [250, 280], [175, 179, 57, 27]], [[342, 265], 'up', [390, 280], [315, 179, 57, 27]], [[475, 265], 'up', [523, 280], [447, 179, 57, 27]],

@@ -36,6 +36,27 @@ test('mesaj → düşünüyor → yazıyor → cevap; geçmiş sonraki mesaja ek
   release();
 });
 
+test('missing primary CLI uses an installed fallback without reporting a quota error', async () => {
+  const calls = [];
+  const store = fakeStore([{ id: 'a', name: 'Manager', engine: 'claude', system: '' }], {});
+  const runner = createAgentRunner({ store, bins: { codex: 'codex.exe' }, mkdirImpl: async () => {}, throttleMs: 0,
+    cliImpl: async (opts) => { calls.push(opts.engine); return { text: 'done', sessionId: 's' }; } });
+  await runner.ask('a', 'task');
+  assert.deepEqual(calls, ['codex']);
+  assert.ok(runner.snapshot().entries.some((e) => /CLI bulunamadı/.test(e.title)));
+});
+
+test('CLI sessions resume only inside the same working directory', async () => {
+  const calls = [];
+  const store = fakeStore([{ id: 'a', name: 'Developer', engine: 'codex', system: '' }], {});
+  const runner = createAgentRunner({ store, bins: { codex: 'codex.exe' }, mkdirImpl: async () => {}, throttleMs: 0,
+    cliImpl: async (opts) => { calls.push(opts); return { text: 'done', sessionId: `s${calls.length}` }; } });
+  await runner.ask('a', 'first', { cwd: 'C:/project-a' });
+  await runner.ask('a', 'follow-up', { cwd: 'C:/project-a' });
+  await runner.ask('a', 'different project', { cwd: 'C:/project-b' });
+  assert.deepEqual(calls.map((c) => c.resumeId), [null, 's1', null]);
+});
+
 test('anahtarsız ajan: mesaj reddedilir; sağlayıcı hatası kayıt olarak görünür', async () => {
   const store = fakeStore([{ id: 'a1', name: 'X', provider: 'openai', model: 'm', hasKey: false }, { id: 'a2', name: 'Y', provider: 'openai', model: 'm', hasKey: true }], { a2: 'k' });
   const r = createAgentRunner({ store, chatImpl: async () => { throw new Error('sağlayıcı 401: geçersiz'); }, throttleMs: 0 });
@@ -82,22 +103,6 @@ test('ask: cevap bitince çözülür; gösterilecek metin ve klasör geçersiz k
   await assert.rejects(() => r.ask('yok', 'x'), /ajan yok/);
 });
 
-test('tasarım uzmanı: Krea izni ve talimatı eklenir; diğerlerine eklenmez', async () => {
-  const calls = [];
-  const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
-  const store = fakeStore([
-    { id: 'd1', name: 'UI Designer', engine: 'claude', division: 'design', system: 'KIMLIK', hasKey: false },
-    { id: 'e1', name: 'DevOps', engine: 'claude', division: 'engineering', system: 'K2', hasKey: false },
-  ], {});
-  const r = createAgentRunner({ store, cliImpl, bins: { claude: 'c' }, workRoot: 'C:/w', throttleMs: 0, mkdirImpl: async () => {} });
-  await r.ask('d1', 'logo');
-  await r.ask('e1', 'deploy');
-  assert.ok(calls[0].allowedTools.includes('mcp__krea-ai'));
-  assert.match(calls[0].persona, /krea/i);
-  assert.ok(!calls[1].allowedTools.includes('mcp__krea-ai'));
-  assert.equal(calls[1].persona, 'K2');
-});
-
 test('Claude uzmanına güvenli geliştirme komutları izinli; tehlikeliler değil', async () => {
   const calls = [];
   const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
@@ -142,14 +147,13 @@ test('CLI limit olayları onRate ile dışarı iletilir', async () => {
   assert.deepEqual(seen, [['claude', 0.4]]);
 });
 
-test('ters mühendislik uzmanı: yalnız REA MCP araçları + okuma izinli, Krea yok', async () => {
+test('ters mühendislik uzmanı: yalnız REA MCP araçları + okuma izinli', async () => {
   const calls = [];
   const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
   const store = fakeStore([{ id: 're', name: 'RE', engine: 'claude', division: 'reverse', system: 'RE', workdir: '', hasKey: false }], {});
   const r = createAgentRunner({ store, cliImpl, bins: { claude: 'c' }, workRoot: 'C:/w', throttleMs: 0, mkdirImpl: async () => {} });
   await r.ask('re', 'şu exe');
   assert.ok(calls[0].allowedTools.includes('mcp__rea'));
-  assert.ok(!calls[0].allowedTools.includes('mcp__krea-ai'));
   assert.ok(!calls[0].allowedTools.some((t) => /git commit|npm install/.test(t)), 'yazma/kurma komutları yok');
 });
 
@@ -195,16 +199,6 @@ test('CLI zaman aşımı: takılan çalıştırma durdurulur, kuyruk kilitlenmez
   assert.equal(r.isBusy('e1'), false);
 });
 
-test('oyun geliştirme uzmanları da Krea (sprite/asset) kullanabilir', async () => {
-  const calls = [];
-  const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
-  const store = fakeStore([{ id: 'ta', name: 'Technical Artist', engine: 'claude', division: 'game-development', system: 'K', workdir: '', hasKey: false }], {});
-  const r = createAgentRunner({ store, cliImpl, bins: { claude: 'c' }, workRoot: 'C:/w', throttleMs: 0, mkdirImpl: async () => {} });
-  await r.ask('ta', 'x');
-  assert.ok(calls[0].allowedTools.includes('mcp__krea-ai'));
-  assert.match(calls[0].persona, /krea/i);
-});
-
 test('Godot kuruluysa: oyun/mühendislik uzmanına Godot talimatı, PATH eki ve claude için godot izni gider', async () => {
   const calls = [];
   const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
@@ -240,7 +234,7 @@ test('Claude uzmanları web arayıp sayfa okuyabilir (WebSearch, WebFetch)', asy
   assert.ok(calls[0].allowedTools.includes('WebFetch'));
 });
 
-test('agy uzmanına Krea talimatı verilmez (agy\'de Krea yetkisiz); ters mühendis web okuyabilir', async () => {
+test('agy uzmanının kimliği korunur; ters mühendis web okuyabilir', async () => {
   const calls = [];
   const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
   const store = fakeStore([
@@ -249,25 +243,9 @@ test('agy uzmanına Krea talimatı verilmez (agy\'de Krea yetkisiz); ters mühen
   ], {});
   const r = createAgentRunner({ store, cliImpl, bins: { antigravity: 'a', claude: 'c' }, workRoot: 'C:/w', throttleMs: 0, mkdirImpl: async () => {} });
   await r.ask('ag', 'x'); await r.ask('re', 'x');
-  assert.doesNotMatch(calls[0].persona, /krea/i);
+  assert.equal(calls[0].persona, 'K');
   assert.ok(calls[1].allowedTools.includes('WebFetch'));
   assert.ok(!calls[1].allowedTools.includes('Bash(npm install:*)'));
-});
-
-test('görsel üreten Claude uzmanı Krea çıktısını yalnız Krea sunucusundan curl ile indirebilir', async () => {
-  const calls = [];
-  const cliImpl = async (o) => { calls.push(o); return { text: 'ok', sessionId: null }; };
-  const store = fakeStore([
-    { id: 'ta', name: 'TA', engine: 'claude', division: 'game-development', system: 'K', workdir: '', hasKey: false },
-    { id: 'be', name: 'BE', engine: 'claude', division: 'engineering', system: 'K', workdir: '', hasKey: false },
-  ], {});
-  const r = createAgentRunner({ store, cliImpl, bins: { claude: 'c' }, workRoot: 'C:/w', throttleMs: 0, mkdirImpl: async () => {} });
-  await r.ask('ta', 'x'); await r.ask('be', 'x');
-  assert.ok(calls[0].allowedTools.includes('Bash(curl -sSfL https://app-uploads.krea.ai/:*)'));
-  assert.ok(calls[0].allowedTools.includes('Bash(curl -sSfL https://gen.krea.ai/:*)'));
-  assert.ok(!calls[0].allowedTools.some((t) => t === 'Bash(curl:*)'), 'genel curl yok');
-  assert.match(calls[0].persona, /krea-indir\.mjs/);
-  assert.ok(!calls[1].allowedTools.some((t) => t.startsWith('Bash(curl')));
 });
 
 test('limit dolunca: motor kapalı işaretlenir, görev yedek motorla sürer, sonraki işler doğrudan yedeğe gider', async () => {

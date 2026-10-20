@@ -10,9 +10,9 @@ It brings Claude Code, Codex, and Antigravity CLI sessions into one workspace, w
 
 > **Interface language:** Turkish. This guide uses English descriptions alongside the Turkish labels you will see in the app.
 >
-> **Project status:** Version 0.1.0, run from source. CLI discovery currently depends on specific Windows installation paths; read the setup notes before starting.
+> **Project status:** Version 0.1.0, run from source. Native CLI discovery supports installation paths, PATH, and explicit executable overrides.
 
-![Feyzullah Ofis pixel-art office and agent dashboard](docs/ekran.png)
+![Pixel-art office background used by Feyzullah Ofis](assets/office/ofis-oda-genis.png)
 
 ## Contents
 
@@ -50,7 +50,7 @@ It brings Claude Code, Codex, and Antigravity CLI sessions into one workspace, w
 | Windows 10 or 11 | Target desktop platform |
 | Node.js 20+ and npm | Install dependencies and launch Electron |
 | Git | Clone the app and use task branches/worktrees |
-| Claude Code, installed and signed in | Required for the default Manager and Prompt Master configuration |
+| Claude Code, installed and signed in | Default engine for Manager and Prompt Master; an installed Codex fallback can also run these roles |
 | Codex, installed and signed in | Recommended for implementation and Claude rate-limit fallback |
 | Antigravity CLI executable named `agy.exe` | Optional engine, recommended for frontend specialists |
 | Specialist catalogs | Recommended for a useful default team; downloaded separately below |
@@ -61,7 +61,7 @@ Use the official [Claude Code documentation](https://docs.claude.com/en/docs/cla
 
 ### CLI discovery in this version
 
-Ofis does not currently perform a general PATH lookup. It checks these locations:
+Ofis checks explicit executable overrides first, known installation locations next, and native executables on PATH last. Known locations:
 
 | Engine | Locations searched |
 |---|---|
@@ -69,7 +69,16 @@ Ofis does not currently perform a general PATH lookup. It checks these locations
 | Codex | Version directories under `%LOCALAPPDATA%\OpenAI\Codex\bin\` |
 | Antigravity | `%LOCALAPPDATA%\agy\bin\agy.exe` |
 
-Claude and Codex discovery looks for their executable within version directories and one nested level. A working terminal command alone does not guarantee that Ofis can find it.
+Claude and Codex discovery looks for their executable within version directories and one nested level. On Windows, PATH lookup accepts native `.exe` files, not npm `.cmd` shims. Set an explicit executable before starting Ofis when needed:
+
+```powershell
+$env:OFIS_CLAUDE_BIN = "C:\Tools\claude.exe"
+$env:OFIS_CODEX_BIN = "C:\Tools\codex.exe"
+$env:OFIS_AGY_BIN = "C:\Tools\agy.exe"
+npm start
+```
+
+Set only the overrides for engines you have installed. Invalid overrides produce a startup error; remove or correct them before retrying.
 
 The app expects the CLI flags and JSON events implemented in [src/agents/cli.js](src/agents/cli.js). See [compatibility and verification](docs/COMPATIBILITY.md) for automated coverage, live engine status, and the Windows acceptance procedure.
 
@@ -78,11 +87,10 @@ The app expects the CLI flags and JSON events implemented in [src/agents/cli.js]
 | Integration | Setup requirement |
 |---|---|
 | Godot 4 | For game tasks, discovery expects `C:\Tools\godot\godot.cmd`; exporting games also requires the appropriate Godot export templates |
-| Krea MCP | Configure and authorize it separately in the CLI used for visual tasks |
 | REA MCP | Configure separately for the reverse-engineering specialist |
 | Feyzullah bridge | Optional integration for external CLI sessions and phone commands; the internal team can run without it |
 
-Ofis does not install or authenticate these integrations for you. Follow the [Krea and REA setup guide](docs/INTEGRATIONS.md) for registration, authentication, diagnostics, and an initial verification task. REA has stricter Node.js requirements than the base app; check the guide before installing it.
+Ofis does not install or authenticate these integrations for you. Follow the [REA setup guide](docs/INTEGRATIONS.md) for registration, authentication, diagnostics, and an initial verification task. REA has stricter Node.js requirements than the base app; check the guide before installing it.
 
 ## Installation
 
@@ -132,7 +140,7 @@ Demo mode is useful for exploring the interface before configuring CLI accounts.
 
 The 👔 checkbox sends a request directly to the Manager, bypassing Prompt Master.
 
-**Start with the default Claude-based coordinator setup.** The app creates the Manager and Prompt Master with Claude. Installing only Codex or agy does not automatically reconfigure those roles, and a missing CLI executable does not trigger rate-limit fallback.
+**Coordinator setup:** The app creates the Manager and Prompt Master with Claude. If Claude is missing, the runner can use an installed Codex fallback. Engine authentication errors still require a valid sign-in; an agy-only installation does not satisfy the default coordinator's fallback chain.
 
 ## How the team works
 
@@ -159,7 +167,7 @@ On restart, task cards that were active when Ofis closed are marked as failed wi
 
 Separate task branches are enabled by default. The app attempts to create a worktree from the target repository's current `HEAD` and uses a branch named `ofis/<task-or-group-id>`.
 
-**Worktree isolation is conditional:** it requires the branch setting to be enabled, an existing repository with an initial commit, and successful worktree creation. If preparation returns no worktree, the task can run directly in its assigned directory. Check the task card for a branch before relying on isolation.
+**Worktree isolation is conditional:** it requires the branch setting to be enabled and a Git repository with an initial commit. When enabled for a Git repository, failed worktree preparation stops the task instead of editing the original directory. Non-Git folders and tasks with the branch setting disabled run directly in their assigned directory. Check the task card before relying on isolation.
 
 Uncommitted changes in your original working directory are not part of the new worktree's starting snapshot.
 
@@ -174,7 +182,7 @@ Merge checks reject tracked, uncommitted changes. If a merge conflicts, Ofis att
 
 After a merge, automatic verification currently supports projects with a usable `package.json` test script. It runs `npm test` and may first install missing dependencies. Other test frameworks are not automatically detected by this path. A failing post-merge test is reported; it does not automatically undo the merge.
 
-Old worktrees are eligible for cleanup after seven days, while active tasks are excluded. Cleanup attempts to commit changes and retain the branch. Keep normal project backups; cleanup is not a backup mechanism.
+Old worktrees are eligible for cleanup after seven days, while active tasks are excluded. Cleanup removes a worktree only after saving succeeds and retains its branch. Failed saves leave pending files in place. Retained branches remain available for diff, merge, or discard after the worktree is removed. Keep normal project backups; cleanup is not a backup mechanism.
 
 The **⟳** control and periodic Git synchronization reconcile supported changes made outside Ofis.
 
@@ -193,22 +201,6 @@ The **⟳** control and periodic Git synchronization reconcile supported changes
 
 Agent details show available task information, outputs, and actions. Permission requests associated with supported CLI/bridge sessions can be approved or rejected there.
 
-<details>
-<summary>Task and report screenshots</summary>
-
-### Tasks
-
-![Kanban task view](docs/gorevler.png)
-
-### Reports
-
-![Task reports and specialist statistics](docs/raporlar.png)
-
-### Task board
-
-![Task board with review and Git actions](docs/pano.png)
-
-</details>
 
 ### Keyboard shortcuts
 
@@ -235,7 +227,7 @@ Specialist definitions come from [Agency Agents](https://github.com/msitarzewski
 |---|---|
 | Architecture, planning, security, and review | Claude |
 | Frontend and UI/UX implementation outside the design division | Antigravity |
-| Visual design | Codex, with Krea configured separately |
+| Visual design | Codex |
 | Other implementation and testing | Codex |
 
 You can change the suggested engine when hiring. Recommendations do not install the corresponding CLI or give it access to MCP services.
@@ -258,7 +250,7 @@ Use a model identifier supported by your provider and account. Preset suggestion
 | Codex | Local Codex session records | Claude |
 | Antigravity | No comparable usage meter | Codex, then Claude |
 
-Fallback applies to recognized quota/rate-limit errors and requires an available alternative executable and account. It does not fix missing executables, authentication errors, or arbitrary failures.
+Fallback applies when the primary executable is missing or a recognized quota/rate-limit error occurs, and requires an available alternative executable and account. It does not fix authentication errors or arbitrary failures. Engines still marked rate-limited are not retried until their tracked reset time.
 
 With the Claude usage guard enabled, the app avoids assigning Claude specialists when the reported usage reaches the guard threshold and bypasses Prompt Master. Usage displays depend on provider output and local records; they are not billing statements.
 
@@ -268,7 +260,7 @@ Write a command, click **⏰**, and choose a local time, **limitler açılınca*
 
 - When both are selected, the time must have arrived and the app's tracked limit conditions must be clear.
 - A time that has already passed is scheduled for the next day.
-- Pending commands persist across restarts.
+- Pending commands persist across restarts; commands rejected at dispatch remain queued.
 - **Ofis must be running to dispatch commands.** This is an in-app queue, not a Windows background scheduler.
 - Availability is based on the limits Ofis knows about; it cannot guarantee provider acceptance.
 
@@ -356,8 +348,8 @@ To reset state, move the data directory to a backup location while Ofis is close
 
 | Symptom | What to check |
 |---|---|
-| CLI works in a terminal but Ofis cannot find it | Compare its executable location with [CLI discovery](#cli-discovery-in-this-version); PATH lookup is not implemented |
-| First request fails with a missing Claude CLI | The default Manager and Prompt Master use Claude; sign in to a discoverable Claude installation |
+| CLI works in a terminal but Ofis cannot find it | Compare its executable location with [CLI discovery](#cli-discovery-in-this-version); check native `.exe` availability or set an executable override |
+| First request fails with a missing Claude CLI | Configure a discoverable Claude executable or its Codex fallback, and sign in |
 | Catalog or specialist list is empty | Check that the catalog clones exist at the installation paths above; use **Ajan ekle** to hire specialists |
 | **Köprü yok** — no bridge | The optional external-session bridge is offline; the internal agent team does not require it |
 | Claude usage says **ölçülmedi** — not measured | Click **↻ ölç**, which makes a small request, or wait for a Claude session to report usage |
@@ -369,7 +361,7 @@ To reset state, move the data directory to a backup location while Ofis is close
 | Merge fails | Commit tracked local changes first; resolve branch conflicts manually and synchronize the board |
 | Post-merge tests did not run | Automatic detection currently requires a usable npm test script |
 | Scheduled task did not start | Keep Ofis running and check local time and tracked limit conditions |
-| Krea or REA tools are unavailable | Configure and authorize the MCP integration in the relevant CLI separately |
+| REA tools are unavailable | Configure and authorize the MCP integration in the relevant CLI separately |
 | Characters look simpler than the screenshots | The optional MetroCity pack is not distributed; the app can draw fallback characters |
 | Office is too small or large | Use zoom controls, drag to pan, and press `0` to center |
 
@@ -400,7 +392,7 @@ Remove-Item Env:OFIS_SNAPSHOT
 
 Snapshot mode captures the window after a short delay and exits.
 
-Demo mode populates the interface with sample data and disables the external bridge connection. It still initializes local app state and does not sandbox agent execution. Use a separate data directory for a clean preview, and avoid submitting real commands or using a profile with pending scheduled work if you only want to inspect the UI.
+Demo mode populates the interface with sample data, disables the external bridge connection, and rejects task dispatch. It still initializes local app state; use a separate data directory for a clean preview. Rejected scheduled commands remain queued for a later real session.
 
 | Path | Responsibility |
 |---|---|
@@ -434,6 +426,5 @@ Explore its [README](ornekler/goc/README.md), [design document](ornekler/goc/doc
 Application code is released under the [MIT License](LICENSE).
 
 - Specialist catalogs are downloaded separately from [Agency Agents](https://github.com/msitarzewski/agency-agents) and [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents); consult their licenses.
-- Krea AI is used for generated visual assets; see the example project's asset documentation for its sources.
 - MetroCity assets are optional and subject to their own license.
 - Claude, Codex, Antigravity, and other services retain their respective terms and trademarks.

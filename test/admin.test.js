@@ -15,6 +15,25 @@ test('yönetici istemi ekibi ve sözleşmeyi içerir', () => {
   assert.match(p, /```json/);
 });
 
+test('worktree preparation failures stop the task before the specialist runs', async () => {
+  const runner = fakeRunner((id) => id === 'admin' ? json({ reply: 'Plan', tasks: [{ agent: 'fe', task: 'edit', cwd: 'C:/repo' }] }) : 'done');
+  const admin = createAdmin({ runner, adminId: () => 'admin', team: () => team, dirOk: () => true, prepare: async () => { throw new Error('worktree unavailable'); } });
+  await admin.command('edit');
+  assert.equal(runner.calls.some((c) => c.id === 'fe'), false);
+  assert.equal(admin.board()[0].status, 'failed');
+  assert.match(admin.board()[0].error, /worktree unavailable/);
+});
+
+test('failed automatic commit marks the task failed instead of done', async () => {
+  const runner = fakeRunner((id) => id === 'admin' ? json({ reply: 'Plan', tasks: [{ agent: 'fe', task: 'edit', cwd: 'C:/repo' }] }) : 'done');
+  const admin = createAdmin({ runner, adminId: () => 'admin', team: () => team, dirOk: () => true,
+    prepare: async () => ({ cwd: 'C:/wt', worktree: 'C:/wt', branch: 'ofis/test' }),
+    afterRun: async () => ({ ok: false, error: 'disk full' }) });
+  await admin.command('edit');
+  assert.equal(admin.board()[0].status, 'failed');
+  assert.match(admin.board()[0].error, /disk full/);
+});
+
 test('cevap ayrıştırma: görevler, bilinmeyen ajan ve bozuk cevap', () => {
   const ok = parseAdminReply(json({ reply: 'Böldüm', tasks: [{ agent: 'fe', task: 'Sayfayı yap' }, { agent: 'rc', task: 'Kontrol et', cwd: 'C:/p' }] }), ['fe', 'rc']);
   assert.equal(ok.reply, 'Böldüm');

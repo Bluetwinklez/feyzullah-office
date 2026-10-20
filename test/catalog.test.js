@@ -20,7 +20,7 @@ test('katalog: bölümler ve uzmanlar; ön bilgisi olmayan dosya atlanır', asyn
 });
 
 test('motor seçimi: tasarım → agy, mimar/inceleme/kontrol → claude, uygulama → codex', () => {
-  assert.equal(engineFor({ id: 'design-ui-designer', division: 'design' }), 'codex'); // Krea agy'de yetkisiz: görsel üreten tasarım Codex'te
+  assert.equal(engineFor({ id: 'design-ui-designer', division: 'design' }), 'codex'); // Görsel tasarım için varsayılan motor Codex
   assert.equal(engineFor({ id: 'engineering-frontend-developer', division: 'engineering' }), 'antigravity');
   assert.equal(engineFor({ id: 'engineering-backend-architect', division: 'engineering' }), 'claude');
   assert.equal(engineFor({ id: 'engineering-code-reviewer', division: 'engineering' }), 'claude');

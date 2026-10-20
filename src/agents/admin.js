@@ -221,7 +221,7 @@ export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], 
     const timer = limit > 0 ? setTimeout(() => { card.timedOut = true; card.cancelled = true; runner.cancel?.(card.runningId ?? card.agentId); }, limit) : null;
     try {
       if (prepare && opts.cwd) {
-        const p = await Promise.resolve().then(() => prepare(opts.cwd, card)).catch(() => null);
+        const p = await prepare(opts.cwd, card);
         if (p?.cwd) {
           opts = { cwd: p.cwd };
           update(card, { branch: p.branch ?? null, workdir: p.cwd, repo: p.repo ?? null, worktree: p.worktree ?? null });
@@ -230,11 +230,17 @@ export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], 
           task = `Not: bu iş git dalı ${p.branch} için ayrı bir çalışma kopyasında yapılıyor. Yalnızca şu klasörde çalış: ${p.cwd}\nDeğişiklikler sonra kullanıcı onayıyla asıl depoya birleştirilecek; asıl depo klasörüne (${card.cwd}) yazma. git commit / merge yapma: commit ve birleştirmeyi Ofis kendisi yapar (.git klasörüne yazma iznin yok).\n\n${swapPath(task, card.cwd, p.cwd)}`;
         }
       }
+      stopped(card);
       card.runningId = agentId;
       // Kartın token/maliyeti: uzman, kontrolcü ve düzeltici turlarının toplamı.
       const addUsage = (r) => { if (!r?.usage) return; const u = card.usage ?? { in: 0, out: 0, cost: 0 }; update(card, { usage: { in: u.in + (r.usage.in ?? 0), out: u.out + (r.usage.out ?? 0), cost: Math.round((u.cost + (r.usage.cost ?? 0)) * 1e4) / 1e4 } }); };
       // Kopyada her uzman turundan sonra Ofis değişiklikleri dala commit eder (uzmanın kum havuzu .git'e yazamaz).
-      const saveTurn = async (who) => { if (afterRun && card.worktree) await Promise.resolve(afterRun(card, who)).catch(() => {}); };
+      const saveTurn = async (who) => {
+        if (afterRun && card.worktree) {
+          const saved = await afterRun(card, who);
+          if (saved?.ok === false) throw new Error(`dal kaydedilemedi: ${saved.error ?? 'commit başarısız'}`);
+        }
+      };
       let r = await runner.ask(agentId, task, opts);
       addUsage(r);
       stopped(card);
@@ -335,7 +341,7 @@ export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], 
         try { await fire(fid); } catch {}
       }
       if (!plan.tasks.length) return { ok: true, tasks: 0 };
-      const group = `g${Date.now().toString(36)}`; // bu komutun görevleri: aynı depoda tek dal paylaşır
+      const group = `g${Date.now().toString(36)}${++seq}`; // eşzamanlı komutlar farklı dal kullanır
       // Aynı klasördeki görevler sırayla (dosyalar ezilmesin), farklı klasördekiler paralel.
       const lanes = new Map();
       const inLane = (key, fn) => { const p = (lanes.get(key) ?? Promise.resolve()).then(fn, fn); lanes.set(key, p); return p; };

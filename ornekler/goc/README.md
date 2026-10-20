@@ -103,12 +103,12 @@ Oyun metinleri koda yazılmaz; hepsi `data/metinler.csv` dosyasından okunur. Oy
 
 ## Varlık kaynakları
 
-Oyundaki görsel, 3B ve ses varlıkları (`varliklar/modeller`, `varliklar/gorseller`, `varliklar/sesler`) **Krea AI** ile üretildi. Oda geometrisi, taş zemin shader'ı ve yedek sesler gibi bazı parçalar ise kodla üretilir. Her varlığın modeli, tarihi ve promptu [`docs/VARLIKLAR.md`](docs/VARLIKLAR.md) dosyasındadır. **Varlık lisansı da oradadır.** Krea çıktıları MIT lisansının kapsamında değildir. Krea kullanım koşullarının bazı maddeleri (ticari kullanım, plan, atıf) henüz doğrulanmadı.
+Oyundaki görsel, 3B ve ses varlıkları (`varliklar/modeller`, `varliklar/gorseller`, `varliklar/sesler`) **yapay zekâ destekli harici bir servis** ile üretildi. Oda geometrisi, taş zemin shader'ı ve yedek sesler gibi bazı parçalar ise kodla üretilir. Her varlığın modeli, tarihi ve promptu [`docs/VARLIKLAR.md`](docs/VARLIKLAR.md) dosyasındadır. **Varlık lisansı da oradadır.** harici servis çıktıları MIT lisansının kapsamında değildir. harici servis kullanım koşullarının bazı maddeleri (ticari kullanım, plan, atıf) henüz doğrulanmadı.
 
 ## Lisans
 
 - **Kod:** MIT. Bkz. [`LICENSE`](LICENSE).
-- **Varlıklar** (Krea çıktıları): MIT kapsamında değildir. Krea kullanım koşullarına tabidir; bkz. [`docs/VARLIKLAR.md`](docs/VARLIKLAR.md#lisans).
+- **Varlıklar** (harici servis çıktıları): MIT kapsamında değildir. harici servis kullanım koşullarına tabidir; bkz. [`docs/VARLIKLAR.md`](docs/VARLIKLAR.md#lisans).
 
 ---
 
@@ -120,4 +120,4 @@ Oyundaki görsel, 3B ve ses varlıkları (`varliklar/modeller`, `varliklar/gorse
 - Tests: `godot --headless --path . --import`, then `godot --headless --path . --script res://test/calistir.gd`.
 - Export: install the 4.7.2 export templates, then run `godot --headless --path . --export-release "Windows Desktop" build/GOC.exe`.
 - Performance was measured only on a GPU-less VM with software rendering. There are no FPS claims for real hardware.
-- License: the code is MIT. The visual, 3D and audio assets were generated with Krea AI. Krea's terms cover them, not MIT; see `docs/VARLIKLAR.md`. Some license points are still marked for verification.
+- License: the code is MIT. The visual, 3D and audio assets were generated using an external AI service. The originating service terms cover them, not MIT; see `docs/VARLIKLAR.md`. Some license points are still marked for verification.

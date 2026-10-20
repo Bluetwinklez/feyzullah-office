@@ -37,3 +37,9 @@ Ofis checks explicit executable overrides, known installation paths, and native 
 8. Record failures and limitations, plus a link to sanitized logs. Do not claim rate-limit fallback was live-tested unless a real limit event was observed; the suite covers simulated fallback separately.
 
 For a successful live run, add the date, commit, OS, exact engine version, MCP version where applicable, pass/fail per step, and evidence link. Re-run affected checks after updating an engine.
+
+## Desktop runtime verification
+
+The desktop runtime is pinned to Electron 44.9.1. The Ubuntu/Node 24 CI job starts the real app under Xvfb using isolated demo data. It checks that the preload IPC API is available, the renderer clock and office canvas initialize, demo state reaches the renderer, and a non-empty screenshot can be captured. The screenshot is uploaded as `desktop-smoke`.
+
+The `--no-sandbox` argument is confined to that CI launch; the application keeps sandboxed, isolated renderers and no Node integration. This automated Linux smoke check does not certify Windows notifications, tray integration, live provider authentication or all macOS hardware. Electron 44 requires macOS 13 or newer; see the [upstream migration notes](https://www.electronjs.org/docs/latest/breaking-changes#breaking-api-changes-440).

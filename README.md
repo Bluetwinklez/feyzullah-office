@@ -48,7 +48,7 @@ It brings Claude Code, Codex, and Antigravity CLI sessions into one workspace, w
 | Component | Purpose |
 |---|---|
 | Windows 10 or 11 | Target desktop platform |
-| Node.js 20+ and npm | Install dependencies and launch Electron |
+| Node.js 22.12.0+ and npm | Install dependencies and launch Electron |
 | Git | Clone the app and use task branches/worktrees |
 | Claude Code, installed and signed in | Default engine for Manager and Prompt Master; an installed Codex fallback can also run these roles |
 | Codex, installed and signed in | Recommended for implementation and Claude rate-limit fallback |

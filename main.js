@@ -333,12 +333,27 @@ app.whenReady().then(async () => {
   }
   if (process.env.OFIS_SNAPSHOT) {
     setTimeout(async () => {
-      win.show();
-      const img = await win.webContents.capturePage();
-      console.log('görüntü', img.getSize());
-      await writeFile(process.env.OFIS_SNAPSHOT, img.toPNG());
-      app.isQuitting = true;
-      app.quit();
+      try {
+        win.show();
+        if (process.env.OFIS_SMOKE === '1') {
+          const ready = await win.webContents.executeJavaScript(`({
+            ipc: typeof window.ofis?.onOffice === 'function',
+            clock: Boolean(document.querySelector('#clock')?.textContent),
+            connected: document.querySelector('#connText')?.textContent === 'Bağlı',
+            canvas: (document.querySelector('#world')?.width ?? 0) > 0
+          })`);
+          if (!Object.values(ready).every(Boolean)) throw new Error(`Renderer smoke check failed: ${JSON.stringify(ready)}`);
+        }
+        const img = await win.webContents.capturePage();
+        if (img.isEmpty()) throw new Error('Window capture is empty');
+        console.log('görüntü', img.getSize());
+        await writeFile(process.env.OFIS_SNAPSHOT, img.toPNG());
+        app.isQuitting = true;
+        app.quit();
+      } catch (error) {
+        console.error('Snapshot verification failed:', error);
+        app.exit(1);
+      }
     }, Number(process.env.OFIS_SNAPSHOT_MS) || 5000);
   }
   if (process.env.OFIS_DEMO === '1') {

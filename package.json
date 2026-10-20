@@ -9,13 +9,16 @@
     "test": "node --test \"test/**/*.test.js\""
   },
   "devDependencies": {
-    "electron": "38.8.6"
+    "electron": "44.9.1"
   },
   "allowScripts": {
-    "electron@38.8.6": true
+    "electron@44.9.1": true
   },
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "0.129.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

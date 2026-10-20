@@ -32,3 +32,27 @@ jobs:
         run: npm ci
       - name: Run application tests
         run: npm test
+
+      - name: Verify Electron installation
+        if: matrix.node == 24 && matrix.os == 'ubuntu-latest'
+        run: node node_modules/electron/install.js
+      - name: Smoke test the real desktop window
+        if: matrix.node == 24 && matrix.os == 'ubuntu-latest'
+        timeout-minutes: 2
+        env:
+          OFIS_DEMO: '1'
+          OFIS_SMOKE: '1'
+          OFIS_SIZE: '1280x800'
+          OFIS_SNAPSHOT: ${{ runner.temp }}/office-smoke.png
+          FEYZULLAH_HOME: ${{ runner.temp }}/office-smoke-data
+        run: |
+          mkdir -p "$FEYZULLAH_HOME"
+          xvfb-run -a ./node_modules/.bin/electron --no-sandbox .
+          test -s "$OFIS_SNAPSHOT"
+      - name: Upload desktop smoke evidence
+        if: always() && matrix.node == 24 && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-smoke
+          path: ${{ runner.temp }}/office-smoke.png
+          if-no-files-found: ignore

@@ -2,6 +2,8 @@
 
 **Run a team of AI coding agents inside a living pixel-art office.**
 
+[![Application tests](https://github.com/Bluetwinklez/feyzullah-office/actions/workflows/app-test.yml/badge.svg)](https://github.com/Bluetwinklez/feyzullah-office/actions/workflows/app-test.yml)
+
 Feyzullah Ofis is a Windows desktop app built with Electron. Give the team a task, watch specialists work, inspect their results, and bring changes into your project through a Git branch when worktree mode is available.
 
 It brings Claude Code, Codex, and Antigravity CLI sessions into one workspace, with task planning, review, usage tracking, and a visual office that reflects agent activity.
@@ -69,7 +71,7 @@ Ofis does not currently perform a general PATH lookup. It checks these locations
 
 Claude and Codex discovery looks for their executable within version directories and one nested level. A working terminal command alone does not guarantee that Ofis can find it.
 
-The app expects the CLI flags and JSON events implemented in [src/agents/cli.js](src/agents/cli.js). A tested CLI version matrix is not yet documented.
+The app expects the CLI flags and JSON events implemented in [src/agents/cli.js](src/agents/cli.js). See [compatibility and verification](docs/COMPATIBILITY.md) for automated coverage, live engine status, and the Windows acceptance procedure.
 
 ### Optional integrations
 
@@ -80,7 +82,7 @@ The app expects the CLI flags and JSON events implemented in [src/agents/cli.js]
 | REA MCP | Configure separately for the reverse-engineering specialist |
 | Feyzullah bridge | Optional integration for external CLI sessions and phone commands; the internal team can run without it |
 
-Ofis does not install or authenticate these integrations for you. Krea and REA setup instructions are not bundled in this repository.
+Ofis does not install or authenticate these integrations for you. Follow the [Krea and REA setup guide](docs/INTEGRATIONS.md) for registration, authentication, diagnostics, and an initial verification task. REA has stricter Node.js requirements than the base app; check the guide before installing it.
 
 ## Installation
 
@@ -419,7 +421,7 @@ The current npm scripts cover starting and testing the app. An installer/build p
 
 Open an issue to discuss substantial changes, then submit a focused pull request with a description of the resulting behavior and relevant verification. Run `npm test` for code changes and include screenshots for interface changes. Mention the Windows and CLI versions used when changing engine integrations. Do not include API keys, account credentials, or private session data.
 
-The repository currently includes a GitHub Actions workflow for the GÖÇ example. Automated CI for the desktop application's own test suite is not configured in the checked-in workflows.
+The [Application tests workflow](.github/workflows/app-test.yml) runs the app suite on Windows and Ubuntu with Node 22 and 24 for pushes and pull requests, and supports manual runs. It uses fake CLI processes and local provider fixtures, so no account credentials are required. Check [Actions](https://github.com/Bluetwinklez/feyzullah-office/actions/workflows/app-test.yml) for actual results. The GÖÇ example has a separate workflow. Live engine and GUI checks are documented in the [compatibility guide](docs/COMPATIBILITY.md).
 
 ## Example project: GÖÇ
 

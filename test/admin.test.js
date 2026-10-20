@@ -454,3 +454,32 @@ test('kapalı motorlar yönetici istemine yazılır', async () => {
   await createAdmin({ runner, adminId: () => 'admin', team: () => team, dirOk: () => true, engineState: () => ({ codex: new Date(2026, 9, 16, 7, 52).getTime() }) }).command('iş');
   assert.match(calls[0], /KAPALI MOTORLAR[\s\S]*codex[\s\S]*07:52/);
 });
+
+
+test('tasks in different subdirectories of a shared repository run sequentially', { timeout: 5000 }, async () => {
+  const events = [];
+  let releaseFirst;
+  let firstStarted;
+  const started = new Promise(resolve => { firstStarted = resolve; });
+  const released = new Promise(resolve => { releaseFirst = resolve; });
+  const runner = { async ask(id, text) {
+    if (id === 'admin') return { text: /Görev raporu/.test(text) ? 'Done' : json({
+      reply: 'Plan ready',
+      tasks: [{ agent: 'fe', task: 'First', cwd: 'C:/repo/ui' },
+              { agent: 'rc', task: 'Second', cwd: 'C:/repo/server' }]
+    }) };
+    events.push(`${id}:start`);
+    if (id === 'fe') { firstStarted(); await released; }
+    events.push(`${id}:end`);
+    return { text: 'Done' };
+  } };
+  const admin = createAdmin({ runner, adminId: () => 'admin', team: () => team,
+    dirOk: () => true, taskLane: async () => 'C:/repo' });
+  const command = admin.command('Edit both subdirectories');
+  await started;
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(events, ['fe:start']);
+  releaseFirst();
+  await command;
+  assert.deepEqual(events, ['fe:start', 'fe:end', 'rc:start', 'rc:end']);
+});

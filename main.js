@@ -14,7 +14,7 @@ import { ADMIN_PERSONA, createAdmin, promptMasterPersona } from './src/agents/ad
 import { loadCaveman, RE_ID, RE_PERSONA } from './src/agents/personas.js';
 import { createUsage } from './src/usage.js';
 import { approvalNotice, boardNotices, dailyReport, reportDay, reportDue } from './src/notify.js';
-import { branchDiff, cleanupWorktrees, commitAll, git, mergeWorktree, removeWorktree, revertMerge, runProjectTests, sharedPreparer, worktreeFate } from './src/gitwork.js';
+import { branchDiff, cleanupWorktrees, commitAll, git, mergeWorktree, removeWorktree, revertMerge, runProjectTests, projectLane, sharedPreparer, worktreeFate } from './src/gitwork.js';
 import { createSchedule } from './src/schedule.js';
 import { addHistory, expertStats, statsLine } from './src/stats.js';
 import { probeClaude } from './src/usage.js';
@@ -278,6 +278,7 @@ app.whenReady().then(async () => {
     review: () => config.review !== false, // uzman çıktısını Reality Checker kontrol eder
     guard: claudeLow,
     prepare: gitPrepare,
+    taskLane: projectLane,
     // Yönetici her komutta depoların güncel durumunu görür (bekleyen / birleştirilmiş dallar).
     repoState: () => {
       const b = admin?.board() ?? [];

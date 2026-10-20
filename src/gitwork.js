@@ -4,9 +4,16 @@ import { execFile, spawn, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { readdir, stat } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 export const git = (args, cwd) => new Promise((res) => execFile('git', args, { cwd, windowsHide: true, timeout: 30_000 }, (err, out, errOut) => res(err ? { ok: false, out: String(out).trim(), err: String(errOut || err.message).trim() } : { ok: true, out: String(out).trim() })));
+
+/** Tasks in different subdirectories of one shared worktree must run in one lane. */
+export async function projectLane(cwd) {
+  const top = await git(['rev-parse', '--show-toplevel'], cwd);
+  const key = top.ok ? top.out : resolve(cwd);
+  return process.platform === 'win32' ? key.toLowerCase() : key;
+}
 
 /** cwd bir git deposundaysa ayrı ağaç + dal açar: { cwd, branch, repo, worktree } | null. */
 export async function prepareWorktree(cwd, id, root) {

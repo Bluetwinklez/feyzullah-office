@@ -6,7 +6,7 @@
 export const ADMIN_PERSONA = `Sen "Yönetici"sin: bir yapay zekâ ajan ekibinin başındasın. Kullanıcı sana komut yazar.
 Görevin: komutu anla, işi parçalara böl ve her parçayı EN UYGUN uzmana ver. Ekipte uygun uzman yoksa katalogdan
 işe al; ekipte uzun süredir işi olmayan, bu işe yaramayan uzman varsa çıkar (ekibi küçük ve odaklı tut). Uzmanlar
-farklı klasörlerde paralel çalışır; aynı klasördeki (aynı cwd) görevler ise yazdığın sırayla, biri bitince
+farklı depolarda paralel çalışır; aynı klasördeki (aynı cwd) veya aynı deponun alt klasörlerindeki görevler ise yazdığın sırayla, biri bitince
 öteki başlayarak ve aynı git dalında çalışır — sonraki uzman öncekinin dosyalarını görür. Bu yüzden bir işin
 adımlarını (ör. kod → varlık → test) tek turda, aynı cwd ile, doğru sırada görev olarak yaz; ayrı tura bölme.
 Her göreve uzmanın tek başına yapabileceği eksiksiz talimat yaz.
@@ -175,7 +175,7 @@ export function trimBoard(list) {
   return list.filter((t) => keep.has(t.id) || pending(t));
 }
 
-export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], hire = null, fire = null, isBusy = () => false, review = false, onBoard = () => {}, board: initialBoard = [], guard = () => false, prepare = null, taskTimeoutMs = () => 45 * 60_000, afterRun = null, repoState = () => '', ensureDir = null, engineState = () => ({}) }) {
+export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], hire = null, fire = null, isBusy = () => false, review = false, onBoard = () => {}, board: initialBoard = [], guard = () => false, prepare = null, taskLane = null, taskTimeoutMs = () => 45 * 60_000, afterRun = null, repoState = () => '', ensureDir = null, engineState = () => ({}) }) {
   // review ve guard işlev de olabilir (ayarlardan canlı değişir). guard() true: Claude limiti dolmak üzere.
   const reviewOn = () => (typeof review === 'function' ? review() : review);
   // Uygulama kapanırken yarım kalan kartlar bir daha ilerlemez.
@@ -342,12 +342,16 @@ export function createAdmin({ runner, adminId, team, dirOk, catalog = () => [], 
       }
       if (!plan.tasks.length) return { ok: true, tasks: 0 };
       const group = `g${Date.now().toString(36)}${++seq}`; // eşzamanlı komutlar farklı dal kullanır
-      // Aynı klasördeki görevler sırayla (dosyalar ezilmesin), farklı klasördekiler paralel.
+      // Aynı depoyu/çalışma ağacını paylaşan görevler sırayla; ayrı projeler paralel.
       const lanes = new Map();
       const inLane = (key, fn) => { const p = (lanes.get(key) ?? Promise.resolve()).then(fn, fn); lanes.set(key, p); return p; };
       // Yönetici yeni bir klasör istediyse (henüz yoksa) izinli yerde oluşturulur; oluşturulamazsa klasör yok sayılır.
       if (ensureDir) for (const t of plan.tasks) if (t.cwd && !dirOk(t.cwd)) await Promise.resolve(ensureDir(t.cwd)).catch(() => false);
-      const results = await Promise.all(plan.tasks.map((t) => inLane(t.cwd && dirOk(t.cwd) ? `cwd:${t.cwd.toLowerCase()}` : `agent:${t.agent}`, async () => {
+      const laneKeys = await Promise.all(plan.tasks.map(async (t) =>
+        t.cwd && dirOk(t.cwd)
+          ? `cwd:${taskLane ? await taskLane(t.cwd) : t.cwd.toLowerCase()}`
+          : `agent:${t.agent}`));
+      const results = await Promise.all(plan.tasks.map((t, index) => inLane(laneKeys[index], async () => {
         const agentId = hiredMap.get(t.agent) ?? t.agent;
         const who = ctx.roster.find((a) => a.id === agentId) ?? { name: t.agent };
         const card = addTask({ agentId, name: who.name, title: t.task.split('\n')[0].slice(0, 120), task: t.task, cwd: t.cwd, group, command: command.slice(0, 120), status: 'doing' });

@@ -8,7 +8,7 @@ The suite uses fake CLI processes, injected providers, local HTTP servers, and t
 
 | Environment | Verification |
 |---|---|
-| Linux, Node 24.19.0 | 2026-10-20: 168 passed, 0 failed, 0 skipped, including preservation of unmerged branches after worktree cleanup |
+| Linux, Node 24.19.0 | 2026-10-20: 170 passed, 0 failed, 0 skipped, including preservation of unmerged branches after worktree cleanup |
 | Windows, Node 22 / 24 | 2026-10-20: both CI jobs passed in [run 39439926043](https://github.com/Bluetwinklez/feyzullah-office/actions/runs/39439926043) |
 | Ubuntu, Node 22 / 24 | 2026-10-20: both CI jobs passed in [run 39439926043](https://github.com/Bluetwinklez/feyzullah-office/actions/runs/39439926043) |
 

@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { chmod, mkdtemp, mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { cleanupWorktrees, git, mergeWorktree, prepareWorktree, removeWorktree } from '../src/gitwork.js';
+import { cleanupWorktrees, git, mergeWorktree, prepareWorktree, projectLane, removeWorktree } from '../src/gitwork.js';
 
 async function repo() {
   const dir = await mkdtemp(join(tmpdir(), 'gw-'));
@@ -223,4 +223,13 @@ test('a saved branch remains reviewable and mergeable after worktree cleanup', a
   assert.equal((await branchDiff(p)).ok, true);
   assert.equal((await mergeWorktree(p)).ok, true);
   assert.equal(await readFile(join(r, 'saved.txt'), 'utf8'), 'saved');
+});
+
+
+test('project lanes identify a repository across subdirectories and separate unrelated folders', async () => {
+  const { dir, r } = await repo();
+  try {
+    assert.equal(await projectLane(r), await projectLane(join(r, 'src')));
+    assert.notEqual(await projectLane(r), await projectLane(dir));
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

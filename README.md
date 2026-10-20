@@ -428,3 +428,7 @@ Application code is released under the [MIT License](LICENSE).
 - Specialist catalogs are downloaded separately from [Agency Agents](https://github.com/msitarzewski/agency-agents) and [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents); consult their licenses.
 - MetroCity assets are optional and subject to their own license.
 - Claude, Codex, Antigravity, and other services retain their respective terms and trademarks.
+
+### Shared repository task scheduling
+
+Tasks targeting the same Git repository, including different subdirectories, run in plan order because they share one task-group worktree. Tasks targeting separate repositories may run in parallel. This prevents specialists from overwriting each other's files or committing another task's unfinished changes.

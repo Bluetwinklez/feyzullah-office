@@ -170,7 +170,7 @@ export function swapPath(text, from, to) {
 
 /** Son MAX_BOARD kart + birleştirilmemiş dalı olan eski kartlar (düğmeleri kaybolmasın). */
 export function trimBoard(list) {
-  const pending = (t) => t.branch && t.worktree && !t.merged && !t.discarded;
+  const pending = (t) => t.branch && !t.merged && !t.discarded;
   const keep = new Set(list.slice(-MAX_BOARD).map((t) => t.id));
   return list.filter((t) => keep.has(t.id) || pending(t));
 }

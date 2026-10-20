@@ -15,6 +15,13 @@ test('yönetici istemi ekibi ve sözleşmeyi içerir', () => {
   assert.match(p, /```json/);
 });
 
+test('board trimming retains saved branches after their worktrees were cleaned up', async () => {
+  const { trimBoard } = await import('../src/agents/admin.js');
+  const pending = { id: 'saved', branch: 'ofis/saved', worktree: null };
+  const cards = [pending, ...Array.from({ length: 300 }, (_, i) => ({ id: `done-${i}`, merged: true }))];
+  assert.ok(trimBoard(cards).some((card) => card.id === pending.id));
+});
+
 test('worktree preparation failures stop the task before the specialist runs', async () => {
   const runner = fakeRunner((id) => id === 'admin' ? json({ reply: 'Plan', tasks: [{ agent: 'fe', task: 'edit', cwd: 'C:/repo' }] }) : 'done');
   const admin = createAdmin({ runner, adminId: () => 'admin', team: () => team, dirOk: () => true, prepare: async () => { throw new Error('worktree unavailable'); } });

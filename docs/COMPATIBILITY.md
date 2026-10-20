@@ -9,8 +9,8 @@ The suite uses fake CLI processes, injected providers, local HTTP servers, and t
 | Environment | Verification |
 |---|---|
 | Linux, Node 24.19.0 | 2026-10-20: 157 passed, 0 failed, 0 skipped after making the download-path test portable |
-| Windows, Node 22 / 24 | Covered by the CI matrix; check the linked run |
-| Ubuntu, Node 22 / 24 | Covered by the CI matrix; check the linked run |
+| Windows, Node 22 / 24 | 2026-10-20: both CI jobs passed in [run 39439926043](https://github.com/Bluetwinklez/feyzullah-office/actions/runs/39439926043) |
+| Ubuntu, Node 22 / 24 | 2026-10-20: both CI jobs passed in [run 39439926043](https://github.com/Bluetwinklez/feyzullah-office/actions/runs/39439926043) |
 
 ## Live engine compatibility
 

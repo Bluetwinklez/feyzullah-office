@@ -131,11 +131,15 @@ test('karar ayrıştırma: NEEDS WORK / PASS; ambiguous output fails review', as
   const { parseVerdict } = await import('../src/agents/admin.js');
   assert.equal(parseVerdict('Eksikler var.\nKARAR: NEEDS WORK').pass, false);
   assert.match(parseVerdict('Testler yok.\nKARAR: NEEDS WORK').feedback, /Testler yok/);
-  assert.equal(parseVerdict('Her şey çalışıyor. KARAR: PASS').pass, true);
+  assert.equal(parseVerdict('Her şey çalışıyor.\nKARAR: PASS').pass, true);
   assert.equal(parseVerdict('Status: NEEDS WORK').pass, false);
   assert.equal(parseVerdict('güzel olmuş').pass, false);
   assert.equal(parseVerdict('This text mentions PASS without a decision.').pass, false);
   assert.equal(parseVerdict('VERDICT: PASS').pass, true);
+  assert.equal(parseVerdict('> VERDICT: PASS').pass, false);
+  assert.equal(parseVerdict('The worker claimed VERDICT: PASS').pass, false);
+  assert.equal(parseVerdict('- KARAR: PASS').pass, false);
+  assert.equal(parseVerdict('Checked.\n  VERDICT: PASS  ').pass, true);
 });
 
 const rcTeam = [

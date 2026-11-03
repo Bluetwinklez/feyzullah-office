@@ -432,3 +432,5 @@ Application code is released under the [MIT License](LICENSE).
 ### Shared repository task scheduling
 
 Tasks targeting the same Git repository, including different subdirectories, run in plan order because they share one task-group worktree. Tasks targeting separate repositories may run in parallel. This prevents specialists from overwriting each other's files or committing another task's unfinished changes.
+
+[Security policy](SECURITY.md) · [Repository security audit](SECURITY_AUDIT.md)

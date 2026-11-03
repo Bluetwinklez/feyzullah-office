@@ -37,3 +37,7 @@ Main READMEs and new maintenance documents are English. Historical Turkish recor
 An Electron desktop workspace for coordinating Claude, Codex and Antigravity in a visual pixel office.
 
 The current GitHub integration rejected repository metadata edits with HTTP 403. This prepared description can be applied when repository administration access is available; it has not been represented as an applied settings change.
+
+## Follow-up: standalone review verdicts
+
+A second review found that the final-line matcher also accepted quoted or inline text ending in `VERDICT: PASS`. It now requires a standalone verdict line (surrounding whitespace is allowed). Regression cases reject Markdown blockquotes, bullet quotations and prose prefixes. Both regression files fail against the previous parser. This validates the output format; it is not a claim that an LLM review is immune to prompt injection.

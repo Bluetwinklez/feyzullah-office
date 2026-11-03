@@ -1,7 +1,7 @@
 {
   "name": "feyzullah-ofis",
   "version": "0.1.0",
-  "description": "Feyzullah Ofis: ajanların çalıştığı piksel ofis (Windows). Feyzullah köprüsünü kullanır.",
+  "description": "A Windows desktop workspace that coordinates AI coding agents in a pixel-art office.",
   "type": "module",
   "main": "main.js",
   "scripts": {

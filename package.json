@@ -9,7 +9,7 @@
     "test": "node --test \"test/**/*.test.js\""
   },
   "devDependencies": {
-    "electron": "44.9.1"
+    "electron": "45.3.3"
   },
   "allowScripts": {
     "electron@44.9.1": true
